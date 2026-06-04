@@ -31,14 +31,14 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:5174** for the public marketing site. Sign in at **http://localhost:5174/access/venue** (not linked from the homepage) with your admin account.
+Open **http://localhost:5174** for the public marketing site. Sign in at **http://localhost:5174/access** (not linked from the homepage) with your admin account.
 
 ## Configuration
 
 | Variable | Description |
 |----------|-------------|
 | `VITE_API_BASE_URL` | Backend URL. Leave empty in dev (proxied to `:8080`). Set to `https://api.momlaunchpad.com` in production. |
-| `VITE_ADMIN_SIGN_IN_PATH` | Obscure ops sign-in path (default `/access/venue`). Not exposed on the marketing homepage. |
+| `VITE_ADMIN_SIGN_IN_PATH` | Obscure ops sign-in path (default `/access`). Not exposed on the marketing homepage. |
 
 ## Production build
 
