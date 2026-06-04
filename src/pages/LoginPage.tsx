@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { Alert } from '../components/ui'
+import { ADMIN_BASE } from '../routes'
 
 export function LoginPage() {
   const { user, login, loading } = useAuth()
@@ -11,7 +12,7 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  if (!loading && user) return <Navigate to="/" replace />
+  if (!loading && user) return <Navigate to={ADMIN_BASE} replace />
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -32,8 +33,8 @@ export function LoginPage() {
         <div className="brand brand-center">
           <span className="brand-mark">ML</span>
           <div>
-            <strong>MomLaunchpad Admin</strong>
-            <small>Internal operations dashboard</small>
+            <strong>Operations</strong>
+            <small>Authorized access only</small>
           </div>
         </div>
         <form onSubmit={handleSubmit} className="form">

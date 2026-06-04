@@ -1,15 +1,16 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { ADMIN_BASE } from '../routes'
 
 const nav = [
-  { to: '/', label: 'Dashboard', end: true },
-  { to: '/plans', label: 'Plans' },
-  { to: '/features', label: 'Features' },
-  { to: '/languages', label: 'Languages' },
-  { to: '/settings', label: 'Settings' },
-  { to: '/users', label: 'Users' },
-  { to: '/community', label: 'Community' },
-  { to: '/referrals', label: 'Referrals' },
+  { to: ADMIN_BASE, label: 'Dashboard', end: true },
+  { to: `${ADMIN_BASE}/plans`, label: 'Plans' },
+  { to: `${ADMIN_BASE}/features`, label: 'Features' },
+  { to: `${ADMIN_BASE}/languages`, label: 'Languages' },
+  { to: `${ADMIN_BASE}/settings`, label: 'Settings' },
+  { to: `${ADMIN_BASE}/users`, label: 'Users' },
+  { to: `${ADMIN_BASE}/community`, label: 'Community' },
+  { to: `${ADMIN_BASE}/referrals`, label: 'Referrals' },
 ]
 
 export function Layout() {

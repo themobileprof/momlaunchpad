@@ -3,6 +3,7 @@ import { Layout } from './components/Layout'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { DashboardPage } from './pages/DashboardPage'
 import { FeaturesPage } from './pages/FeaturesPage'
+import { HomePage } from './pages/HomePage'
 import { LanguagesPage } from './pages/LanguagesPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlansPage } from './pages/PlansPage'
@@ -10,6 +11,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { UsersPage } from './pages/UsersPage'
 import { CommunityPage } from './pages/CommunityPage'
 import { ReferralsPage } from './pages/ReferralsPage'
+import { ADMIN_BASE, ADMIN_SIGN_IN_PATH } from './routes'
 import { Spinner } from './components/ui'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -21,15 +23,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       </div>
     )
   }
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Navigate to={ADMIN_SIGN_IN_PATH} replace />
   return <>{children}</>
 }
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path={ADMIN_SIGN_IN_PATH} element={<LoginPage />} />
       <Route
+        path={ADMIN_BASE}
         element={
           <ProtectedRoute>
             <Layout />
