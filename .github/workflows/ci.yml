@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  VITE_API_BASE_URL: https://api.momlaunchpad.com
+
+jobs:
+  lint-and-build:
+    name: Lint and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+
+      - name: Production build
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.momlaunchpad.com' }}
+          VITE_ADMIN_SIGN_IN_PATH: ${{ vars.VITE_ADMIN_SIGN_IN_PATH || '/access' }}
+          VITE_APP_GITHUB_REPO: ${{ vars.VITE_APP_GITHUB_REPO || 'themobileprof/momlaunchpad-app' }}
+        run: npm run build

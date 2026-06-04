@@ -1,0 +1,76 @@
+name: Deploy site
+
+# Builds momlaunchpad-admin and rsyncs dist/ to the server for nginx (momlaunchpad.com).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  WEB_ROOT: /var/www/momlaunchpad.com
+  VITE_API_BASE_URL: https://api.momlaunchpad.com
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+
+      - name: Build for production
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.momlaunchpad.com' }}
+          VITE_ADMIN_SIGN_IN_PATH: ${{ vars.VITE_ADMIN_SIGN_IN_PATH || '/access' }}
+          VITE_APP_GITHUB_REPO: ${{ vars.VITE_APP_GITHUB_REPO || 'themobileprof/momlaunchpad-app' }}
+          VITE_GITHUB_API_BASE_URL: ${{ vars.VITE_GITHUB_API_BASE_URL || 'https://api.github.com' }}
+        run: npm run build
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rsync dist to server
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USERNAME }}
+          WEB_ROOT: ${{ env.WEB_ROOT }}
+        run: |
+          SSH_OPTS="-i $HOME/.ssh/deploy_key -o StrictHostKeyChecking=yes"
+          REMOTE="${USER}@${HOST}"
+
+          ssh $SSH_OPTS "$REMOTE" "mkdir -p '${WEB_ROOT}'"
+
+          rsync -avz --delete \
+            -e "ssh $SSH_OPTS" \
+            dist/ \
+            "${REMOTE}:${WEB_ROOT}/"
+
+          echo "Deployed to ${WEB_ROOT} on ${HOST}"
+
+      - name: Smoke check (homepage)
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USERNAME }}
+        run: |
+          SSH_OPTS="-i $HOME/.ssh/deploy_key -o StrictHostKeyChecking=yes"
+          ssh $SSH_OPTS "${USER}@${HOST}" \
+            "curl -fsS -o /dev/null -w '%{http_code}\n' -H 'Host: momlaunchpad.com' http://127.0.0.1/ | grep -q '^200$'"
+
+          echo "Homepage OK (nginx vhost momlaunchpad.com)"

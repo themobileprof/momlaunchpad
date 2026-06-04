@@ -49,7 +49,35 @@ npm run build
 npm run preview
 ```
 
-Serve the `dist/` folder behind your internal network or VPN. Do **not** expose this dashboard publicly without additional auth (SSO, IP allowlist, etc.).
+Serve the `dist/` folder at **`/var/www/momlaunchpad.com`** with nginx (`momlaunchpad-be/deploy/nginx/momlaunchpad.com.conf`).
+
+## Deploy on push (GitHub Actions)
+
+Pushing to **`main`** runs `.github/workflows/deploy.yml`:
+
+1. `npm ci` → lint → production build (`VITE_API_BASE_URL` baked in)
+2. `rsync` `dist/` to `/var/www/momlaunchpad.com` on the server
+3. Smoke check via nginx (`Host: momlaunchpad.com`)
+
+### Required GitHub secrets (same server as the API)
+
+| Secret | Description |
+|--------|-------------|
+| `SSH_HOST` | Server IP or hostname |
+| `SSH_USERNAME` | SSH user (e.g. `samuel`) |
+| `SSH_PRIVATE_KEY` | Private key for deploy |
+
+### Optional repository variables
+
+| Variable | Default |
+|----------|---------|
+| `VITE_API_BASE_URL` | `https://api.momlaunchpad.com` |
+| `VITE_ADMIN_SIGN_IN_PATH` | `/access` |
+| `VITE_APP_GITHUB_REPO` | `themobileprof/momlaunchpad-app` |
+
+PRs run **CI only** (lint + build, no deploy). Use **Actions → Deploy site → Run workflow** to redeploy manually.
+
+Do **not** expose `/console` publicly without network restrictions; the marketing site is public at `/`.
 
 ## API
 
