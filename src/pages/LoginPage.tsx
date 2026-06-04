@@ -47,7 +47,7 @@ export function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="username"
-              placeholder="admin@momlaunchpad.com"
+              placeholder="you@company.com"
             />
           </label>
           <label>

@@ -31,7 +31,7 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:5174** for the public marketing site. Sign in at **http://localhost:5174/access** (not linked from the homepage) with your admin account.
+Open **http://localhost:5174** for the public marketing site (includes **Download Android app** from the latest APK on [momlaunchpad-app releases](https://github.com/themobileprof/momlaunchpad-app/releases)). Sign in at **http://localhost:5174/access** (not linked from the homepage) with your admin account.
 
 ## Configuration
 
@@ -39,6 +39,8 @@ Open **http://localhost:5174** for the public marketing site. Sign in at **http:
 |----------|-------------|
 | `VITE_API_BASE_URL` | Backend URL. Leave empty in dev (proxied to `:8080`). Set to `https://api.momlaunchpad.com` in production. |
 | `VITE_ADMIN_SIGN_IN_PATH` | Obscure ops sign-in path (default `/access`). Not exposed on the marketing homepage. |
+| `VITE_APP_GITHUB_REPO` | Repo for latest APK (`themobileprof/momlaunchpad-app`). |
+| `VITE_GITHUB_API_BASE_URL` | GitHub API base (default `https://api.github.com`). |
 
 ## Production build
 

@@ -1,3 +1,4 @@
+import { ApkDownloadButton } from '../components/ApkDownloadButton'
 import './home.css'
 
 const JOURNEY = [
@@ -68,7 +69,8 @@ export function HomePage() {
             and tools that respect your pace.
           </p>
           <div className="home-hero-actions home-reveal" style={{ animationDelay: '0.28s' }}>
-            <a className="home-btn home-btn-primary" href="#support">
+            <ApkDownloadButton size="lg" />
+            <a className="home-btn home-btn-ghost" href="#support">
               See how it helps
             </a>
             <a className="home-btn home-btn-ghost" href="#trust">
@@ -159,12 +161,15 @@ export function HomePage() {
         <section className="home-cta" aria-labelledby="cta-heading">
           <h2 id="cta-heading">Ready when you are</h2>
           <p>
-            MomLaunchpad is coming to iOS and Android. Be among the first mothers to experience
-            support that honors the whole of your pregnancy—not just the clinical checklist.
+            Try the Android app today, or reach out for early access on other platforms—support
+            that honors the whole of your pregnancy, not just the clinical checklist.
           </p>
-          <a className="home-btn home-btn-primary home-btn-lg" href="mailto:hello@momlaunchpad.com">
-            Get early access
-          </a>
+          <div className="home-cta-actions">
+            <ApkDownloadButton size="lg" />
+            <a className="home-btn home-btn-ghost home-btn-lg" href="mailto:hello@momlaunchpad.com">
+              Contact us
+            </a>
+          </div>
         </section>
       </main>
 

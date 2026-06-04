@@ -1,21 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
+import { useAdminConfig } from '../context/AdminConfigContext'
 import type { ReferralLeaderboardEntry } from '../api/types'
 import { ADMIN_BASE } from '../routes'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 
-const GRANT_PRESETS = [
-  { label: 'Gift card', description: 'Monthly top referrer — gift card' },
-  { label: 'Account credit', description: 'Referral milestone — account credit' },
-]
-
 export function ReferralsPage() {
+  const { config, loading: configLoading } = useAdminConfig()
   const [entries, setEntries] = useState<ReferralLeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
+
+  const grantPresets = config?.referral_reward_presets ?? []
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -48,7 +47,7 @@ export function ReferralsPage() {
     }
   }
 
-  if (loading) return <Spinner />
+  if (loading || (configLoading && !config)) return <Spinner />
 
   return (
     <>
@@ -90,9 +89,9 @@ export function ReferralsPage() {
                   <td><strong>{entry.referral_reward_points}</strong></td>
                   <td className="actions">
                     <div className="btn-row">
-                      {GRANT_PRESETS.map((preset) => (
+                      {grantPresets.map((preset) => (
                         <button
-                          key={preset.label}
+                          key={preset.description}
                           type="button"
                           className="btn btn-sm btn-primary"
                           disabled={busyId === entry.user_id}

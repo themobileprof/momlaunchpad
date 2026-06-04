@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { api } from '../api/client'
+import { useAdminConfig } from '../context/AdminConfigContext'
 import type {
   AdminUserSummary,
   CatalogKeyLabel,
@@ -10,17 +11,13 @@ import { Tabs } from '../components/Tabs'
 import { UserPicker } from '../components/UserPicker'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 
-const REPORT_STATUSES = ['open', 'reviewed', 'dismissed', 'actioned'] as const
-const POST_STATUSES = ['active', 'hidden', 'removed', 'pending_review'] as const
-
-type CatalogKind = 'interest-groups' | 'interests' | 'badge-types' | 'event-types' | 'countries'
-
 export function CommunityPage() {
+  const { config, loading: configLoading } = useAdminConfig()
   const [tab, setTab] = useState('reports')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
-  const [reportFilter, setReportFilter] = useState('open')
+  const [reportFilter, setReportFilter] = useState('')
   const [reports, setReports] = useState<CommunityReport[]>([])
   const [reportsLoading, setReportsLoading] = useState(false)
 
@@ -30,7 +27,7 @@ export function CommunityPage() {
   const [badgeBusy, setBadgeBusy] = useState<string | null>(null)
   const [postBusy, setPostBusy] = useState<string | null>(null)
 
-  const [catalogKind, setCatalogKind] = useState<CatalogKind>('interest-groups')
+  const [catalogKind, setCatalogKind] = useState('')
   const [catalogRows, setCatalogRows] = useState<CatalogKeyLabel[] | CommunityInterest[]>([])
   const [catalogLoading, setCatalogLoading] = useState(false)
   const [catalogForm, setCatalogForm] = useState({
@@ -42,7 +39,21 @@ export function CommunityPage() {
     is_enabled: true,
   })
 
+  const reportStatuses = config?.report_statuses ?? []
+  const postStatuses = config?.post_statuses ?? []
+  const catalogSections = config?.catalog_sections ?? []
+
+  useEffect(() => {
+    if (config?.default_report_status) {
+      setReportFilter((prev) => prev || config.default_report_status)
+    }
+    if (config?.catalog_sections[0]?.id) {
+      setCatalogKind((prev) => prev || config.catalog_sections[0].id)
+    }
+  }, [config])
+
   const loadReports = useCallback(async () => {
+    if (!reportFilter) return
     setReportsLoading(true)
     setError('')
     try {
@@ -285,6 +296,8 @@ export function CommunityPage() {
     }
   }
 
+  if (configLoading && !config) return <Spinner />
+
   return (
     <>
       <PageHeader
@@ -313,7 +326,7 @@ export function CommunityPage() {
                 value={reportFilter}
                 onChange={(e) => setReportFilter(e.target.value)}
               >
-                {REPORT_STATUSES.map((s) => (
+                {reportStatuses.map((s) => (
                   <option key={s} value={s}>
                     {s}
                   </option>
@@ -346,7 +359,7 @@ export function CommunityPage() {
                       <strong>{r.target_type}</strong>
                       {r.target_type === 'post' && (
                         <div className="btn-row mt">
-                          {POST_STATUSES.map((status) => (
+                          {postStatuses.map((status) => (
                             <button
                               key={status}
                               type="button"
@@ -475,13 +488,13 @@ export function CommunityPage() {
                 Catalog
                 <select
                   value={catalogKind}
-                  onChange={(e) => setCatalogKind(e.target.value as CatalogKind)}
+                  onChange={(e) => setCatalogKind(e.target.value)}
                 >
-                  <option value="interest-groups">Interest groups</option>
-                  <option value="interests">Interests</option>
-                  <option value="badge-types">Badge types</option>
-                  <option value="event-types">Event types</option>
-                  <option value="countries">Countries</option>
+                  {catalogSections.map((section) => (
+                    <option key={section.id} value={section.id}>
+                      {section.label}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>

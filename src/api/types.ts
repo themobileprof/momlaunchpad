@@ -6,6 +6,25 @@ export interface UserInfo {
   is_admin: boolean
 }
 
+export interface ReferralRewardPreset {
+  label: string
+  description: string
+}
+
+export interface AdminCatalogSection {
+  id: string
+  label: string
+}
+
+export interface AdminConfig {
+  quota_periods: string[]
+  report_statuses: string[]
+  post_statuses: string[]
+  default_report_status: string
+  catalog_sections: AdminCatalogSection[]
+  referral_reward_presets: ReferralRewardPreset[]
+}
+
 /** Admin lookup by email — id is for API calls only. */
 export interface AdminUserSummary {
   id: string
@@ -14,6 +33,9 @@ export interface AdminUserSummary {
   language: string
   referral_code?: string
   plan_code?: string
+  referral_reward_points?: number
+  is_admin?: boolean
+  created_at?: string
 }
 
 export interface AuthResponse {

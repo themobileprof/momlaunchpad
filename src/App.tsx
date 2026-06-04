@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { AdminConfigProvider } from './context/AdminConfigContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { DashboardPage } from './pages/DashboardPage'
 import { FeaturesPage } from './pages/FeaturesPage'
@@ -36,7 +37,9 @@ function AppRoutes() {
         path={ADMIN_BASE}
         element={
           <ProtectedRoute>
-            <Layout />
+            <AdminConfigProvider>
+              <Layout />
+            </AdminConfigProvider>
           </ProtectedRoute>
         }
       >

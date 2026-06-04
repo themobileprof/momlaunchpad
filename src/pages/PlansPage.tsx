@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { api } from '../api/client'
+import { useAdminConfig } from '../context/AdminConfigContext'
 import type { Feature, Plan, PlanFeature } from '../api/types'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 
 export function PlansPage() {
+  const { config } = useAdminConfig()
+  const quotaPeriods = config?.quota_periods ?? []
   const [plans, setPlans] = useState<Plan[]>([])
   const [features, setFeatures] = useState<Feature[]>([])
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
@@ -14,8 +17,14 @@ export function PlansPage() {
 
   const [newPlan, setNewPlan] = useState({ code: '', name: '', description: '' })
   const [quotaLimit, setQuotaLimit] = useState('')
-  const [quotaPeriod, setQuotaPeriod] = useState('monthly')
+  const [quotaPeriod, setQuotaPeriod] = useState('')
   const [assignBusy, setAssignBusy] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (quotaPeriod === '' && quotaPeriods[0]) {
+      setQuotaPeriod(quotaPeriods[0])
+    }
+  }, [quotaPeriods, quotaPeriod])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -86,7 +95,7 @@ export function PlansPage() {
   }
 
   async function assignFeature(featureId: number) {
-    if (!selectedPlan) return
+    if (!selectedPlan || !quotaPeriod) return
     setAssignBusy(featureId)
     try {
       await api.assignFeatureToPlan(selectedPlan.id, featureId, {
@@ -230,11 +239,12 @@ export function PlansPage() {
               </label>
               <label>
                 Period
-                <select value={quotaPeriod} onChange={(e) => setQuotaPeriod(e.target.value)}>
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="unlimited">Unlimited</option>
+                <select value={quotaPeriod} onChange={(e) => setQuotaPeriod(e.target.value)} required>
+                  {quotaPeriods.map((period) => (
+                    <option key={period} value={period}>
+                      {period}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>

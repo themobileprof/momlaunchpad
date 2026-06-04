@@ -55,6 +55,8 @@ export const api = {
 
   me: () => request<import('./types').UserInfo>('/api/auth/me'),
 
+  getAdminConfig: () => request<import('./types').AdminConfig>('/api/admin/config'),
+
   // Plans
   listPlans: () => request<{ plans: import('./types').Plan[] }>('/api/admin/plans'),
   createPlan: (body: { code: string; name: string; description: string }) =>
@@ -128,6 +130,11 @@ export const api = {
     ),
 
   // Users
+  listUsers: (limit = 100, offset = 0) =>
+    request<{ users: import('./types').AdminUserSummary[]; limit: number; offset: number }>(
+      `/api/admin/users?limit=${limit}&offset=${offset}`,
+    ),
+
   lookupUserByEmail: (email: string) =>
     request<{ users: import('./types').AdminUserSummary[] }>(
       `/api/admin/users/search?email=${encodeURIComponent(email.trim())}`,

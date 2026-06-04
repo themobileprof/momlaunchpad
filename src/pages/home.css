@@ -435,6 +435,38 @@
   line-height: 1.6;
 }
 
+.home-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.home-apk-download {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.home-apk-meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--home-ink-soft);
+}
+
+.home-apk-muted,
+.home-apk-error {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--home-ink-soft);
+}
+
+.home-apk-error {
+  color: var(--home-rose-deep);
+}
+
 .home-footer {
   position: relative;
   z-index: 1;
