@@ -13,9 +13,9 @@ export function PlansPage() {
   const [loading, setLoading] = useState(true)
 
   const [newPlan, setNewPlan] = useState({ code: '', name: '', description: '' })
-  const [assignFeatureId, setAssignFeatureId] = useState('')
   const [quotaLimit, setQuotaLimit] = useState('')
   const [quotaPeriod, setQuotaPeriod] = useState('monthly')
+  const [assignBusy, setAssignBusy] = useState<number | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -85,11 +85,11 @@ export function PlansPage() {
     }
   }
 
-  async function assignFeature(e: FormEvent) {
-    e.preventDefault()
-    if (!selectedPlan || !assignFeatureId) return
+  async function assignFeature(featureId: number) {
+    if (!selectedPlan) return
+    setAssignBusy(featureId)
     try {
-      await api.assignFeatureToPlan(selectedPlan.id, Number(assignFeatureId), {
+      await api.assignFeatureToPlan(selectedPlan.id, featureId, {
         quota_limit: quotaLimit === '' ? null : Number(quotaLimit),
         quota_period: quotaPeriod,
       })
@@ -98,8 +98,13 @@ export function PlansPage() {
       setPlanFeatures(res.features ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Assign failed')
+    } finally {
+      setAssignBusy(null)
     }
   }
+
+  const assignedIds = new Set(planFeatures.map((pf) => pf.feature_id))
+  const unassignedFeatures = features.filter((f) => !assignedIds.has(f.id))
 
   async function removeFeature(featureId: number) {
     if (!selectedPlan) return
@@ -216,31 +221,56 @@ export function PlansPage() {
             </table>
           )}
 
-          <form className="form inline-form mt" onSubmit={assignFeature}>
-            <label>
-              Feature
-              <select value={assignFeatureId} onChange={(e) => setAssignFeatureId(e.target.value)} required>
-                <option value="">Select…</option>
-                {features.map((f) => (
-                  <option key={f.id} value={f.id}>{f.feature_key}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Quota limit
-              <input type="number" min={0} value={quotaLimit} onChange={(e) => setQuotaLimit(e.target.value)} placeholder="empty = unlimited" />
-            </label>
-            <label>
-              Period
-              <select value={quotaPeriod} onChange={(e) => setQuotaPeriod(e.target.value)}>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="unlimited">Unlimited</option>
-              </select>
-            </label>
-            <button type="submit" className="btn btn-primary">Assign</button>
-          </form>
+          <div className="mt">
+            <p className="muted mb">Defaults for new assignments</p>
+            <div className="form inline-form mb">
+              <label>
+                Quota limit
+                <input type="number" min={0} value={quotaLimit} onChange={(e) => setQuotaLimit(e.target.value)} placeholder="empty = ∞" />
+              </label>
+              <label>
+                Period
+                <select value={quotaPeriod} onChange={(e) => setQuotaPeriod(e.target.value)}>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="unlimited">Unlimited</option>
+                </select>
+              </label>
+            </div>
+            {unassignedFeatures.length === 0 ? (
+              <EmptyState message="All features are on this plan." />
+            ) : (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unassignedFeatures.map((f) => (
+                    <tr key={f.id}>
+                      <td>
+                        <strong>{f.name}</strong>
+                        <div className="table-sub"><code>{f.feature_key}</code></div>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-primary"
+                          disabled={assignBusy === f.id}
+                          onClick={() => assignFeature(f.id)}
+                        >
+                          {assignBusy === f.id ? 'Adding…' : 'Add to plan'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </Card>
       )}
     </>

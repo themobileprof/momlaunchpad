@@ -1,14 +1,21 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { ReferralLeaderboardEntry } from '../api/types'
+import { ADMIN_BASE } from '../routes'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
+
+const GRANT_PRESETS = [
+  { label: 'Gift card', description: 'Monthly top referrer — gift card' },
+  { label: 'Account credit', description: 'Referral milestone — account credit' },
+]
 
 export function ReferralsPage() {
   const [entries, setEntries] = useState<ReferralLeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
-  const [rewardDesc, setRewardDesc] = useState<Record<string, string>>({})
+  const [busyId, setBusyId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -27,18 +34,17 @@ export function ReferralsPage() {
     load()
   }, [load])
 
-  async function grant(userId: string, e: FormEvent) {
-    e.preventDefault()
-    const description = rewardDesc[userId]?.trim()
-    if (!description) return
+  async function grant(entry: ReferralLeaderboardEntry, description: string) {
+    setBusyId(entry.user_id)
     setError('')
     try {
-      await api.grantReferralReward(userId, description)
-      setMessage(`Reward granted for ${userId}.`)
-      setRewardDesc((prev) => ({ ...prev, [userId]: '' }))
+      await api.grantReferralReward(entry.user_id, description)
+      setMessage(`Reward granted for ${entry.email}.`)
       await load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Grant failed')
+    } finally {
+      setBusyId(null)
     }
   }
 
@@ -48,7 +54,7 @@ export function ReferralsPage() {
     <>
       <PageHeader
         title="Referrals"
-        description="Users with pending referral reward points — grant rewards to clear their balance."
+        description="Pending referral points — grant from each row."
         action={
           <button type="button" className="btn btn-ghost" onClick={load}>
             Refresh
@@ -69,45 +75,39 @@ export function ReferralsPage() {
                 <th>Code</th>
                 <th>Referrals</th>
                 <th>Points</th>
-                <th>Grant reward</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {entries.map((entry) => (
                 <tr key={entry.user_id}>
                   <td>
-                    <div>{entry.name || entry.email}</div>
-                    <div className="table-sub">
-                      <code>{entry.user_id}</code>
-                    </div>
+                    <div>{entry.name || '—'}</div>
+                    <div className="table-sub">{entry.email}</div>
                   </td>
-                  <td>
-                    <code>{entry.referral_code}</code>
-                  </td>
+                  <td>{entry.referral_code}</td>
                   <td>{entry.total_referrals}</td>
-                  <td>
-                    <strong>{entry.referral_reward_points}</strong>
-                  </td>
-                  <td>
-                    <form className="form inline-form" onSubmit={(e) => grant(entry.user_id, e)}>
-                      <label className="flex-grow">
-                        Description
-                        <input
-                          value={rewardDesc[entry.user_id] ?? ''}
-                          onChange={(e) =>
-                            setRewardDesc((prev) => ({
-                              ...prev,
-                              [entry.user_id]: e.target.value,
-                            }))
-                          }
-                          placeholder="e.g. $50 gift card — March 2026"
-                          required
-                        />
-                      </label>
-                      <button type="submit" className="btn btn-primary btn-sm">
-                        Grant
-                      </button>
-                    </form>
+                  <td><strong>{entry.referral_reward_points}</strong></td>
+                  <td className="actions">
+                    <div className="btn-row">
+                      {GRANT_PRESETS.map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          className="btn btn-sm btn-primary"
+                          disabled={busyId === entry.user_id}
+                          onClick={() => grant(entry, preset.description)}
+                        >
+                          {busyId === entry.user_id ? '…' : preset.label}
+                        </button>
+                      ))}
+                      <Link
+                        to={`${ADMIN_BASE}/users?email=${encodeURIComponent(entry.email)}`}
+                        className="btn btn-sm btn-ghost"
+                      >
+                        Account
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

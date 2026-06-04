@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { api } from '../api/client'
 import type {
+  AdminUserSummary,
   CatalogKeyLabel,
   CommunityInterest,
   CommunityReport,
 } from '../api/types'
 import { Tabs } from '../components/Tabs'
+import { UserPicker } from '../components/UserPicker'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 
 const REPORT_STATUSES = ['open', 'reviewed', 'dismissed', 'actioned'] as const
@@ -22,11 +24,11 @@ export function CommunityPage() {
   const [reports, setReports] = useState<CommunityReport[]>([])
   const [reportsLoading, setReportsLoading] = useState(false)
 
-  const [postId, setPostId] = useState('')
-  const [postStatus, setPostStatus] = useState('hidden')
-
   const [badgeUserId, setBadgeUserId] = useState('')
-  const [badgeType, setBadgeType] = useState('')
+  const [badgeUser, setBadgeUser] = useState<AdminUserSummary | null>(null)
+  const [badgeTypes, setBadgeTypes] = useState<CatalogKeyLabel[]>([])
+  const [badgeBusy, setBadgeBusy] = useState<string | null>(null)
+  const [postBusy, setPostBusy] = useState<string | null>(null)
 
   const [catalogKind, setCatalogKind] = useState<CatalogKind>('interest-groups')
   const [catalogRows, setCatalogRows] = useState<CatalogKeyLabel[] | CommunityInterest[]>([])
@@ -106,6 +108,11 @@ export function CommunityPage() {
     if (tab === 'catalog') loadCatalog()
   }, [tab, catalogKind, loadCatalog])
 
+  useEffect(() => {
+    if (tab !== 'badges') return
+    void api.listBadgeTypes().then((res) => setBadgeTypes(res.badge_types ?? []))
+  }, [tab])
+
   async function updateReport(id: string, status: string) {
     setError('')
     try {
@@ -117,39 +124,95 @@ export function CommunityPage() {
     }
   }
 
-  async function handlePostStatus(e: FormEvent) {
-    e.preventDefault()
-    if (!postId.trim()) return
+  async function setPostStatus(postId: string, status: string) {
+    setPostBusy(`${postId}-${status}`)
     setError('')
     try {
-      await api.updateCommunityPostStatus(postId.trim(), postStatus)
-      setMessage(`Post ${postId} set to ${postStatus}.`)
-      setPostId('')
+      await api.updateCommunityPostStatus(postId, status)
+      setMessage(`Post set to ${status}.`)
+      await loadReports()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Post update failed')
+    } finally {
+      setPostBusy(null)
     }
   }
 
-  async function grantBadge(e: FormEvent) {
-    e.preventDefault()
+  async function grantBadge(badgeKey: string) {
+    if (!badgeUserId) return
+    setBadgeBusy(`grant-${badgeKey}`)
     setError('')
     try {
-      await api.grantCommunityBadge(badgeUserId.trim(), badgeType.trim())
-      setMessage('Badge granted.')
-      setBadgeType('')
+      await api.grantCommunityBadge(badgeUserId, badgeKey)
+      setMessage(`Granted ${badgeKey}.`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Grant failed')
+    } finally {
+      setBadgeBusy(null)
     }
   }
 
-  async function revokeBadge(e: FormEvent) {
-    e.preventDefault()
+  async function revokeBadge(badgeKey: string) {
+    if (!badgeUserId) return
+    setBadgeBusy(`revoke-${badgeKey}`)
     setError('')
     try {
-      await api.revokeCommunityBadge(badgeUserId.trim(), badgeType.trim())
-      setMessage('Badge revoked.')
+      await api.revokeCommunityBadge(badgeUserId, badgeKey)
+      setMessage(`Revoked ${badgeKey}.`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Revoke failed')
+    } finally {
+      setBadgeBusy(null)
+    }
+  }
+
+  async function toggleCatalogEnabled(row: CatalogKeyLabel | CommunityInterest) {
+    setError('')
+    const next = !row.is_enabled
+    const sort_order = row.sort_order ?? 0
+    try {
+      switch (catalogKind) {
+        case 'interest-groups':
+          await api.upsertInterestGroup(row.key, { label: row.label, sort_order, is_enabled: next })
+          break
+        case 'interests': {
+          const interest = row as CommunityInterest
+          await api.upsertCatalogInterest(row.key, {
+            label: row.label,
+            group_key: interest.group_key,
+            sort_order,
+            is_enabled: next,
+          })
+          break
+        }
+        case 'badge-types':
+          await api.upsertBadgeType(row.key, {
+            label: row.label,
+            description: row.description,
+            sort_order,
+            is_enabled: next,
+          })
+          break
+        case 'event-types':
+          await api.upsertEventType(row.key, {
+            label: row.label,
+            description: row.description,
+            sort_order,
+            is_enabled: next,
+          })
+          break
+        case 'countries':
+          await api.upsertCatalogCountry(row.key.toUpperCase(), {
+            name: row.label,
+            sort_order,
+            is_enabled: next,
+          })
+          break
+      }
+      setMessage(`${row.label} ${next ? 'enabled' : 'disabled'}.`)
+      await loadCatalog()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Update failed')
     }
   }
 
@@ -236,7 +299,6 @@ export function CommunityPage() {
         onChange={setTab}
         tabs={[
           { id: 'reports', label: 'Reports' },
-          { id: 'posts', label: 'Posts' },
           { id: 'badges', label: 'Badges' },
           { id: 'catalog', label: 'Catalog' },
         ]}
@@ -281,10 +343,27 @@ export function CommunityPage() {
                 {reports.map((r) => (
                   <tr key={r.id}>
                     <td>
-                      <code>{r.target_type}</code>
-                      <div className="table-sub">
-                        <code>{r.target_id}</code>
-                      </div>
+                      <strong>{r.target_type}</strong>
+                      {r.target_type === 'post' && (
+                        <div className="btn-row mt">
+                          {POST_STATUSES.map((status) => (
+                            <button
+                              key={status}
+                              type="button"
+                              className="btn btn-sm btn-ghost"
+                              disabled={postBusy === `${r.target_id}-${status}`}
+                              onClick={() => setPostStatus(r.target_id, status)}
+                            >
+                              {postBusy === `${r.target_id}-${status}` ? '…' : status}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {r.target_type === 'user' && (
+                        <div className="table-sub muted">
+                          Look up member by email under Users.
+                        </div>
+                      )}
                     </td>
                     <td>
                       {r.reason}
@@ -329,67 +408,62 @@ export function CommunityPage() {
         </Card>
       )}
 
-      {tab === 'posts' && (
-        <Card className="mt">
-          <h2 className="card-title">Update post status</h2>
-          <form className="form" onSubmit={handlePostStatus}>
-            <label>
-              Post ID
-              <input
-                value={postId}
-                onChange={(e) => setPostId(e.target.value)}
-                placeholder="UUID"
-                required
-              />
-            </label>
-            <label>
-              Status
-              <select value={postStatus} onChange={(e) => setPostStatus(e.target.value)}>
-                {POST_STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button type="submit" className="btn btn-primary">
-              Apply
-            </button>
-          </form>
-        </Card>
-      )}
-
       {tab === 'badges' && (
         <Card className="mt">
-          <h2 className="card-title">User badges</h2>
-          <form className="form" onSubmit={grantBadge}>
-            <label>
-              User ID
-              <input
-                value={badgeUserId}
-                onChange={(e) => setBadgeUserId(e.target.value)}
-                placeholder="UUID"
-                required
-              />
-            </label>
-            <label>
-              Badge type key
-              <input
-                value={badgeType}
-                onChange={(e) => setBadgeType(e.target.value)}
-                placeholder="expert_obgyn"
-                required
-              />
-            </label>
-            <div className="btn-row">
-              <button type="submit" className="btn btn-primary">
-                Grant badge
-              </button>
-              <button type="button" className="btn btn-danger" onClick={revokeBadge}>
-                Revoke badge
-              </button>
-            </div>
-          </form>
+          <UserPicker
+            label="Member email"
+            user={badgeUser}
+            onSelect={(u) => {
+              setBadgeUser(u)
+              setBadgeUserId(u.id)
+            }}
+            onClear={() => {
+              setBadgeUser(null)
+              setBadgeUserId('')
+            }}
+          />
+          {!badgeUser && <p className="muted mt">Look up a member to grant or revoke badges.</p>}
+          {badgeTypes.length === 0 ? (
+            <EmptyState message="No badge types in catalog." />
+          ) : (
+            <table className="table mt">
+              <thead>
+                <tr>
+                  <th>Badge</th>
+                  <th>Key</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {badgeTypes.map((bt) => (
+                  <tr key={bt.key}>
+                    <td>{bt.label}</td>
+                    <td><code>{bt.key}</code></td>
+                    <td className="actions">
+                      <div className="btn-row">
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-primary"
+                          disabled={!badgeUserId || badgeBusy === `grant-${bt.key}`}
+                          onClick={() => grantBadge(bt.key)}
+                        >
+                          Grant
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger"
+                          disabled={!badgeUserId || badgeBusy === `revoke-${bt.key}`}
+                          onClick={() => revokeBadge(bt.key)}
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </Card>
       )}
 
@@ -421,8 +495,8 @@ export function CommunityPage() {
                   <tr>
                     <th>Key</th>
                     <th>Label</th>
-                    <th>Enabled</th>
-                    <th></th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -435,15 +509,28 @@ export function CommunityPage() {
                         )}
                       </td>
                       <td>{row.label}</td>
-                      <td>{row.is_enabled ? 'Yes' : 'No'}</td>
                       <td>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-ghost"
-                          onClick={() => startEditCatalog(row)}
-                        >
-                          Edit
-                        </button>
+                        <span className={row.is_enabled ? 'badge badge-ok' : 'badge badge-muted'}>
+                          {row.is_enabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </td>
+                      <td className="actions">
+                        <div className="btn-row">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-ghost"
+                            onClick={() => toggleCatalogEnabled(row)}
+                          >
+                            {row.is_enabled ? 'Disable' : 'Enable'}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-ghost"
+                            onClick={() => startEditCatalog(row)}
+                          >
+                            Edit
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

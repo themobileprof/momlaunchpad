@@ -99,7 +99,13 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
 .table th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .table-sub { font-size: 0.8rem; margin-top: 0.2rem; }
 .row-selected { background: var(--accent-soft); }
-.actions { white-space: nowrap; }
+.actions { white-space: nowrap; vertical-align: top; }
+.actions .btn-row { justify-content: flex-end; }
+.table th[scope="row"] {
+  color: var(--muted); font-weight: 600; font-size: 0.78rem;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  width: 8rem;
+}
 
 .kv-list { list-style: none; padding: 0; margin: 0; }
 .kv-list li { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
@@ -173,3 +179,26 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
 .tab:hover { color: var(--text); background: var(--surface-2); }
 .tab.active { background: var(--accent); color: white; border-color: var(--accent); }
 .mb { margin-bottom: 1rem; }
+
+.user-picker { position: relative; }
+.user-picker-selected {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 0.65rem; border: 1px solid var(--border); border-radius: 8px; background: white;
+}
+.user-picker-primary { font-weight: 600; }
+.user-picker-meta { font-size: 0.82rem; color: var(--muted); display: block; }
+.user-picker-error { color: var(--danger); font-size: 0.85rem; margin: 0.35rem 0 0; }
+.user-picker-results {
+  list-style: none; margin: 0.35rem 0 0; padding: 0;
+  border: 1px solid var(--border); border-radius: 8px; background: white;
+  box-shadow: var(--shadow); max-height: 240px; overflow-y: auto;
+}
+.user-picker-hint { padding: 0.65rem 0.85rem; color: var(--muted); font-size: 0.88rem; }
+.user-picker-option {
+  width: 100%; text-align: left; border: none; background: transparent;
+  padding: 0.65rem 0.85rem; cursor: pointer; font: inherit;
+  border-bottom: 1px solid var(--border);
+}
+.user-picker-option:hover { background: var(--accent-soft); }
+.user-picker-option:last-child { border-bottom: none; }
+.user-picker-results li:last-child .user-picker-option { border-bottom: none; }

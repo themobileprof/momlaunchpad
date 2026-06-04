@@ -6,6 +6,16 @@ export interface UserInfo {
   is_admin: boolean
 }
 
+/** Admin lookup by email — id is for API calls only. */
+export interface AdminUserSummary {
+  id: string
+  email: string
+  name?: string
+  language: string
+  referral_code?: string
+  plan_code?: string
+}
+
 export interface AuthResponse {
   token: string
   user: UserInfo

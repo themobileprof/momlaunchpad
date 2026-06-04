@@ -128,6 +128,11 @@ export const api = {
     ),
 
   // Users
+  lookupUserByEmail: (email: string) =>
+    request<{ users: import('./types').AdminUserSummary[] }>(
+      `/api/admin/users/search?email=${encodeURIComponent(email.trim())}`,
+    ),
+
   getUserSubscription: (userId: string) =>
     request<{ user_id: string; subscription: import('./types').UserSubscription }>(
       `/api/admin/users/${userId}/subscription`,
