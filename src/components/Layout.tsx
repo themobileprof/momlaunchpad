@@ -8,6 +8,8 @@ const nav = [
   { to: '/languages', label: 'Languages' },
   { to: '/settings', label: 'Settings' },
   { to: '/users', label: 'Users' },
+  { to: '/community', label: 'Community' },
+  { to: '/referrals', label: 'Referrals' },
 ]
 
 export function Layout() {

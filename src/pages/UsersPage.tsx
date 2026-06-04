@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { api } from '../api/client'
-import type { Plan, QuotaInfo, UserSubscription } from '../api/types'
+import type { Plan, QuotaInfo, ReferralRewardRecord, UserSubscription } from '../api/types'
 import { Alert, Card, PageHeader } from '../components/ui'
 
 export function UsersPage() {
@@ -11,6 +11,9 @@ export function UsersPage() {
   const [planCode, setPlanCode] = useState('')
   const [featureKey, setFeatureKey] = useState('chat')
   const [grantFeature, setGrantFeature] = useState('')
+  const [grantExpires, setGrantExpires] = useState('')
+  const [referralRewards, setReferralRewards] = useState<ReferralRewardRecord[]>([])
+  const [referralRewardDesc, setReferralRewardDesc] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -23,14 +26,18 @@ export function UsersPage() {
     setMessage('')
     setSubscription(null)
     setQuota(null)
+    setReferralRewards([])
     try {
-      const [subRes, plansRes] = await Promise.all([
-        api.getUserSubscription(userId.trim()),
+      const uid = userId.trim()
+      const [subRes, plansRes, rewardsRes] = await Promise.all([
+        api.getUserSubscription(uid),
         plans.length ? Promise.resolve({ plans }) : api.listPlans(),
+        api.listUserReferralRewards(uid).catch(() => ({ rewards: [] })),
       ])
       setSubscription(subRes.subscription)
       setPlans(plansRes.plans ?? plans)
       setPlanCode(subRes.subscription.plan_code)
+      setReferralRewards(rewardsRes.rewards ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'User lookup failed')
     } finally {
@@ -76,11 +83,30 @@ export function UsersPage() {
     e.preventDefault()
     if (!grantFeature.trim()) return
     try {
-      await api.grantFeature(userId.trim(), grantFeature.trim())
+      let expires_at: number | undefined
+      if (grantExpires) {
+        expires_at = Math.floor(new Date(grantExpires).getTime() / 1000)
+      }
+      await api.grantFeature(userId.trim(), grantFeature.trim(), expires_at)
       setMessage(`Granted feature "${grantFeature}".`)
       setGrantFeature('')
+      setGrantExpires('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Grant failed')
+    }
+  }
+
+  async function grantReferralReward(e: FormEvent) {
+    e.preventDefault()
+    if (!referralRewardDesc.trim()) return
+    try {
+      await api.grantReferralReward(userId.trim(), referralRewardDesc.trim())
+      setMessage('Referral reward granted.')
+      setReferralRewardDesc('')
+      const res = await api.listUserReferralRewards(userId.trim())
+      setReferralRewards(res.rewards ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Referral grant failed')
     }
   }
 
@@ -158,16 +184,72 @@ export function UsersPage() {
       )}
 
       {subscription && (
-        <Card className="mt">
-          <h2 className="card-title">Grant feature override</h2>
-          <form className="form inline-form" onSubmit={grant}>
-            <label>
-              Feature key
-              <input value={grantFeature} onChange={(e) => setGrantFeature(e.target.value)} placeholder="voice_calls" />
-            </label>
-            <button type="submit" className="btn btn-primary">Grant</button>
-          </form>
-        </Card>
+        <>
+          <Card className="mt">
+            <h2 className="card-title">Grant feature override</h2>
+            <form className="form inline-form" onSubmit={grant}>
+              <label>
+                Feature key
+                <input
+                  value={grantFeature}
+                  onChange={(e) => setGrantFeature(e.target.value)}
+                  placeholder="voice_calls"
+                />
+              </label>
+              <label>
+                Expires (optional)
+                <input
+                  type="datetime-local"
+                  value={grantExpires}
+                  onChange={(e) => setGrantExpires(e.target.value)}
+                />
+              </label>
+              <button type="submit" className="btn btn-primary">
+                Grant
+              </button>
+            </form>
+          </Card>
+
+          <Card className="mt">
+            <h2 className="card-title">Referral rewards</h2>
+            {referralRewards.length > 0 ? (
+              <table className="table mb">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Referrals</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {referralRewards.map((r) => (
+                    <tr key={r.id}>
+                      <td>{new Date(r.created_at).toLocaleDateString()}</td>
+                      <td>{r.referrals_count}</td>
+                      <td>{r.reward_description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p className="muted mb">No referral rewards recorded yet.</p>
+            )}
+            <form className="form inline-form" onSubmit={grantReferralReward}>
+              <label className="flex-grow">
+                Reward description
+                <input
+                  value={referralRewardDesc}
+                  onChange={(e) => setReferralRewardDesc(e.target.value)}
+                  placeholder="Monthly top referrer — gift card"
+                  required
+                />
+              </label>
+              <button type="submit" className="btn btn-primary">
+                Grant referral reward
+              </button>
+            </form>
+          </Card>
+        </>
       )}
     </>
   )

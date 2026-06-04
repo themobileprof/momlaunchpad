@@ -9,7 +9,9 @@ Internal operations dashboard for managing MomLaunchpad backend configuration �
 - **Features** — CRUD for feature flags (`chat`, `calendar`, `voice_calls`, etc.)
 - **Languages** — enable/disable and mark languages as experimental
 - **Settings** — edit system settings (e.g. AI assistant name)
-- **Users** — look up by UUID: change plan, check/reset quota, grant feature overrides
+- **Users** — look up by UUID: change plan, check/reset quota, grant feature overrides (with optional expiry), referral reward history
+- **Community** — moderation reports, post status, expert badges, catalog (interests, badge types, events, countries)
+- **Referrals** — leaderboard of users with pending points; grant rewards
 
 ## Prerequisites
 

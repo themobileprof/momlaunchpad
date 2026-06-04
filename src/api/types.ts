@@ -102,3 +102,66 @@ export interface QuotaInfo {
   period_start?: string
   period_end?: string
 }
+
+export interface CommunityReport {
+  id: string
+  reporter_id: string
+  target_type: string
+  target_id: string
+  reason: string
+  details?: string
+  status: string
+  reviewed_by?: string
+  reviewed_at?: string
+  created_at: string
+}
+
+export interface CatalogKeyLabel {
+  key: string
+  label: string
+  sort_order: number
+  is_enabled: boolean
+  created_at?: string
+  updated_at?: string
+  group_key?: string
+  description?: string
+}
+
+export interface CommunityInterest extends CatalogKeyLabel {
+  group_key: string
+}
+
+export interface CommunityCountry {
+  code: string
+  name: string
+  sort_order: number
+  is_enabled: boolean
+}
+
+export interface CommunityRegion {
+  id: string
+  country_code: string
+  code: string
+  name: string
+  sort_order: number
+  is_enabled: boolean
+}
+
+export interface ReferralLeaderboardEntry {
+  user_id: string
+  email: string
+  name?: string
+  referral_code: string
+  referral_reward_points: number
+  total_referrals: number
+  created_at: string
+}
+
+export interface ReferralRewardRecord {
+  id: number
+  user_id: string
+  referrals_count: number
+  reward_description: string
+  rewarded_by_admin_id: string
+  created_at: string
+}

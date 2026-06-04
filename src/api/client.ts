@@ -148,4 +148,103 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ feature_key, expires_at }),
     }),
+
+  // Community moderation
+  listCommunityReports: (status = 'open') =>
+    request<{ reports: import('./types').CommunityReport[] }>(
+      `/api/admin/community/reports?status=${encodeURIComponent(status)}`,
+    ),
+  updateCommunityReport: (id: string, status: string) =>
+    request(`/api/admin/community/reports/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    }),
+  updateCommunityPostStatus: (postId: string, status: string) =>
+    request(`/api/admin/community/posts/${postId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    }),
+  grantCommunityBadge: (userId: string, badge_type: string) =>
+    request(`/api/admin/community/users/${userId}/badges`, {
+      method: 'POST',
+      body: JSON.stringify({ badge_type }),
+    }),
+  revokeCommunityBadge: (userId: string, badgeType: string) =>
+    request(`/api/admin/community/users/${userId}/badges/${encodeURIComponent(badgeType)}`, {
+      method: 'DELETE',
+    }),
+
+  // Community catalog
+  listInterestGroups: () =>
+    request<{ interest_groups: import('./types').CatalogKeyLabel[] }>(
+      '/api/admin/community/catalog/interest-groups',
+    ),
+  upsertInterestGroup: (key: string, body: { label: string; sort_order?: number; is_enabled?: boolean }) =>
+    request(`/api/admin/community/catalog/interest-groups/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  listCatalogInterests: () =>
+    request<{ interests: import('./types').CommunityInterest[] }>(
+      '/api/admin/community/catalog/interests',
+    ),
+  upsertCatalogInterest: (
+    key: string,
+    body: { label: string; group_key: string; sort_order?: number; is_enabled?: boolean },
+  ) =>
+    request(`/api/admin/community/catalog/interests/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  listBadgeTypes: () =>
+    request<{ badge_types: import('./types').CatalogKeyLabel[] }>(
+      '/api/admin/community/catalog/badge-types',
+    ),
+  upsertBadgeType: (
+    key: string,
+    body: { label: string; description?: string; sort_order?: number; is_enabled?: boolean },
+  ) =>
+    request(`/api/admin/community/catalog/badge-types/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  listEventTypes: () =>
+    request<{ event_types: import('./types').CatalogKeyLabel[] }>(
+      '/api/admin/community/catalog/event-types',
+    ),
+  upsertEventType: (
+    key: string,
+    body: { label: string; description?: string; sort_order?: number; is_enabled?: boolean },
+  ) =>
+    request(`/api/admin/community/catalog/event-types/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+  listCatalogCountries: () =>
+    request<{ countries: import('./types').CommunityCountry[] }>(
+      '/api/admin/community/catalog/countries',
+    ),
+  upsertCatalogCountry: (
+    code: string,
+    body: { name: string; sort_order?: number; is_enabled?: boolean },
+  ) =>
+    request(`/api/admin/community/catalog/countries/${encodeURIComponent(code)}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  // Referrals
+  getReferralLeaderboard: (limit = 100) =>
+    request<{ entries: import('./types').ReferralLeaderboardEntry[] }>(
+      `/api/admin/referrals/leaderboard?limit=${limit}`,
+    ),
+  grantReferralReward: (userId: string, reward_description: string) =>
+    request<{ reward: import('./types').ReferralRewardRecord }>(
+      `/api/admin/users/${userId}/referral-reward`,
+      { method: 'POST', body: JSON.stringify({ reward_description }) },
+    ),
+  listUserReferralRewards: (userId: string) =>
+    request<{ rewards: import('./types').ReferralRewardRecord[] }>(
+      `/api/admin/users/${userId}/referral-rewards`,
+    ),
 }
