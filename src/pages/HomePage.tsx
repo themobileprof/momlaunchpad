@@ -1,4 +1,5 @@
 import { ApkDownloadButton } from '../components/ApkDownloadButton'
+import { BrandLogo } from '../components/BrandLogo'
 import './home.css'
 
 const JOURNEY = [
@@ -42,10 +43,7 @@ export function HomePage() {
     <div className="home">
       <div className="home-grain" aria-hidden />
       <header className="home-header">
-        <a href="/" className="home-logo" aria-label="MomLaunchpad home">
-          <span className="home-logo-mark" aria-hidden />
-          <span className="home-logo-text">MomLaunchpad</span>
-        </a>
+        <BrandLogo href="/" size="lg" showText className="home-logo" />
         <nav className="home-nav" aria-label="Page sections">
           <a href="#journey">Your journey</a>
           <a href="#support">How we help</a>
@@ -174,7 +172,7 @@ export function HomePage() {
       </main>
 
       <footer className="home-footer">
-        <p className="home-footer-brand">MomLaunchpad</p>
+        <BrandLogo size="md" className="home-footer-logo" />
         <p className="home-footer-tag">Warm support for every chapter of pregnancy.</p>
         <p className="home-footer-copy">© {new Date().getFullYear()} MomLaunchpad. All rights reserved.</p>
       </footer>

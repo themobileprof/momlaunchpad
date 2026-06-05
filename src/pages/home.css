@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Karla:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
 .home {
-  --home-bg: #faf6f1;
-  --home-bg-deep: #f0e8de;
-  --home-ink: #2c221c;
-  --home-ink-soft: #5c4f45;
-  --home-rose: #c96b52;
-  --home-rose-deep: #a8523d;
-  --home-blush: #f3ddd4;
-  --home-sage: #4d6b5c;
-  --home-sage-soft: #dce8e0;
-  --home-plum: #5e4a5a;
-  --home-glow: rgba(201, 107, 82, 0.18);
+  --home-bg: #faf8fc;
+  --home-bg-deep: var(--brand-purple-soft);
+  --home-ink: var(--brand-ink);
+  --home-ink-soft: var(--brand-ink-soft);
+  --home-rose: var(--brand-magenta);
+  --home-rose-deep: var(--brand-magenta-deep);
+  --home-blush: var(--brand-magenta-soft);
+  --home-sage: var(--brand-purple);
+  --home-sage-soft: var(--brand-purple-soft);
+  --home-plum: var(--brand-purple-deep);
+  --home-glow: rgba(217, 27, 139, 0.2);
 
   font-family: 'Karla', system-ui, sans-serif;
   color: var(--home-ink);
@@ -42,24 +42,11 @@
 }
 
 .home-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  text-decoration: none;
   color: var(--home-ink);
 }
 
-.home-logo-mark {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50% 50% 50% 12%;
-  background: linear-gradient(145deg, var(--home-rose), var(--home-plum));
-  box-shadow: 0 4px 14px var(--home-glow);
-}
-
-.home-logo-text {
+.home-logo .brand-logo-text strong {
   font-family: 'Fraunces', Georgia, serif;
-  font-weight: 600;
   font-size: 1.15rem;
   letter-spacing: -0.02em;
 }
@@ -182,14 +169,14 @@
 }
 
 .home-btn-primary {
-  background: var(--home-rose);
-  color: #fffaf7;
+  background: var(--brand-gradient);
+  color: #ffffff;
   box-shadow: 0 6px 24px var(--home-glow);
 }
 
 .home-btn-primary:hover {
-  background: var(--home-rose-deep);
-  box-shadow: 0 10px 28px rgba(168, 82, 61, 0.28);
+  background: linear-gradient(135deg, var(--brand-purple-deep) 0%, var(--brand-magenta-deep) 100%);
+  box-shadow: 0 10px 28px rgba(217, 27, 139, 0.32);
 }
 
 .home-btn-ghost {
@@ -199,8 +186,8 @@
 }
 
 .home-btn-ghost:hover {
-  border-color: var(--home-rose);
-  color: var(--home-rose-deep);
+  border-color: var(--brand-magenta);
+  color: var(--brand-magenta-deep);
 }
 
 .home-btn-lg {
@@ -214,7 +201,7 @@
   padding: 1.5rem 1.75rem;
   background: linear-gradient(135deg, #fffdf9 0%, var(--home-blush) 100%);
   border-radius: 20px 20px 20px 4px;
-  border: 1px solid rgba(201, 107, 82, 0.12);
+  border: 1px solid rgba(217, 27, 139, 0.12);
   box-shadow: 0 12px 40px rgba(44, 34, 28, 0.06);
 }
 
@@ -476,10 +463,13 @@
   background: var(--home-bg-deep);
 }
 
-.home-footer-brand {
+.home-footer-logo {
+  justify-content: center;
+  margin: 0 auto 0.75rem;
+}
+
+.home-footer-logo .brand-logo-text strong {
   font-family: 'Fraunces', Georgia, serif;
-  font-weight: 600;
-  margin: 0 0 0.35rem;
 }
 
 .home-footer-tag {

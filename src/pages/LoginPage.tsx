@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { BrandLogo } from '../components/BrandLogo'
 import { Alert } from '../components/ui'
 import { ADMIN_BASE } from '../routes'
 
@@ -30,12 +31,8 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <div className="brand brand-center">
-          <span className="brand-mark">ML</span>
-          <div>
-            <strong>Operations</strong>
-            <small>Authorized access only</small>
-          </div>
+        <div className="brand brand-center login-brand">
+          <BrandLogo size="lg" title="MomLaunchpad" subtitle="Authorized access only" />
         </div>
         <form onSubmit={handleSubmit} className="form">
           {error && <Alert variant="error">{error}</Alert>}

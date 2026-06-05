@@ -1,21 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --bg: #f4f1ec;
-  --surface: #fffcf8;
-  --surface-2: #ebe4da;
-  --border: #d8cfc3;
-  --text: #2a2420;
-  --muted: #6b625a;
-  --accent: #c45c3e;
-  --accent-hover: #a84a30;
-  --accent-soft: #f5e6df;
-  --sage: #5a7a6a;
-  --sage-soft: #e3ece7;
+  --bg: #faf8fc;
+  --surface: #ffffff;
+  --surface-2: var(--brand-purple-soft);
+  --border: #e4dcef;
+  --text: var(--brand-ink);
+  --muted: var(--brand-ink-soft);
+  --accent: var(--brand-magenta);
+  --accent-hover: var(--brand-magenta-deep);
+  --accent-soft: var(--brand-magenta-soft);
+  --sage: var(--brand-purple);
+  --sage-soft: var(--brand-purple-soft);
   --danger: #b42318;
   --danger-soft: #fde8e6;
   --ok: #2d6a4f;
-  --shadow: 0 1px 2px rgba(42, 36, 32, 0.06), 0 8px 24px rgba(42, 36, 32, 0.06);
+  --shadow: 0 1px 2px rgba(74, 45, 122, 0.06), 0 8px 24px rgba(74, 45, 122, 0.08);
   --radius: 12px;
   --sidebar-w: 260px;
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -32,8 +32,8 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
 
 .sidebar {
   width: var(--sidebar-w);
-  background: #2a2420;
-  color: #f7f3ef;
+  background: var(--brand-purple-deep);
+  color: #faf8fc;
   display: flex;
   flex-direction: column;
   padding: 1.25rem;
@@ -44,25 +44,22 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
 
 .brand { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 2rem; }
 .brand strong { display: block; font-size: 1rem; }
-.brand small { color: #b8afa6; font-size: 0.75rem; }
+.brand small { color: rgba(255, 255, 255, 0.65); font-size: 0.75rem; }
 .brand-center { justify-content: center; margin-bottom: 1.5rem; }
-.brand-mark {
-  width: 40px; height: 40px; border-radius: 10px;
-  background: var(--accent); color: white;
-  display: grid; place-items: center; font-weight: 700;
-}
+.brand .brand-logo-text strong { color: #fff; }
+.brand .brand-logo-text small { color: rgba(255, 255, 255, 0.65); }
 
 .nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
 .nav-link {
-  color: #d8cfc3; text-decoration: none; padding: 0.6rem 0.75rem;
+  color: rgba(255, 255, 255, 0.72); text-decoration: none; padding: 0.6rem 0.75rem;
   border-radius: 8px; font-weight: 500; transition: background 0.15s, color 0.15s;
 }
-.nav-link:hover { background: rgba(255,255,255,0.06); color: white; }
-.nav-link.active { background: var(--accent); color: white; }
+.nav-link:hover { background: rgba(255, 255, 255, 0.08); color: white; }
+.nav-link.active { background: var(--brand-gradient); color: white; }
 
 .sidebar-footer { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem; }
 .user-chip { margin-bottom: 0.75rem; }
-.user-email { display: block; font-size: 0.85rem; word-break: break-all; color: #d8cfc3; }
+.user-email { display: block; font-size: 0.85rem; word-break: break-all; color: rgba(255, 255, 255, 0.72); }
 
 .main { flex: 1; padding: 2rem; max-width: 1200px; }
 
@@ -127,8 +124,10 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
   padding: 0.55rem 0.9rem; cursor: pointer; transition: background 0.15s, opacity 0.15s;
 }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-.btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-primary { background: var(--brand-gradient); color: white; }
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--brand-purple-deep) 0%, var(--brand-magenta-deep) 100%);
+}
 .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover:not(:disabled) { background: var(--surface-2); }
 .btn-danger { background: var(--danger-soft); color: var(--danger); border: 1px solid #f5c2c0; }
@@ -158,6 +157,8 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
   border: 1px solid var(--border); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow);
 }
 .login-hint { font-size: 0.82rem; margin-top: 1rem; text-align: center; }
+.login-brand .brand-logo-text strong { color: var(--brand-ink); }
+.login-brand .brand-logo-text small { color: var(--brand-ink-soft); }
 
 .center-page { min-height: 100vh; display: grid; place-items: center; }
 .spinner {
@@ -177,7 +178,7 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
   background: var(--surface); color: var(--muted); cursor: pointer;
 }
 .tab:hover { color: var(--text); background: var(--surface-2); }
-.tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.tab.active { background: var(--brand-gradient); color: white; border-color: transparent; }
 .mb { margin-bottom: 1rem; }
 
 .user-picker { position: relative; }

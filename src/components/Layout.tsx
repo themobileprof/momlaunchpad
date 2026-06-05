@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { BrandLogo } from './BrandLogo'
 import { useAuth } from '../context/AuthContext'
 import { ADMIN_BASE } from '../routes'
 
@@ -20,11 +21,7 @@ export function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">ML</span>
-          <div>
-            <strong>MomLaunchpad</strong>
-            <small>Operations</small>
-          </div>
+          <BrandLogo size="md" subtitle="Operations" />
         </div>
         <nav className="nav">
           {nav.map((item) => (

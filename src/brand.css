@@ -1,0 +1,52 @@
+/* MomLaunchpad brand — deep purple + magenta from logo */
+:root {
+  --brand-purple: #4a2d7a;
+  --brand-purple-deep: #3a2260;
+  --brand-purple-soft: #ede8f5;
+  --brand-magenta: #d91b8b;
+  --brand-magenta-deep: #b81574;
+  --brand-magenta-soft: #fce4f0;
+  --brand-ink: #2a1f3d;
+  --brand-ink-soft: #5c4f6e;
+  --brand-gradient: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-magenta) 100%);
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-logo-img {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.brand-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.brand-logo-text strong {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.brand-logo-text small {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+.brand-logo--lg .brand-logo-text strong {
+  font-size: 1.15rem;
+}
+
+.brand-logo--lg .brand-logo-text small {
+  font-size: 0.78rem;
+}
