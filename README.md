@@ -56,16 +56,20 @@ Serve the `dist/` folder at **`/var/www/momlaunchpad.com`** with nginx (`momlaun
 Pushing to **`main`** runs `.github/workflows/deploy.yml`:
 
 1. `npm ci` → lint → production build (`VITE_API_BASE_URL` baked in)
-2. `rsync` `dist/` to `/var/www/momlaunchpad.com` on the server
-3. Smoke check via nginx (`Host: momlaunchpad.com`)
+2. `rsync` `dist/` to `/var/www/momlaunchpad.com` on the server — **the workflow is green when this finishes**
+3. Optional smoke check via nginx (`Host: momlaunchpad.com`); a warning here does not fail the deploy
 
 ### Required GitHub secrets (same server as the API)
+
+The deploy job uses the **`production`** environment. Add these as **repository secrets** or **production environment secrets** (environment wins if both exist):
 
 | Secret | Description |
 |--------|-------------|
 | `SSH_HOST` | Server IP or hostname |
-| `SSH_USERNAME` | SSH user (e.g. `samuel`) |
-| `SSH_PRIVATE_KEY` | Private key for deploy |
+| `SSH_USERNAME` | SSH user (e.g. `sammy`) — must be able to write to `/var/www/momlaunchpad.com` |
+| `SSH_PRIVATE_KEY` | Full private key PEM, including `-----BEGIN … KEY-----` lines (paste multiline secret as-is) |
+
+The matching **public** key must be in `~/.ssh/authorized_keys` on the server for `SSH_USERNAME`.
 
 ### Optional repository variables
 
