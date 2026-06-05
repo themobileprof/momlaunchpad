@@ -12,6 +12,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { UsersPage } from './pages/UsersPage'
 import { CommunityPage } from './pages/CommunityPage'
 import { ReferralsPage } from './pages/ReferralsPage'
+import { FeedbackPage } from './pages/FeedbackPage'
 import { ADMIN_BASE, ADMIN_SIGN_IN_PATH } from './routes'
 import { Spinner } from './components/ui'
 
@@ -51,6 +52,7 @@ function AppRoutes() {
         <Route path="users" element={<UsersPage />} />
         <Route path="community" element={<CommunityPage />} />
         <Route path="referrals" element={<ReferralsPage />} />
+        <Route path="feedback" element={<FeedbackPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -53,6 +53,12 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
 .nav-link {
   color: rgba(255, 255, 255, 0.72); text-decoration: none; padding: 0.6rem 0.75rem;
   border-radius: 8px; font-weight: 500; transition: background 0.15s, color 0.15s;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+}
+.nav-count {
+  min-width: 1.35rem; height: 1.35rem; padding: 0 0.35rem;
+  border-radius: 999px; background: var(--coral, #e07a5f); color: white;
+  font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;
 }
 .nav-link:hover { background: rgba(255, 255, 255, 0.08); color: white; }
 .nav-link.active { background: var(--brand-gradient); color: white; }

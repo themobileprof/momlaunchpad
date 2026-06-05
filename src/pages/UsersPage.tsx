@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAdminConfig } from '../context/AdminConfigContext'
+import { useAuth } from '../context/AuthContext'
 import { UserPicker } from '../components/UserPicker'
 import { ADMIN_BASE } from '../routes'
 import type {
@@ -23,6 +24,7 @@ const PAGE_SIZE = 100
 
 export function UsersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { user: currentAdmin } = useAuth()
   const { config, loading: configLoading } = useAdminConfig()
   const [allUsers, setAllUsers] = useState<AdminUserSummary[]>([])
   const [listOffset, setListOffset] = useState(0)
@@ -40,6 +42,7 @@ export function UsersPage() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
+  const [grantExpiresAt, setGrantExpiresAt] = useState('')
   const detailRef = useRef<HTMLDivElement>(null)
 
   const rewardPresets = config?.referral_reward_presets ?? []
@@ -178,8 +181,15 @@ export function UsersPage() {
     setBusy(`grant-${featureKey}`)
     setError('')
     try {
-      await api.grantFeature(userId, featureKey)
-      setMessage(`Granted ${featureKey}.`)
+      const expires_at = grantExpiresAt
+        ? Math.floor(new Date(grantExpiresAt).getTime() / 1000)
+        : undefined
+      await api.grantFeature(userId, featureKey, expires_at)
+      setMessage(
+        expires_at
+          ? `Granted ${featureKey} until ${new Date(expires_at * 1000).toLocaleString()}.`
+          : `Granted ${featureKey}.`,
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Grant failed')
     } finally {
@@ -209,6 +219,38 @@ export function UsersPage() {
     if (!selectedUser) return
     await grantReferralForUser(selectedUser, description)
     setRewardDesc('')
+  }
+
+  async function toggleAdminRole(makeAdmin: boolean) {
+    if (!selectedUser) return
+    if (!makeAdmin && selectedUser.id === currentAdmin?.id) {
+      setError('You cannot remove your own admin access.')
+      return
+    }
+    const action = makeAdmin ? 'promote' : 'demote'
+    if (
+      !confirm(
+        `${makeAdmin ? 'Promote' : 'Remove admin access for'} ${selectedUser.email}?`,
+      )
+    ) {
+      return
+    }
+    setBusy(`admin-${action}`)
+    setError('')
+    try {
+      await api.setUserAdmin(selectedUser.id, makeAdmin)
+      setMessage(
+        makeAdmin
+          ? `${selectedUser.email} is now an admin.`
+          : `Admin access removed for ${selectedUser.email}.`,
+      )
+      setSelectedUser({ ...selectedUser, is_admin: makeAdmin })
+      await loadUserList(0, false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Admin update failed')
+    } finally {
+      setBusy(null)
+    }
   }
 
   if (configLoading && !config) return <Spinner />
@@ -363,8 +405,66 @@ export function UsersPage() {
                     <th scope="row">Started</th>
                     <td>{new Date(subscription.starts_at).toLocaleDateString()}</td>
                   </tr>
+                  {selectedUser.referral_code && (
+                    <tr>
+                      <th scope="row">Referral code</th>
+                      <td><code>{selectedUser.referral_code}</code></td>
+                    </tr>
+                  )}
+                  {(selectedUser.referral_reward_points ?? 0) > 0 && (
+                    <tr>
+                      <th scope="row">Pending referral points</th>
+                      <td>{selectedUser.referral_reward_points}</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
+              <div className="btn-row mt">
+                <Link
+                  to={`${ADMIN_BASE}/community?tab=badges`}
+                  className="btn btn-sm btn-ghost"
+                >
+                  Manage badges
+                </Link>
+                <Link to={`${ADMIN_BASE}/community`} className="btn btn-sm btn-ghost">
+                  Community tools
+                </Link>
+              </div>
+            </Card>
+
+            <Card className="mt">
+              <h2 className="card-title">Admin access</h2>
+              <p className="muted mb">
+                {selectedUser.is_admin
+                  ? 'This account can sign in to the admin console.'
+                  : 'This account is a regular member only.'}
+              </p>
+              <div className="btn-row">
+                {selectedUser.is_admin ? (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-danger"
+                    disabled={
+                      busy === 'admin-demote' || selectedUser.id === currentAdmin?.id
+                    }
+                    onClick={() => toggleAdminRole(false)}
+                  >
+                    {busy === 'admin-demote' ? '…' : 'Remove admin access'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    disabled={busy === 'admin-promote'}
+                    onClick={() => toggleAdminRole(true)}
+                  >
+                    {busy === 'admin-promote' ? '…' : 'Promote to admin'}
+                  </button>
+                )}
+                {selectedUser.id === currentAdmin?.id && (
+                  <span className="muted table-sub">You cannot demote your own account.</span>
+                )}
+              </div>
             </Card>
 
             <Card className="mt">
@@ -411,6 +511,18 @@ export function UsersPage() {
 
             <Card className="mt">
               <h2 className="card-title">Feature quotas</h2>
+              <label className="mb" style={{ display: 'block' }}>
+                Optional expiry for feature grants
+                <input
+                  type="datetime-local"
+                  value={grantExpiresAt}
+                  onChange={(e) => setGrantExpiresAt(e.target.value)}
+                  style={{ width: '100%', marginTop: '0.35rem' }}
+                />
+                <span className="muted table-sub">
+                  Leave empty for a permanent override.
+                </span>
+              </label>
               {featureRows.length === 0 ? (
                 <EmptyState message="No features configured." />
               ) : (

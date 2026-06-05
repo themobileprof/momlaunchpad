@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { QuotaStats, TopicAnalytic, UserStats, VoiceCall } from '../api/types'
+import { ADMIN_BASE } from '../routes'
 import { Alert, Card, PageHeader, Spinner } from '../components/ui'
 
 export function DashboardPage() {
@@ -8,25 +10,38 @@ export function DashboardPage() {
   const [topics, setTopics] = useState<TopicAnalytic[]>([])
   const [calls, setCalls] = useState<VoiceCall[]>([])
   const [quota, setQuota] = useState<QuotaStats | null>(null)
+  const [topicDays, setTopicDays] = useState(7)
+  const [quotaPeriod, setQuotaPeriod] = useState('today')
+  const [pendingBadgeRequests, setPendingBadgeRequests] = useState(0)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const [userRes, topicRes, callRes, quotaRes, badgeReqRes] = await Promise.all([
+        api.getUserStats(),
+        api.getTopicAnalytics(topicDays),
+        api.getCallHistory(topicDays),
+        api.getQuotaStats(quotaPeriod),
+        api.listBadgeRequests('pending'),
+      ])
+      setStats(userRes.stats)
+      setTopics(topicRes.analytics ?? [])
+      setCalls(callRes.calls ?? [])
+      setQuota(quotaRes.stats)
+      setPendingBadgeRequests(badgeReqRes.requests?.length ?? 0)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load dashboard')
+    } finally {
+      setLoading(false)
+    }
+  }, [topicDays, quotaPeriod])
+
   useEffect(() => {
-    Promise.all([
-      api.getUserStats(),
-      api.getTopicAnalytics(7),
-      api.getCallHistory(7),
-      api.getQuotaStats('today'),
-    ])
-      .then(([userRes, topicRes, callRes, quotaRes]) => {
-        setStats(userRes.stats)
-        setTopics(topicRes.analytics ?? [])
-        setCalls(callRes.calls ?? [])
-        setQuota(quotaRes.stats)
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [])
+    load()
+  }, [load])
 
   if (loading) return <Spinner />
   if (error) return <Alert variant="error">{error}</Alert>
@@ -35,8 +50,41 @@ export function DashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        description="Platform health, usage, and conversation insights."
+        description="Server-side metrics and chat insights. Use Google Analytics 4 for DAU/WAU, retention, and in-app feature funnels."
+        action={
+          <button type="button" className="btn btn-ghost" onClick={load}>
+            Refresh
+          </button>
+        }
       />
+
+      {pendingBadgeRequests > 0 && (
+        <Alert variant="success">
+          <strong>{pendingBadgeRequests} badge request{pendingBadgeRequests === 1 ? '' : 's'}</strong>{' '}
+          waiting for review.{' '}
+          <Link to={`${ADMIN_BASE}/community?tab=badge-requests`}>Review now →</Link>
+        </Alert>
+      )}
+
+      <Card>
+        <h2 className="card-title">Where to look</h2>
+        <ul className="kv-list">
+          <li>
+            <span>GA4 (mobile app)</span>
+            <span className="muted">DAU / WAU, retention, feature_used events</span>
+          </li>
+          <li>
+            <span>This console</span>
+            <span className="muted">Chat topics + sample questions, user counts, quota, testimonials</span>
+          </li>
+          <li>
+            <span>
+              <Link to={`${ADMIN_BASE}/feedback`}>Feedback</Link>
+            </span>
+            <span className="muted">Full testimonial text &amp; star ratings</span>
+          </li>
+        </ul>
+      </Card>
 
       <div className="stat-grid">
         <Card>
@@ -44,16 +92,21 @@ export function DashboardPage() {
           <strong className="stat-value">{stats?.total_users ?? 0}</strong>
         </Card>
         <Card>
-          <span className="stat-label">Active (7 days)</span>
+          <span className="stat-label">Chatted (7 days)</span>
           <strong className="stat-value">{stats?.active_users_7_days ?? 0}</strong>
+          <span className="muted table-sub">Users who sent a chat message — not full DAU</span>
         </Card>
         <Card>
-          <span className="stat-label">Active (30 days)</span>
+          <span className="stat-label">Chatted (30 days)</span>
           <strong className="stat-value">{stats?.active_users_30_days ?? 0}</strong>
+          <span className="muted table-sub">See GA4 for all-app active users</span>
         </Card>
         <Card>
-          <span className="stat-label">Usage today</span>
+          <span className="stat-label">Quota usage ({quotaPeriod})</span>
           <strong className="stat-value">{quota?.total_usage ?? 0}</strong>
+          <span className="muted table-sub">
+            {quota?.users_at_limit ?? 0} at limit · {quota?.users_over_limit ?? 0} over
+          </span>
         </Card>
       </div>
 
@@ -82,9 +135,37 @@ export function DashboardPage() {
         </Card>
       </div>
 
+      <Card>
+        <div className="form inline-form">
+          <label>
+            Quota period
+            <select value={quotaPeriod} onChange={(e) => setQuotaPeriod(e.target.value)}>
+              <option value="today">today</option>
+              <option value="daily">daily</option>
+              <option value="weekly">weekly</option>
+              <option value="monthly">monthly</option>
+            </select>
+          </label>
+        </div>
+      </Card>
+
       <div className="grid-2">
         <Card>
-          <h2 className="card-title">Top chat topics (7 days)</h2>
+          <div className="btn-row" style={{ justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+            <h2 className="card-title" style={{ margin: 0 }}>Top chat topics</h2>
+            <label className="muted">
+              Period{' '}
+              <select
+                value={topicDays}
+                onChange={(e) => setTopicDays(Number(e.target.value))}
+              >
+                <option value={7}>7 days</option>
+                <option value={14}>14 days</option>
+                <option value={30}>30 days</option>
+                <option value={90}>90 days</option>
+              </select>
+            </label>
+          </div>
           {topics.length === 0 ? (
             <p className="muted">No message data yet.</p>
           ) : (
@@ -114,7 +195,7 @@ export function DashboardPage() {
           )}
         </Card>
         <Card>
-          <h2 className="card-title">Voice calls (7 days)</h2>
+          <h2 className="card-title">Voice calls ({topicDays} days)</h2>
           {calls.length === 0 ? (
             <p className="muted">No voice calls recorded.</p>
           ) : (

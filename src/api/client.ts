@@ -128,6 +128,10 @@ export const api = {
     request<{ period: string; stats: import('./types').QuotaStats }>(
       `/api/admin/quota/stats?period=${period}`,
     ),
+  listFeedback: () =>
+    request<{ feedback: import('./types').UserFeedback[] }>(
+      '/api/admin/analytics/feedback',
+    ),
 
   // Users
   listUsers: (limit = 100, offset = 0) =>
@@ -138,6 +142,11 @@ export const api = {
   lookupUserByEmail: (email: string) =>
     request<{ users: import('./types').AdminUserSummary[] }>(
       `/api/admin/users/search?email=${encodeURIComponent(email.trim())}`,
+    ),
+  setUserAdmin: (userId: string, is_admin: boolean) =>
+    request<{ message: string; user_id: string; is_admin: boolean }>(
+      `/api/admin/users/${userId}/admin`,
+      { method: 'PUT', body: JSON.stringify({ is_admin }) },
     ),
 
   getUserSubscription: (userId: string) =>
@@ -176,6 +185,10 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ status }),
     }),
+  listUserBadges: (userId: string) =>
+    request<{ badges: import('./types').CommunityUserBadge[] }>(
+      `/api/admin/community/users/${userId}/badges`,
+    ),
   grantCommunityBadge: (userId: string, badge_type: string) =>
     request(`/api/admin/community/users/${userId}/badges`, {
       method: 'POST',
@@ -185,6 +198,26 @@ export const api = {
     request(`/api/admin/community/users/${userId}/badges/${encodeURIComponent(badgeType)}`, {
       method: 'DELETE',
     }),
+  listBadgeRequests: (status = 'pending') =>
+    request<{ requests: import('./types').CommunityBadgeRequest[] }>(
+      `/api/admin/community/badge-requests?status=${encodeURIComponent(status)}`,
+    ),
+  approveBadgeRequest: (id: string, admin_note?: string) =>
+    request<{ request: import('./types').CommunityBadgeRequest }>(
+      `/api/admin/community/badge-requests/${id}/approve`,
+      {
+        method: 'POST',
+        body: JSON.stringify(admin_note ? { admin_note } : {}),
+      },
+    ),
+  rejectBadgeRequest: (id: string, admin_note?: string) =>
+    request<{ request: import('./types').CommunityBadgeRequest }>(
+      `/api/admin/community/badge-requests/${id}/reject`,
+      {
+        method: 'POST',
+        body: JSON.stringify(admin_note ? { admin_note } : {}),
+      },
+    ),
 
   // Community catalog
   listInterestGroups: () =>
@@ -244,6 +277,39 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(body),
     }),
+  listCatalogRegions: (countryCode?: string) => {
+    const query = countryCode
+      ? `?country_code=${encodeURIComponent(countryCode)}`
+      : ''
+    return request<{ regions: import('./types').CommunityRegion[] }>(
+      `/api/admin/community/catalog/regions${query}`,
+    )
+  },
+  createCatalogRegion: (body: {
+    country_code: string
+    code: string
+    name: string
+    sort_order?: number
+    is_enabled?: boolean
+  }) =>
+    request<{ region: import('./types').CommunityRegion }>(
+      '/api/admin/community/catalog/regions',
+      { method: 'POST', body: JSON.stringify(body) },
+    ),
+  updateCatalogRegion: (
+    id: string,
+    body: {
+      country_code: string
+      code: string
+      name: string
+      sort_order?: number
+      is_enabled?: boolean
+    },
+  ) =>
+    request<{ region: import('./types').CommunityRegion }>(
+      `/api/admin/community/catalog/regions/${encodeURIComponent(id)}`,
+      { method: 'PUT', body: JSON.stringify(body) },
+    ),
 
   // Referrals
   getReferralLeaderboard: (limit = 100) =>

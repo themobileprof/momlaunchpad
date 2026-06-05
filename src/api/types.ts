@@ -99,6 +99,17 @@ export interface TopicAnalytic {
   sample_query: string
 }
 
+/** User rating + optional testimonial (full text — admin only, not in GA4). */
+export interface UserFeedback {
+  id: string
+  user_id: string
+  user_email?: string
+  user_name?: string
+  rating: number
+  message?: string
+  created_at: string
+}
+
 export interface VoiceCall {
   call_sid: string
   user_id: string
@@ -110,11 +121,11 @@ export interface VoiceCall {
 }
 
 export interface QuotaStats {
-  total_users?: number
-  active_users?: number
-  total_usage?: number
-  by_feature?: Record<string, number>
-  by_plan?: Record<string, number>
+  total_users: number
+  total_usage: number
+  average_usage: number
+  users_at_limit: number
+  users_over_limit: number
 }
 
 export interface UserSubscription {
@@ -146,6 +157,28 @@ export interface CommunityReport {
   reviewed_by?: string
   reviewed_at?: string
   created_at: string
+}
+
+export interface CommunityUserBadge {
+  badge_type: string
+  label: string
+  verified_at: string
+  verified_by?: string
+}
+
+export interface CommunityBadgeRequest {
+  id: string
+  user_id: string
+  badge_type: string
+  status: string
+  message?: string
+  admin_note?: string
+  reviewed_by?: string
+  reviewed_at?: string
+  created_at: string
+  updated_at: string
+  user_email?: string
+  user_name?: string
 }
 
 export interface CatalogKeyLabel {

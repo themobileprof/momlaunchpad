@@ -10,7 +10,7 @@ Internal operations dashboard for managing MomLaunchpad backend configuration �
 - **Languages** — enable/disable and mark languages as experimental
 - **Settings** — edit system settings (e.g. AI assistant name)
 - **Users** — look up by UUID: change plan, check/reset quota, grant feature overrides (with optional expiry), referral reward history
-- **Community** — moderation reports, post status, expert badges, catalog (interests, badge types, events, countries)
+- **Community** — moderation reports, badge request review (approve/reject), manual badge grants, catalog (interests, badge types, events, countries)
 - **Referrals** — leaderboard of users with pending points; grant rewards
 
 ## Prerequisites

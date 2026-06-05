@@ -19,6 +19,10 @@ export function PlansPage() {
   const [quotaLimit, setQuotaLimit] = useState('')
   const [quotaPeriod, setQuotaPeriod] = useState('')
   const [assignBusy, setAssignBusy] = useState<number | null>(null)
+  const [editPlan, setEditPlan] = useState({ name: '', description: '' })
+  const [editingFeatureId, setEditingFeatureId] = useState<number | null>(null)
+  const [editQuotaLimit, setEditQuotaLimit] = useState('')
+  const [editQuotaPeriod, setEditQuotaPeriod] = useState('')
 
   useEffect(() => {
     if (quotaPeriod === '' && quotaPeriods[0]) {
@@ -46,12 +50,60 @@ export function PlansPage() {
 
   async function selectPlan(plan: Plan) {
     setSelectedPlan(plan)
+    setEditPlan({ name: plan.name, description: plan.description })
+    setEditingFeatureId(null)
     setMessage('')
     try {
       const res = await api.getPlanFeatures(plan.id)
       setPlanFeatures(res.features ?? [])
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load plan features')
+    }
+  }
+
+  async function savePlanDetails() {
+    if (!selectedPlan) return
+    setError('')
+    try {
+      await api.updatePlan(selectedPlan.id, {
+        name: editPlan.name.trim(),
+        description: editPlan.description.trim(),
+      })
+      setMessage('Plan updated.')
+      await load()
+      setSelectedPlan({
+        ...selectedPlan,
+        name: editPlan.name.trim(),
+        description: editPlan.description.trim(),
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Update failed')
+    }
+  }
+
+  function startEditFeatureQuota(pf: PlanFeature) {
+    setEditingFeatureId(pf.feature_id)
+    setEditQuotaLimit(pf.quota_limit == null ? '' : String(pf.quota_limit))
+    setEditQuotaPeriod(pf.quota_period)
+  }
+
+  async function saveFeatureQuota(featureId: number) {
+    if (!selectedPlan || !editQuotaPeriod) return
+    setAssignBusy(featureId)
+    setError('')
+    try {
+      await api.assignFeatureToPlan(selectedPlan.id, featureId, {
+        quota_limit: editQuotaLimit === '' ? null : Number(editQuotaLimit),
+        quota_period: editQuotaPeriod,
+      })
+      setMessage('Feature quota updated.')
+      setEditingFeatureId(null)
+      const res = await api.getPlanFeatures(selectedPlan.id)
+      setPlanFeatures(res.features ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Update failed')
+    } finally {
+      setAssignBusy(null)
     }
   }
 
@@ -200,6 +252,32 @@ export function PlansPage() {
 
       {selectedPlan && (
         <Card className="mt">
+          <h2 className="card-title">Edit {selectedPlan.code}</h2>
+          <div className="form">
+            <label>
+              Name
+              <input
+                value={editPlan.name}
+                onChange={(e) => setEditPlan({ ...editPlan, name: e.target.value })}
+              />
+            </label>
+            <label>
+              Description
+              <textarea
+                rows={2}
+                value={editPlan.description}
+                onChange={(e) => setEditPlan({ ...editPlan, description: e.target.value })}
+              />
+            </label>
+            <button type="button" className="btn btn-primary" onClick={savePlanDetails}>
+              Save plan details
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {selectedPlan && (
+        <Card className="mt">
           <h2 className="card-title">Features for {selectedPlan.name}</h2>
           {planFeatures.length === 0 ? (
             <EmptyState message="No features assigned to this plan." />
@@ -217,12 +295,74 @@ export function PlansPage() {
                 {planFeatures.map((pf) => (
                   <tr key={pf.feature_id}>
                     <td><code>{pf.feature_key}</code></td>
-                    <td>{pf.quota_limit ?? '∞'}</td>
-                    <td>{pf.quota_period}</td>
                     <td>
-                      <button type="button" className="btn btn-sm btn-danger" onClick={() => removeFeature(pf.feature_id)}>
-                        Remove
-                      </button>
+                      {editingFeatureId === pf.feature_id ? (
+                        <input
+                          type="number"
+                          min={0}
+                          value={editQuotaLimit}
+                          onChange={(e) => setEditQuotaLimit(e.target.value)}
+                          placeholder="empty = ∞"
+                        />
+                      ) : (
+                        pf.quota_limit ?? '∞'
+                      )}
+                    </td>
+                    <td>
+                      {editingFeatureId === pf.feature_id ? (
+                        <select
+                          value={editQuotaPeriod}
+                          onChange={(e) => setEditQuotaPeriod(e.target.value)}
+                        >
+                          {quotaPeriods.map((period) => (
+                            <option key={period} value={period}>
+                              {period}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        pf.quota_period
+                      )}
+                    </td>
+                    <td>
+                      <div className="btn-row">
+                        {editingFeatureId === pf.feature_id ? (
+                          <>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-primary"
+                              disabled={assignBusy === pf.feature_id}
+                              onClick={() => saveFeatureQuota(pf.feature_id)}
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-ghost"
+                              onClick={() => setEditingFeatureId(null)}
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-ghost"
+                              onClick={() => startEditFeatureQuota(pf)}
+                            >
+                              Edit quota
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-danger"
+                              onClick={() => removeFeature(pf.feature_id)}
+                            >
+                              Remove
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
