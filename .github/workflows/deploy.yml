@@ -9,7 +9,6 @@ on:
 
 env:
   WEB_ROOT: /var/www/momlaunchpad.com
-  VITE_API_BASE_URL: https://api.momlaunchpad.com
 
 jobs:
   deploy:
@@ -28,12 +27,22 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
-      - name: Build for production
+      - name: Write production env file
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.momlaunchpad.com' }}
-          VITE_ADMIN_SIGN_IN_PATH: ${{ vars.VITE_ADMIN_SIGN_IN_PATH || '/access' }}
-          VITE_APP_GITHUB_REPO: ${{ vars.VITE_APP_GITHUB_REPO || 'themobileprof/momlaunchpad-app' }}
-          VITE_GITHUB_API_BASE_URL: ${{ vars.VITE_GITHUB_API_BASE_URL || 'https://api.github.com' }}
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${ENV_FILE:-}" ]; then
+            echo "::error::ENV_FILE is empty. Add the production .env contents under Settings → Secrets → Actions (or the production environment)."
+            exit 1
+          fi
+
+          printf '%s\n' "$ENV_FILE" > .env
+          chmod 600 .env
+          echo "Wrote .env ($(wc -c < .env) bytes) — Vite bakes VITE_* vars at build time"
+
+      - name: Build for production
         run: npm run build
 
       - name: Configure SSH

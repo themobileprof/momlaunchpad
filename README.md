@@ -55,9 +55,10 @@ Serve the `dist/` folder at **`/var/www/momlaunchpad.com`** with nginx (`momlaun
 
 Pushing to **`main`** runs `.github/workflows/deploy.yml`:
 
-1. `npm ci` → lint → production build (`VITE_API_BASE_URL` baked in)
-2. `rsync` `dist/` to `/var/www/momlaunchpad.com` on the server — **the workflow is green when this finishes**
-3. Optional smoke check via nginx (`Host: momlaunchpad.com`); a warning here does not fail the deploy
+1. Write the `ENV_FILE` secret to `.env` on the runner
+2. `npm ci` → lint → production build (Vite bakes `VITE_*` from `.env` into `dist/`)
+3. `rsync` `dist/` to `/var/www/momlaunchpad.com` on the server — **the workflow is green when this finishes**
+4. Optional smoke check via nginx (`Host: momlaunchpad.com`); a warning here does not fail the deploy
 
 ### Required GitHub secrets (same server as the API)
 
@@ -65,19 +66,27 @@ The deploy job uses the **`production`** environment. Add these as **repository 
 
 | Secret | Description |
 |--------|-------------|
+| `ENV_FILE` | Full production `.env` file (same pattern as `momlaunchpad-be`). Must include the `VITE_*` vars below; other keys are ignored by the static build. |
 | `SSH_HOST` | Server IP or hostname |
 | `SSH_USERNAME` | SSH user (e.g. `sammy`) — must be able to write to `/var/www/momlaunchpad.com` |
 | `SSH_PRIVATE_KEY` | Full private key PEM, including `-----BEGIN … KEY-----` lines (paste multiline secret as-is) |
 
 The matching **public** key must be in `~/.ssh/authorized_keys` on the server for `SSH_USERNAME`.
 
-### Optional repository variables
+Set `ENV_FILE` from your local production env (include at least the Vite keys):
 
-| Variable | Default |
+```bash
+gh secret set ENV_FILE < .env.production
+```
+
+Example `VITE_*` entries in `ENV_FILE`:
+
+| Variable | Example |
 |----------|---------|
 | `VITE_API_BASE_URL` | `https://api.momlaunchpad.com` |
 | `VITE_ADMIN_SIGN_IN_PATH` | `/access` |
 | `VITE_APP_GITHUB_REPO` | `themobileprof/momlaunchpad-app` |
+| `VITE_GITHUB_API_BASE_URL` | `https://api.github.com` |
 
 PRs run **CI only** (lint + build, no deploy). Use **Actions → Deploy site → Run workflow** to redeploy manually.
 
