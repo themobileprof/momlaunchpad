@@ -20,6 +20,24 @@ const JOURNEY = [
   },
 ]
 
+const GOOD_FOR_ME_MOMENTS = [
+  {
+    label: 'Your post',
+    title: 'When you are still waiting for answers',
+    body: 'Tap Good for me? on what you wrote—a quiet check-in that your question lands in the context of your own journey.',
+  },
+  {
+    label: 'The whole thread',
+    title: 'When everyone says something different',
+    body: 'Review discussion gently summarizes what mothers are suggesting and what might matter for you—not a pile of conflicting voices.',
+  },
+  {
+    label: 'One reply',
+    title: 'When a single tip stays with you',
+    body: 'Good for me? on that reply weighs one recommendation against your stage, symptoms, and history—the original question stays in view.',
+  },
+]
+
 const PILLARS = [
   {
     title: 'A companion who remembers you',
@@ -28,7 +46,7 @@ const PILLARS = [
   },
   {
     title: 'A circle that feels real',
-    body: 'Community built for mothers: interests, local context, expert voices—without the noise of a generic social feed.',
+    body: 'Community built for mothers—local context, shared interests, and Good for me? when another mom’s advice sounds right but you need to know if it fits you.',
     icon: '◎',
   },
   {
@@ -47,6 +65,7 @@ export function HomePage() {
         <nav className="home-nav" aria-label="Page sections">
           <a href="#journey">Your journey</a>
           <a href="#support">How we help</a>
+          <a href="#good-for-me">Good for me?</a>
           <a href="#trust">Built for you</a>
         </nav>
       </header>
@@ -135,6 +154,50 @@ export function HomePage() {
           </div>
         </section>
 
+        <section
+          id="good-for-me"
+          className="home-section home-good-for-me"
+          aria-labelledby="good-for-me-heading"
+        >
+          <div className="home-good-for-me-inner">
+            <p className="home-eyebrow">Community, made personal</p>
+            <span className="home-good-for-me-badge" aria-hidden>
+              Good for me?
+            </span>
+            <h2 id="good-for-me-heading">When the thread helps—but your heart still hesitates</h2>
+            <p className="home-good-for-me-lead">
+              Other mothers share their paths with generosity: try this, I swore by that, my
+              doctor said… It can feel like relief and pressure at once. You want to belong—but
+              your body, your week, and your history are not identical to anyone else&apos;s.
+            </p>
+            <p className="home-good-for-me-lead">
+              <strong>Good for me?</strong> opens a private chat that reads the conversation in
+              light of your journey—what you&apos;ve logged, where you are, what you&apos;ve been
+              carrying—and offers a calm, personalized take: what might fit, what to treat gently,
+              and when to bring it to your care team. Not a verdict from the crowd. Not
+              fear-mongering. Space to think clearly before you act on someone else&apos;s story.
+            </p>
+            <ol className="home-good-for-me-moments">
+              {GOOD_FOR_ME_MOMENTS.map((moment, i) => (
+                <li
+                  key={moment.label}
+                  className="home-good-for-me-moment"
+                  style={{ animationDelay: `${0.08 * i}s` }}
+                >
+                  <span className="home-good-for-me-moment-label">{moment.label}</span>
+                  <h3>{moment.title}</h3>
+                  <p>{moment.body}</p>
+                </li>
+              ))}
+            </ol>
+            <p className="home-good-for-me-footnote">
+              Other mothers share their paths; <strong>Good for me?</strong> helps you find yours.
+              It never replaces your doctor—it helps you walk into that conversation clearer, not
+              more alone.
+            </p>
+          </div>
+        </section>
+
         <section id="trust" className="home-section home-trust" aria-labelledby="trust-heading">
           <div className="home-section-intro">
             <p className="home-eyebrow">Built for you</p>
@@ -152,6 +215,13 @@ export function HomePage() {
             <li>
               <strong>Gentle by default</strong>
               <span>No doom scrolling. No shame. Just steady, warm guidance when you reach for it.</span>
+            </li>
+            <li>
+              <strong>Advice with your name on it</strong>
+              <span>
+                Community wisdom stays shared; Good for me? checks whether a tip fits your stage
+                and your health story before you take it to heart.
+              </span>
             </li>
           </ul>
         </section>

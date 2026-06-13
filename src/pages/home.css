@@ -375,6 +375,113 @@
   line-height: 1.65;
 }
 
+.home-good-for-me {
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.home-good-for-me-inner {
+  margin: 0 clamp(1.25rem, 4vw, 3rem);
+  padding: clamp(2.5rem, 6vw, 4rem);
+  background: #fffdf9;
+  border: 1px solid rgba(44, 34, 28, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 16px 48px rgba(44, 34, 28, 0.06);
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.home-good-for-me-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--home-rose-deep);
+  background: var(--home-blush);
+  border: 1.5px solid rgba(217, 27, 139, 0.22);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  margin-bottom: 1.25rem;
+}
+
+.home-good-for-me-lead {
+  max-width: 40rem;
+  color: var(--home-ink-soft);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  margin: 0 0 1rem;
+}
+
+.home-good-for-me-lead strong {
+  color: var(--home-ink);
+  font-weight: 600;
+}
+
+.home-good-for-me-moments {
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0 0;
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .home-good-for-me-moments {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.home-good-for-me-moment {
+  background: var(--home-bg-deep);
+  border-radius: 18px;
+  padding: 1.35rem 1.2rem;
+  animation: home-rise 0.85s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.home-good-for-me-moment-label {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--home-sage);
+  margin-bottom: 0.65rem;
+}
+
+.home-good-for-me-moment h3 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.05rem;
+  margin: 0 0 0.55rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.home-good-for-me-moment p {
+  margin: 0;
+  color: var(--home-ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.home-good-for-me-footnote {
+  margin: 2rem 0 0;
+  max-width: 36rem;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.02rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--home-plum);
+}
+
+.home-good-for-me-footnote strong {
+  font-style: normal;
+  font-weight: 600;
+}
+
 .home-trust-list {
   list-style: none;
   padding: 0;
@@ -385,7 +492,13 @@
 
 @media (min-width: 720px) {
   .home-trust-list {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .home-trust-list {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -503,7 +616,8 @@
 @media (prefers-reduced-motion: reduce) {
   .home-reveal,
   .home-journey-card,
-  .home-pillar {
+  .home-pillar,
+  .home-good-for-me-moment {
     animation: none;
     opacity: 1;
   }
