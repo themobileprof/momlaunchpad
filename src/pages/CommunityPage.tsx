@@ -17,7 +17,6 @@ import { Tabs } from '../components/Tabs'
 import { UserPicker } from '../components/UserPicker'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 import { usePendingBadgeRequests } from '../hooks/usePendingBadgeRequests'
-import { isTestUser } from '../lib/testUser'
 
 const COMMUNITY_TABS = ['reports', 'badge-requests', 'badges', 'catalog'] as const
 type CommunityTab = (typeof COMMUNITY_TABS)[number]
@@ -801,15 +800,7 @@ export function CommunityPage() {
             }}
           />
           {!badgeUser && (
-            <p className="muted mt">
-              Look up a member to view, grant, or revoke badges. Demo test accounts are marked{' '}
-              <span className="badge badge-test">Test</span> in Users.
-            </p>
-          )}
-          {badgeUser && isTestUser(badgeUser) && (
-            <Alert variant="info">
-              Demo test account — grant verified badges here when you are ready (not done by the seeder).
-            </Alert>
+            <p className="muted mt">Look up a member to view, grant, or revoke badges.</p>
           )}
           {badgeUser && (
             <>

@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { api } from '../api/client'
 import type { AdminUserSummary } from '../api/types'
-import { UserRoleBadges } from './UserRoleBadges'
 
 type Props = {
   user: AdminUserSummary | null
@@ -49,7 +48,6 @@ export function UserPicker({ user, onSelect, onClear, label = 'Email' }: Props) 
             <span className="user-picker-primary">
               {user.name ? `${user.name} — ${user.email}` : user.email}
             </span>
-            <UserRoleBadges user={user} />
             {user.plan_code && <span className="badge badge-muted">{user.plan_code}</span>}
             <button type="button" className="btn btn-ghost btn-sm" onClick={onClear}>
               Change

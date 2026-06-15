@@ -300,7 +300,7 @@ export function UsersPage() {
     <>
       <PageHeader
         title="User management"
-        description="Real members and demo test accounts (@momlaunchpad.com) are labeled in the list below."
+        description="Test accounts are labeled below; in the app they look like any other member."
         action={
           <button type="button" className="btn btn-ghost" onClick={() => loadUserList(0, false)}>
             Refresh list
@@ -309,9 +309,8 @@ export function UsersPage() {
       />
       {testUserCount > 0 && (
         <Alert variant="info">
-          {testUserCount} demo test account{testUserCount === 1 ? '' : 's'} (@momlaunchpad.com).
-          Verified community badges are not granted automatically — use{' '}
-          <Link to={`${ADMIN_BASE}/community?tab=badges`}>Community → Grant badges</Link> after seeding.
+          {testUserCount} test account{testUserCount === 1 ? '' : 's'} marked below. Grant verified badges in{' '}
+          <Link to={`${ADMIN_BASE}/community?tab=badges`}>Community → Grant badges</Link> when ready.
         </Alert>
       )}
       {error && <Alert variant="error">{error}</Alert>}
@@ -357,14 +356,8 @@ export function UsersPage() {
                 {visibleUsers.map((user) => {
                   const isSelected = selectedUser?.id === user.id
                   const pendingPoints = user.referral_reward_points ?? 0
-                  const testAccount = isTestUser(user)
                   return (
-                    <tr
-                      key={user.id}
-                      className={[isSelected ? 'row-selected' : '', testAccount ? 'row-test' : '']
-                        .filter(Boolean)
-                        .join(' ')}
-                    >
+                    <tr key={user.id} className={isSelected ? 'row-selected' : ''}>
                       <td>
                         <div>{user.name || '—'}</div>
                         <div className="table-sub">{user.email}</div>
@@ -455,15 +448,14 @@ export function UsersPage() {
             <Card className="mt">
               <h2 className="card-title">Account — {selectedUser.email}</h2>
               {isTestUser(selectedUser) && (
-                <Alert variant="info">
-                  Demo test account. Grant verified badges manually in{' '}
+                <p className="muted mb">
                   <Link
                     to={`${ADMIN_BASE}/community?tab=badges&email=${encodeURIComponent(selectedUser.email)}`}
                   >
-                    Community → Grant badges
-                  </Link>
-                  .
-                </Alert>
+                    Grant badges
+                  </Link>{' '}
+                  for this member.
+                </p>
               )}
               <table className="table">
                 <tbody>
