@@ -148,6 +148,18 @@ code, .table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em;
 }
 .badge-ok { background: var(--sage-soft); color: var(--ok); }
 .badge-muted { background: var(--surface-2); color: var(--muted); }
+.badge-test { background: #fff3cd; color: #856404; }
+
+.user-role-badges { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem; }
+
+.card-title-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 0.75rem; margin-bottom: 0.75rem;
+}
+.card-title-row .card-title { margin-bottom: 0; }
+.checkbox-inline { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.88rem; cursor: pointer; }
+.row-test { background: #fffdf5; }
+.row-test.row-selected { background: #fff8e1; }
 
 .alert { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.92rem; }
 .alert-error { background: var(--danger-soft); color: var(--danger); border: 1px solid #f5c2c0; }

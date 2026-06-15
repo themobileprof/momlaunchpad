@@ -35,6 +35,7 @@ export interface AdminUserSummary {
   plan_code?: string
   referral_reward_points?: number
   is_admin?: boolean
+  is_test_user?: boolean
   created_at?: string
 }
 

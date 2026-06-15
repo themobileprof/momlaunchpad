@@ -17,6 +17,7 @@ import { Tabs } from '../components/Tabs'
 import { UserPicker } from '../components/UserPicker'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 import { usePendingBadgeRequests } from '../hooks/usePendingBadgeRequests'
+import { isTestUser } from '../lib/testUser'
 
 const COMMUNITY_TABS = ['reports', 'badge-requests', 'badges', 'catalog'] as const
 type CommunityTab = (typeof COMMUNITY_TABS)[number]
@@ -225,6 +226,27 @@ export function CommunityPage() {
   useEffect(() => {
     if (tab === 'badge-requests') loadBadgeRequests()
   }, [tab, loadBadgeRequests])
+
+  const emailFromUrl = searchParams.get('email')?.trim() ?? ''
+
+  useEffect(() => {
+    if (tab !== 'badges' || !emailFromUrl || badgeUser?.email === emailFromUrl) return
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await api.lookupUserByEmail(emailFromUrl)
+        const match = res.users?.[0]
+        if (cancelled || !match) return
+        setBadgeUser(match)
+        setBadgeUserId(match.id)
+      } catch {
+        // User can still look up manually.
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [tab, emailFromUrl, badgeUser?.email])
 
   function badgeLabel(key: string) {
     return badgeTypes.find((b) => b.key === key)?.label ?? key
@@ -778,7 +800,17 @@ export function CommunityPage() {
               setBadgeUserId('')
             }}
           />
-          {!badgeUser && <p className="muted mt">Look up a member to view, grant, or revoke badges.</p>}
+          {!badgeUser && (
+            <p className="muted mt">
+              Look up a member to view, grant, or revoke badges. Demo test accounts are marked{' '}
+              <span className="badge badge-test">Test</span> in Users.
+            </p>
+          )}
+          {badgeUser && isTestUser(badgeUser) && (
+            <Alert variant="info">
+              Demo test account — grant verified badges here when you are ready (not done by the seeder).
+            </Alert>
+          )}
           {badgeUser && (
             <>
               <h2 className="card-title mt">Current badges — {badgeUser.email}</h2>

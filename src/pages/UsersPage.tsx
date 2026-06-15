@@ -4,7 +4,9 @@ import { api } from '../api/client'
 import { useAdminConfig } from '../context/AdminConfigContext'
 import { useAuth } from '../context/AuthContext'
 import { UserPicker } from '../components/UserPicker'
+import { UserRoleBadges } from '../components/UserRoleBadges'
 import { ADMIN_BASE } from '../routes'
+import { isTestUser } from '../lib/testUser'
 import type {
   AdminUserSummary,
   Feature,
@@ -43,7 +45,11 @@ export function UsersPage() {
   const [loading, setLoading] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
   const [grantExpiresAt, setGrantExpiresAt] = useState('')
+  const [hideTestUsers, setHideTestUsers] = useState(false)
   const detailRef = useRef<HTMLDivElement>(null)
+
+  const testUserCount = allUsers.filter((u) => isTestUser(u)).length
+  const visibleUsers = hideTestUsers ? allUsers.filter((u) => !isTestUser(u)) : allUsers
 
   const rewardPresets = config?.referral_reward_presets ?? []
 
@@ -253,28 +259,88 @@ export function UsersPage() {
     }
   }
 
+  async function deleteSelectedUser() {
+    if (!selectedUser) return
+    if (selectedUser.id === currentAdmin?.id) {
+      setError('You cannot delete your own account.')
+      return
+    }
+    if (selectedUser.is_admin) {
+      setError('Remove admin access before deleting an admin account, or delete a non-admin user.')
+      return
+    }
+    if (
+      !confirm(
+        `Soft-delete ${selectedUser.email}? They will be signed out and hidden from the app; their email can be used to register again.`,
+      )
+    ) {
+      return
+    }
+    setBusy('delete-user')
+    setError('')
+    try {
+      await api.deleteUser(selectedUser.id)
+      setMessage(`${selectedUser.email} was deleted.`)
+      setSelectedUser(null)
+      setUserId('')
+      setSubscription(null)
+      setFeatureRows([])
+      setReferralRewards([])
+      await loadUserList(0, false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Delete failed')
+    } finally {
+      setBusy(null)
+    }
+  }
+
   if (configLoading && !config) return <Spinner />
 
   return (
     <>
       <PageHeader
         title="User management"
-        description="Browse all accounts and manage the selected user below."
+        description="Real members and demo test accounts (@momlaunchpad.com) are labeled in the list below."
         action={
           <button type="button" className="btn btn-ghost" onClick={() => loadUserList(0, false)}>
             Refresh list
           </button>
         }
       />
+      {testUserCount > 0 && (
+        <Alert variant="info">
+          {testUserCount} demo test account{testUserCount === 1 ? '' : 's'} (@momlaunchpad.com).
+          Verified community badges are not granted automatically — use{' '}
+          <Link to={`${ADMIN_BASE}/community?tab=badges`}>Community → Grant badges</Link> after seeding.
+        </Alert>
+      )}
       {error && <Alert variant="error">{error}</Alert>}
       {message && <Alert variant="success">{message}</Alert>}
 
       <Card>
-        <h2 className="card-title">All users</h2>
+        <div className="card-title-row">
+          <h2 className="card-title">All users</h2>
+          {testUserCount > 0 && (
+            <label className="checkbox-inline muted">
+              <input
+                type="checkbox"
+                checked={hideTestUsers}
+                onChange={(e) => setHideTestUsers(e.target.checked)}
+              />
+              Hide test accounts ({testUserCount})
+            </label>
+          )}
+        </div>
         {listLoading && allUsers.length === 0 ? (
           <Spinner />
-        ) : allUsers.length === 0 ? (
-          <EmptyState message="No users yet." />
+        ) : visibleUsers.length === 0 ? (
+          <EmptyState
+            message={
+              hideTestUsers && allUsers.length > 0
+                ? 'All loaded users are test accounts. Uncheck “Hide test accounts” to show them.'
+                : 'No users yet.'
+            }
+          />
         ) : (
           <>
             <table className="table">
@@ -288,19 +354,21 @@ export function UsersPage() {
                 </tr>
               </thead>
               <tbody>
-                {allUsers.map((user) => {
+                {visibleUsers.map((user) => {
                   const isSelected = selectedUser?.id === user.id
                   const pendingPoints = user.referral_reward_points ?? 0
+                  const testAccount = isTestUser(user)
                   return (
-                    <tr key={user.id} className={isSelected ? 'row-selected' : ''}>
+                    <tr
+                      key={user.id}
+                      className={[isSelected ? 'row-selected' : '', testAccount ? 'row-test' : '']
+                        .filter(Boolean)
+                        .join(' ')}
+                    >
                       <td>
                         <div>{user.name || '—'}</div>
                         <div className="table-sub">{user.email}</div>
-                        {user.is_admin && (
-                          <span className="badge badge-muted" style={{ marginTop: '0.25rem' }}>
-                            Admin
-                          </span>
-                        )}
+                        <UserRoleBadges user={user} />
                         {pendingPoints > 0 && (
                           <div className="table-sub">{pendingPoints} referral pts</div>
                         )}
@@ -386,6 +454,17 @@ export function UsersPage() {
           <>
             <Card className="mt">
               <h2 className="card-title">Account — {selectedUser.email}</h2>
+              {isTestUser(selectedUser) && (
+                <Alert variant="info">
+                  Demo test account. Grant verified badges manually in{' '}
+                  <Link
+                    to={`${ADMIN_BASE}/community?tab=badges&email=${encodeURIComponent(selectedUser.email)}`}
+                  >
+                    Community → Grant badges
+                  </Link>
+                  .
+                </Alert>
+              )}
               <table className="table">
                 <tbody>
                   {selectedUser.name && (
@@ -465,6 +544,32 @@ export function UsersPage() {
                   <span className="muted table-sub">You cannot demote your own account.</span>
                 )}
               </div>
+            </Card>
+
+            <Card className="mt danger-zone">
+              <h2 className="card-title">Delete account</h2>
+              <p className="muted mb">
+                Soft-deletes this user: they cannot sign in, disappear from admin lists, and their
+                email can be used for a new registration. Community posts remain but are hidden
+                from feeds while the author is deleted.
+              </p>
+              <button
+                type="button"
+                className="btn btn-sm btn-danger"
+                disabled={
+                  busy === 'delete-user' ||
+                  selectedUser.id === currentAdmin?.id ||
+                  selectedUser.is_admin
+                }
+                onClick={() => deleteSelectedUser()}
+              >
+                {busy === 'delete-user' ? '…' : 'Delete user'}
+              </button>
+              {selectedUser.is_admin && (
+                <p className="muted table-sub mt">
+                  Admin accounts cannot be deleted from the console.
+                </p>
+              )}
             </Card>
 
             <Card className="mt">

@@ -148,6 +148,11 @@ export const api = {
       `/api/admin/users/${userId}/admin`,
       { method: 'PUT', body: JSON.stringify({ is_admin }) },
     ),
+  deleteUser: (userId: string) =>
+    request<{ message: string; user_id: string }>(
+      `/api/admin/users/${userId}`,
+      { method: 'DELETE' },
+    ),
 
   getUserSubscription: (userId: string) =>
     request<{ user_id: string; subscription: import('./types').UserSubscription }>(
