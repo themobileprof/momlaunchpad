@@ -33,6 +33,10 @@ npm run dev
 
 Open **http://localhost:5174** for the public marketing site (includes **Download Android app** from the latest APK on [momlaunchpad-app releases](https://github.com/themobileprof/momlaunchpad-app/releases)). Sign in at **http://localhost:5174/access** (not linked from the homepage) with your admin account.
 
+### Referral invite links (`/join?ref=CODE`)
+
+Backend referral links use `https://momlaunchpad.com/join?ref=CODE` (see `REFERRAL_LINK_BASE_URL` in momlaunchpad-be). The `/join` page saves the code to `localStorage` under `momlaunchpad_referral_code`. The **mobile app** must send that code as `referral_code` on sign-up (`POST /api/auth/register` or Google token auth) — the API applies the referral and credits the referrer. Android App Links to `/join` can pass the URL directly to the app.
+
 ## Configuration
 
 | Variable | Description |

@@ -1,10 +1,13 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { useMemo } from 'react'
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { ReferralCapture } from './components/ReferralCapture'
 import { AdminConfigProvider } from './context/AdminConfigContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { DashboardPage } from './pages/DashboardPage'
 import { FeaturesPage } from './pages/FeaturesPage'
 import { HomePage } from './pages/HomePage'
+import { JoinPage } from './pages/JoinPage'
 import { LanguagesPage } from './pages/LanguagesPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlansPage } from './pages/PlansPage'
@@ -14,6 +17,7 @@ import { CommunityPage } from './pages/CommunityPage'
 import { ReferralsPage } from './pages/ReferralsPage'
 import { FeedbackPage } from './pages/FeedbackPage'
 import { ADMIN_BASE, ADMIN_SIGN_IN_PATH } from './routes'
+import { captureReferralFromSearchParams } from './lib/referral'
 import { Spinner } from './components/ui'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -29,10 +33,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function FallbackRedirect() {
+  const [searchParams] = useSearchParams()
+  useMemo(() => {
+    captureReferralFromSearchParams(searchParams)
+  }, [searchParams])
+  return <Navigate to="/" replace />
+}
+
 function AppRoutes() {
   return (
-    <Routes>
+    <>
+      <ReferralCapture />
+      <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/join" element={<JoinPage />} />
       <Route path={ADMIN_SIGN_IN_PATH} element={<LoginPage />} />
       <Route
         path={ADMIN_BASE}
@@ -54,8 +69,9 @@ function AppRoutes() {
         <Route path="referrals" element={<ReferralsPage />} />
         <Route path="feedback" element={<FeedbackPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<FallbackRedirect />} />
     </Routes>
+    </>
   )
 }
 
