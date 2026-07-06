@@ -161,7 +161,7 @@ export function HomePage() {
               </div>
               <FeatureList items={MOBILE_FEATURES} />
               <div className="home-access-cta">
-                <ApkDownloadButton size="lg" />
+                <ApkDownloadButton size="lg" installHelpOpen />
               </div>
             </article>
 
@@ -319,7 +319,7 @@ export function HomePage() {
             to start in your browser today.
           </p>
           <div className="home-cta-actions home-cta-actions--dual">
-            <ApkDownloadButton size="lg" />
+            <ApkDownloadButton size="lg" showInstallHelp={false} />
             <Link to="/app" className="home-btn home-btn-outline home-btn-lg">
               Open web app
             </Link>

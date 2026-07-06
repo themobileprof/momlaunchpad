@@ -1,12 +1,21 @@
 import { useEffect, useState } from 'react'
 import { fetchLatestApkRelease, type ApkReleaseInfo } from '../lib/githubRelease'
+import { ApkInstallHelp } from './ApkInstallHelp'
 
 type Props = {
   className?: string
   size?: 'default' | 'lg'
+  /** Show expandable install instructions (unknown publisher, etc.) */
+  showInstallHelp?: boolean
+  installHelpOpen?: boolean
 }
 
-export function ApkDownloadButton({ className = '', size = 'default' }: Props) {
+export function ApkDownloadButton({
+  className = '',
+  size = 'default',
+  showInstallHelp = true,
+  installHelpOpen = false,
+}: Props) {
   const [release, setRelease] = useState<ApkReleaseInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -72,6 +81,10 @@ export function ApkDownloadButton({ className = '', size = 'default' }: Props) {
       <p className="home-apk-meta">
         {release.name} · {release.tag}
       </p>
+      <p className="home-apk-trust">
+        Official build · direct from MomLaunchpad (early access, not Play Store yet)
+      </p>
+      {showInstallHelp && <ApkInstallHelp defaultOpen={installHelpOpen} />}
     </div>
   )
 }

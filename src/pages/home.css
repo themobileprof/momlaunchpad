@@ -742,6 +742,88 @@
   color: var(--home-ink-soft);
 }
 
+.home-apk-trust {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: var(--home-ink-soft);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.home-apk-install-help {
+  margin-top: 0.85rem;
+  text-align: left;
+  font-size: 0.88rem;
+  color: var(--home-ink-soft);
+  border: 1px solid rgba(44, 34, 28, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 253, 249, 0.85);
+  overflow: hidden;
+}
+
+.home-apk-install-help summary {
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--home-ink);
+  list-style: none;
+  user-select: none;
+}
+
+.home-apk-install-help summary::-webkit-details-marker {
+  display: none;
+}
+
+.home-apk-install-help summary::after {
+  content: '+';
+  float: right;
+  color: var(--home-sage);
+  font-weight: 700;
+}
+
+.home-apk-install-help[open] summary::after {
+  content: '−';
+}
+
+.home-apk-install-help-body {
+  padding: 0 1rem 1rem;
+  border-top: 1px solid rgba(44, 34, 28, 0.06);
+}
+
+.home-apk-install-help-body p {
+  margin: 0.85rem 0 0;
+  line-height: 1.55;
+}
+
+.home-apk-install-help-body p:first-child {
+  margin-top: 0.85rem;
+}
+
+.home-apk-install-help-body ol {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+  line-height: 1.55;
+}
+
+.home-apk-install-help-body li {
+  margin-bottom: 0.45rem;
+}
+
+.home-apk-install-help-body a {
+  color: var(--home-rose-deep);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.home-apk-install-help-body a:hover {
+  text-decoration: underline;
+}
+
+.home-apk-install-help-alt {
+  font-size: 0.85rem !important;
+  font-style: italic;
+}
+
 .home-apk-muted,
 .home-apk-error {
   margin: 0;
