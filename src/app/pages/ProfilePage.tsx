@@ -1,0 +1,151 @@
+import { useEffect, useState } from 'react'
+import { userApi } from '../api'
+import { BottomNav } from '../components/BottomNav'
+import { AppCard, GradientButton, MomAppBar } from '../components/ui'
+import { useUserAuth } from '../context/UserAuthContext'
+import { useUserProfile } from '../context/UserProfileContext'
+import { JOURNEY_STAGES, type JourneyStage } from '../types'
+
+export function ProfilePage() {
+  const { user } = useUserAuth()
+  const { profile, setProfile } = useUserProfile()
+  const [name, setName] = useState('')
+  const [journeyStage, setJourneyStage] = useState<JourneyStage | undefined>()
+  const [pregnancyWeek, setPregnancyWeek] = useState(20)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name)
+      setJourneyStage(profile.journey_stage)
+      if (profile.pregnancy_week) setPregnancyWeek(profile.pregnancy_week)
+    }
+  }, [profile])
+
+  async function save() {
+    setSaving(true)
+    setMessage('')
+    try {
+      const body: Record<string, unknown> = {
+        name: name.trim(),
+        language: 'en',
+        journey_stage: journeyStage,
+      }
+      if (journeyStage === 'pregnant') body.pregnancy_week = pregnancyWeek
+      const p = await userApi.updateProfile(body)
+      setProfile(p)
+      setMessage('Saved!')
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const p = await userApi.uploadProfilePhoto(file)
+    setProfile(p)
+  }
+
+  return (
+    <>
+      <MomAppBar pageTitle="Your profile" />
+      <div className="user-app-content">
+        <div style={{ padding: 16 }}>
+          <p className="u-caption">Personalization</p>
+          <div style={{ marginBottom: 16 }}>
+          <AppCard>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 16 }}>
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  background: 'var(--surface-muted)',
+                  overflow: 'hidden',
+                  display: 'grid',
+                  placeItems: 'center',
+                }}
+              >
+                {profile?.profile_photo_url ? (
+                  <img src={profile.profile_photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '2rem' }}>👤</span>
+                )}
+              </div>
+              <div>
+                <strong>{profile?.name || 'Your profile'}</strong>
+                <p className="u-muted" style={{ margin: 0, fontSize: '0.85rem' }}>{user?.email}</p>
+              </div>
+            </div>
+            <label className="app-btn app-btn--outline app-btn--sm" style={{ cursor: 'pointer' }}>
+              Change photo
+              <input type="file" accept="image/*" hidden onChange={onPhotoChange} />
+            </label>
+          </AppCard>
+          </div>
+
+          <p className="u-caption">About you</p>
+          <div style={{ marginBottom: 16 }}>
+          <AppCard>
+            <label className="app-label">Name</label>
+            <input className="app-input" value={name} onChange={(e) => setName(e.target.value)} />
+          </AppCard>
+          </div>
+
+          <p className="u-caption">Journey</p>
+          <div style={{ marginBottom: 16 }}>
+          <AppCard>
+            <select
+              className="app-input"
+              value={journeyStage ?? ''}
+              onChange={(e) => setJourneyStage(e.target.value as JourneyStage)}
+            >
+              <option value="">Select stage</option>
+              {JOURNEY_STAGES.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+            {journeyStage === 'pregnant' && (
+              <>
+                <label className="app-label" style={{ marginTop: 12 }}>Week: {pregnancyWeek}</label>
+                <input
+                  type="range"
+                  min={4}
+                  max={42}
+                  value={pregnancyWeek}
+                  onChange={(e) => setPregnancyWeek(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: 'var(--mint)' }}
+                />
+              </>
+            )}
+          </AppCard>
+          </div>
+
+          {profile?.referral_code && (
+            <>
+              <p className="u-caption">Referrals</p>
+              <div style={{ marginBottom: 16 }}>
+          <AppCard>
+                <p style={{ margin: '0 0 8px' }}>Your code: <strong>{profile.referral_code}</strong></p>
+                <p className="u-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+                  {profile.total_referrals} referrals · {profile.referral_reward_points} reward points
+                </p>
+              </AppCard>
+              </div>
+            </>
+          )}
+
+          {message && <p className={message === 'Saved!' ? 'u-muted' : 'u-alert u-alert--error'}>{message}</p>}
+          <GradientButton onClick={save} disabled={saving}>
+            {saving ? 'Saving…' : 'Save changes ✓'}
+          </GradientButton>
+        </div>
+      </div>
+      <BottomNav />
+    </>
+  )
+}

@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
+import UserApp from './app/UserApp'
+import { APP_BASE } from './app/routes'
 import { Layout } from './components/Layout'
 import { ReferralCapture } from './components/ReferralCapture'
 import { AdminConfigProvider } from './context/AdminConfigContext'
@@ -48,6 +50,7 @@ function AppRoutes() {
       <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/join" element={<JoinPage />} />
+      <Route path={`${APP_BASE}/*`} element={<UserApp />} />
       <Route path={ADMIN_SIGN_IN_PATH} element={<LoginPage />} />
       <Route
         path={ADMIN_BASE}

@@ -86,6 +86,9 @@ export function HomePage() {
             and tools that respect your pace.
           </p>
           <div className="home-hero-actions home-reveal" style={{ animationDelay: '0.28s' }}>
+            <a className="home-btn home-btn-primary" href="/app">
+              Use web app
+            </a>
             <ApkDownloadButton size="lg" />
             <a className="home-btn home-btn-ghost" href="#support">
               See how it helps
