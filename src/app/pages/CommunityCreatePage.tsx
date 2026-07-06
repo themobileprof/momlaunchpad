@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { userApi } from '../api'
+import { PostImagePicker, type PendingImage } from '../components/PostImagePicker'
 import { GradientButton, MomAppBar } from '../components/ui'
 import { appPath } from '../routes'
 
@@ -9,7 +10,7 @@ export function CommunityCreatePage() {
   const [mode, setMode] = useState<'post' | 'event'>('post')
   const [body, setBody] = useState('')
   const [isAnonymous, setIsAnonymous] = useState(false)
-  const [imageUrl, setImageUrl] = useState('')
+  const [images, setImages] = useState<PendingImage[]>([])
   const [eventTitle, setEventTitle] = useState('')
   const [eventType, setEventType] = useState('')
   const [venue, setVenue] = useState('')
@@ -17,6 +18,7 @@ export function CommunityCreatePage() {
   const [eventTypes, setEventTypes] = useState<{ key: string; label: string }[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState('')
 
   useEffect(() => {
     userApi.getEventTypes().then((r) => setEventTypes(r.event_types))
@@ -29,11 +31,19 @@ export function CommunityCreatePage() {
     }
     setLoading(true)
     setError('')
+    setUploadProgress('')
     try {
+      const imageUrls: string[] = []
+      for (let i = 0; i < images.length; i++) {
+        setUploadProgress(`Uploading image ${i + 1} of ${images.length}…`)
+        const { url } = await userApi.uploadCommunityImage(images[i].file)
+        imageUrls.push(url)
+      }
+
       const payload: Parameters<typeof userApi.createPost>[0] = {
         body: body.trim(),
         is_anonymous: isAnonymous,
-        ...(imageUrl.trim() ? { image_urls: [imageUrl.trim()] } : {}),
+        ...(imageUrls.length > 0 ? { image_urls: imageUrls } : {}),
       }
       if (mode === 'event') {
         if (!eventTitle.trim() || !startsAt || !eventType) {
@@ -49,11 +59,13 @@ export function CommunityCreatePage() {
         }
       }
       const post = await userApi.createPost(payload)
+      images.forEach((img) => URL.revokeObjectURL(img.previewUrl))
       navigate(appPath(`community/post/${post.id}`))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create post')
     } finally {
       setLoading(false)
+      setUploadProgress('')
     }
   }
 
@@ -67,6 +79,7 @@ export function CommunityCreatePage() {
         </div>
 
         {error && <div className="u-alert u-alert--error">{error}</div>}
+        {uploadProgress && <p className="u-muted" style={{ marginBottom: 12 }}>{uploadProgress}</p>}
 
         <textarea
           className="app-input"
@@ -82,13 +95,9 @@ export function CommunityCreatePage() {
           Post anonymously
         </label>
 
-        <input
-          className="app-input"
-          placeholder="Image URL (optional, HTTPS)"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          style={{ marginBottom: 12 }}
-        />
+        <div style={{ marginBottom: 16 }}>
+          <PostImagePicker images={images} onChange={setImages} disabled={loading} />
+        </div>
 
         {mode === 'event' && (
           <>
@@ -105,7 +114,7 @@ export function CommunityCreatePage() {
         )}
 
         <GradientButton onClick={submit} disabled={loading}>
-          {loading ? 'Posting…' : 'Share with community →'}
+          {loading ? (uploadProgress || 'Posting…') : 'Share with community →'}
         </GradientButton>
       </div>
     </div>

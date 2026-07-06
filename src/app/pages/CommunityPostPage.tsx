@@ -5,6 +5,7 @@ import { IconHeart } from '../components/Icons'
 import { GradientButton, MomAppBar } from '../components/ui'
 import type { CommunityEvent, CommunityPost, CommunityReply } from '../types'
 import { appPath } from '../routes'
+import { resolveMediaUrl } from '../lib/mediaUrl'
 
 export function CommunityPostPage() {
   const { id } = useParams<{ id: string }>()
@@ -95,6 +96,18 @@ export function CommunityPostPage() {
         <div className="app-card">
           <strong>{post.is_anonymous ? 'Anonymous Mom' : post.author.display_name}</strong>
           <p className="u-body" style={{ whiteSpace: 'pre-wrap', margin: '12px 0' }}>{post.body}</p>
+          {post.image_urls.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+              {post.image_urls.map((url) => (
+                <img
+                  key={url}
+                  src={resolveMediaUrl(url)}
+                  alt=""
+                  style={{ width: '100%', borderRadius: 12, objectFit: 'cover', maxHeight: 320 }}
+                />
+              ))}
+            </div>
+          )}
           <div className="post-actions">
             <button type="button" className={`post-action${post.liked_by_me ? ' post-action--active' : ''}`} onClick={toggleLike}>
               <IconHeart filled={post.liked_by_me} /> {post.like_count}

@@ -126,6 +126,28 @@ export const userApi = {
   getQuota: (feature: string) =>
     request<{ feature: string; quota: QuotaInfo }>(`/api/subscription/quota/${feature}`),
 
+  uploadCommunityImage: async (file: File) => {
+    const token = getUserToken()
+    const form = new FormData()
+    form.append('image', file)
+    const res = await fetch(`${API_BASE}/api/community/uploads`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    })
+    if (!res.ok) {
+      let message = res.statusText
+      try {
+        const body = await res.json()
+        message = body.error ?? message
+      } catch {
+        /* ignore */
+      }
+      throw new ApiError(res.status, message)
+    }
+    return res.json() as Promise<{ url: string }>
+  },
+
   // Conversations
   listConversations: (limit = 50, offset = 0) =>
     request<Conversation[]>(`/api/conversations?limit=${limit}&offset=${offset}`),

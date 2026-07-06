@@ -6,6 +6,7 @@ import { IconBell, IconComment, IconHeart } from '../components/Icons'
 import { EmptyState, MomAppBar } from '../components/ui'
 import type { CommunityFeedFilter, CommunityPost } from '../types'
 import { appPath } from '../routes'
+import { resolveMediaUrl } from '../lib/mediaUrl'
 
 const FILTERS: { value: CommunityFeedFilter; label: string }[] = [
   { value: 'for_you', label: 'For You' },
@@ -30,7 +31,7 @@ function PostCard({ post, onLike }: { post: CommunityPost; onLike: () => void })
         {post.image_urls.length > 0 && (
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginBottom: 8 }}>
             {post.image_urls.map((url) => (
-              <img key={url} src={url} alt="" style={{ height: 80, borderRadius: 8, objectFit: 'cover' }} />
+              <img key={url} src={resolveMediaUrl(url)} alt="" style={{ height: 80, borderRadius: 8, objectFit: 'cover' }} />
             ))}
           </div>
         )}
