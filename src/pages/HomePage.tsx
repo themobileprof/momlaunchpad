@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { ApkDownloadButton } from '../components/ApkDownloadButton'
 import { BrandLogo } from '../components/BrandLogo'
 import './home.css'
@@ -56,6 +57,39 @@ const PILLARS = [
   },
 ]
 
+const MOBILE_FEATURES = [
+  { label: 'AI chat & community', status: 'available' as const },
+  { label: 'Calendar & health tracking', status: 'available' as const },
+  { label: 'Push reminders', status: 'soon' as const },
+  { label: 'Location-aware community', status: 'soon' as const },
+  { label: 'Voice companion calls', status: 'soon' as const },
+]
+
+const WEB_FEATURES = [
+  { label: 'AI chat & community', status: 'available' as const },
+  { label: 'Calendar & profile', status: 'available' as const },
+  { label: 'Works in any browser', status: 'available' as const },
+  { label: 'No install required', status: 'available' as const },
+]
+
+function FeatureList({ items }: { items: typeof MOBILE_FEATURES }) {
+  return (
+    <ul className="home-access-features">
+      {items.map((item) => (
+        <li key={item.label}>
+          <span className="home-access-feature-icon" aria-hidden>
+            {item.status === 'available' ? '✓' : '◦'}
+          </span>
+          <span>{item.label}</span>
+          {item.status === 'soon' && (
+            <span className="home-access-soon">Coming soon</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export function HomePage() {
   return (
     <div className="home">
@@ -63,10 +97,11 @@ export function HomePage() {
       <header className="home-header">
         <BrandLogo href="/" size="lg" showText className="home-logo" />
         <nav className="home-nav" aria-label="Page sections">
+          <a href="#get-started">Get started</a>
           <a href="#journey">Your journey</a>
           <a href="#support">How we help</a>
           <a href="#good-for-me">Good for me?</a>
-          <a href="#trust">Built for you</a>
+          <Link to="/app" className="home-nav-app-link">Web app</Link>
         </nav>
       </header>
 
@@ -81,26 +116,74 @@ export function HomePage() {
             <span className="home-hero-accent"> on the days that ask a lot of you</span>
           </h1>
           <p className="home-hero-lead home-reveal" style={{ animationDelay: '0.2s' }}>
-            MomLaunchpad is a companion for the emotional arc of pregnancy—from the first
-            flutter of worry to the last-week whirlwind—woven together with chat, community,
-            and tools that respect your pace.
+            Chat, community, and gentle structure for your pregnancy journey—on your phone
+            first, or in the browser when that fits your day.
           </p>
           <div className="home-hero-actions home-reveal" style={{ animationDelay: '0.28s' }}>
-            <a className="home-btn home-btn-primary" href="/app">
-              Use web app
+            <a className="home-btn home-btn-primary home-btn-lg" href="#get-started">
+              Get started
             </a>
-            <ApkDownloadButton size="lg" />
             <a className="home-btn home-btn-ghost" href="#support">
               See how it helps
-            </a>
-            <a className="home-btn home-btn-ghost" href="#trust">
-              Why mothers trust us
             </a>
           </div>
           <blockquote className="home-hero-quote home-reveal" style={{ animationDelay: '0.36s' }}>
             <p>“I wanted something that felt like a friend who had time—not another app shouting at me.”</p>
             <footer>— the feeling we design for</footer>
           </blockquote>
+        </section>
+
+        <section
+          id="get-started"
+          className="home-section home-access"
+          aria-labelledby="access-heading"
+        >
+          <div className="home-section-intro home-section-intro--center">
+            <p className="home-eyebrow">Get started</p>
+            <h2 id="access-heading">Two ways to use MomLaunchpad</h2>
+            <p className="home-section-lead">
+              The Android app is our primary experience—built for your pocket, with mobile-only
+              features on the way. The web app brings chat, community, and calendar to any
+              screen, no install required.
+            </p>
+          </div>
+
+          <div className="home-access-grid">
+            <article className="home-access-card home-access-card--primary">
+              <div className="home-access-card-head">
+                <span className="home-access-badge home-access-badge--primary">Recommended</span>
+                <span className="home-access-icon" aria-hidden>📱</span>
+                <h3>Android app</h3>
+                <p className="home-access-tagline">
+                  Your pocket companion—the full experience, with push, location, and voice
+                  features arriving soon.
+                </p>
+              </div>
+              <FeatureList items={MOBILE_FEATURES} />
+              <div className="home-access-cta">
+                <ApkDownloadButton size="lg" />
+              </div>
+            </article>
+
+            <article className="home-access-card home-access-card--secondary">
+              <div className="home-access-card-head">
+                <span className="home-access-badge">Also available</span>
+                <span className="home-access-icon" aria-hidden>🌐</span>
+                <h3>Web app</h3>
+                <p className="home-access-tagline">
+                  Sign in from any browser—ideal for longer chats, community threads, or when
+                  you are at your desk.
+                </p>
+              </div>
+              <FeatureList items={WEB_FEATURES} />
+              <div className="home-access-cta">
+                <Link to="/app" className="home-btn home-btn-outline home-btn-lg home-access-web-btn">
+                  Open web app
+                </Link>
+                <p className="home-access-note">Free · same account as mobile</p>
+              </div>
+            </article>
+          </div>
         </section>
 
         <section id="journey" className="home-section home-journey" aria-labelledby="journey-heading">
@@ -232,11 +315,14 @@ export function HomePage() {
         <section className="home-cta" aria-labelledby="cta-heading">
           <h2 id="cta-heading">Ready when you are</h2>
           <p>
-            Try the Android app today, or reach out for early access on other platforms—support
-            that honors the whole of your pregnancy, not just the clinical checklist.
+            Download the Android app for the fullest experience—or open the web app if you prefer
+            to start in your browser today.
           </p>
-          <div className="home-cta-actions">
+          <div className="home-cta-actions home-cta-actions--dual">
             <ApkDownloadButton size="lg" />
+            <Link to="/app" className="home-btn home-btn-outline home-btn-lg">
+              Open web app
+            </Link>
             <a className="home-btn home-btn-ghost home-btn-lg" href="mailto:hello@momlaunchpad.com">
               Contact us
             </a>
@@ -247,6 +333,11 @@ export function HomePage() {
       <footer className="home-footer">
         <BrandLogo size="md" className="home-footer-logo" />
         <p className="home-footer-tag">Warm support for every chapter of pregnancy.</p>
+        <p className="home-footer-links">
+          <Link to="/app">Web app</Link>
+          <span aria-hidden> · </span>
+          <a href="#get-started">Download Android</a>
+        </p>
         <p className="home-footer-copy">© {new Date().getFullYear()} MomLaunchpad. All rights reserved.</p>
       </footer>
     </div>

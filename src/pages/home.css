@@ -190,6 +190,24 @@
   color: var(--brand-magenta-deep);
 }
 
+.home-btn-outline {
+  background: #fffdf9;
+  color: var(--home-ink);
+  border: 1.5px solid rgba(74, 45, 122, 0.28);
+  box-shadow: 0 4px 16px rgba(44, 34, 28, 0.04);
+}
+
+.home-btn-outline:hover {
+  border-color: var(--brand-purple);
+  color: var(--brand-purple-deep);
+  background: var(--home-sage-soft);
+}
+
+.home-nav-app-link {
+  color: var(--home-rose-deep) !important;
+  font-weight: 600;
+}
+
 .home-btn-lg {
   padding: 0.9rem 1.75rem;
   font-size: 1rem;
@@ -255,6 +273,159 @@
   font-size: 1.08rem;
   line-height: 1.6;
   margin: 0;
+}
+
+/* Dual access — mobile primary, web secondary */
+.home-access {
+  padding-top: clamp(2rem, 5vw, 3rem);
+}
+
+.home-access-grid {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .home-access-grid {
+    grid-template-columns: 1.15fr 1fr;
+    align-items: stretch;
+  }
+}
+
+.home-access-card {
+  display: flex;
+  flex-direction: column;
+  background: #fffdf9;
+  border: 1px solid rgba(44, 34, 28, 0.08);
+  border-radius: 24px;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  box-shadow: 0 12px 40px rgba(44, 34, 28, 0.06);
+}
+
+.home-access-card--primary {
+  border-color: rgba(217, 27, 139, 0.18);
+  box-shadow: 0 16px 48px rgba(217, 27, 139, 0.1);
+  background: linear-gradient(165deg, #fffdf9 0%, var(--home-blush) 120%);
+}
+
+.home-access-card--secondary {
+  background: #fffdf9;
+}
+
+.home-access-card-head {
+  margin-bottom: 1.25rem;
+}
+
+.home-access-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--home-ink-soft);
+  background: rgba(44, 34, 28, 0.06);
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  margin-bottom: 0.85rem;
+}
+
+.home-access-badge--primary {
+  color: var(--home-rose-deep);
+  background: rgba(217, 27, 139, 0.12);
+}
+
+.home-access-icon {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.home-access-card h3 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.home-access-tagline {
+  margin: 0;
+  color: var(--home-ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.home-access-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  flex: 1;
+}
+
+.home-access-features li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(44, 34, 28, 0.06);
+  font-size: 0.92rem;
+  color: var(--home-ink);
+}
+
+.home-access-features li:last-child {
+  border-bottom: none;
+}
+
+.home-access-feature-icon {
+  width: 1.25rem;
+  flex-shrink: 0;
+  color: var(--home-sage);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.home-access-soon {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--home-ink-soft);
+  background: rgba(44, 34, 28, 0.06);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+}
+
+.home-access-cta {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.home-access-cta .home-apk-download {
+  width: 100%;
+}
+
+.home-access-cta .home-apk-download .home-btn {
+  width: 100%;
+}
+
+.home-access-web-btn {
+  width: 100%;
+  text-align: center;
+}
+
+.home-access-note {
+  margin: 0;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--home-ink-soft);
 }
 
 .home-journey-list {
@@ -543,6 +714,21 @@
   align-items: flex-start;
 }
 
+.home-cta-actions--dual {
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.home-cta-actions--dual .home-apk-download {
+  flex: 1 1 100%;
+}
+
+.home-cta-actions--dual .home-btn-outline,
+.home-cta-actions--dual .home-btn-ghost {
+  flex: 1 1 calc(50% - 0.375rem);
+  min-width: 10rem;
+}
+
 .home-apk-download {
   display: flex;
   flex-direction: column;
@@ -588,7 +774,22 @@
 .home-footer-tag {
   color: var(--home-ink-soft);
   font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+
+.home-footer-links {
   margin: 0 0 1.25rem;
+  font-size: 0.88rem;
+}
+
+.home-footer-links a {
+  color: var(--home-rose-deep);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.home-footer-links a:hover {
+  text-decoration: underline;
 }
 
 .home-footer-copy {
@@ -658,6 +859,11 @@
 
   .home-btn {
     width: 100%;
+  }
+
+  .home-cta-actions--dual .home-btn-outline,
+  .home-cta-actions--dual .home-btn-ghost {
+    flex: 1 1 100%;
   }
 }
 
