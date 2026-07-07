@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { GoogleSignInSection } from '../components/GoogleSignInSection'
 import { AppBackground, GlassCard, GradientButton } from '../components/ui'
 import { useUserAuth } from '../context/UserAuthContext'
+import { getStoredReferralCode } from '../../lib/referral'
 import { appPath } from '../routes'
 
 export function UserRegisterPage() {
@@ -10,6 +11,7 @@ export function UserRegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [referralCode, setReferralCode] = useState(() => getStoredReferralCode() ?? '')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -32,7 +34,7 @@ export function UserRegisterPage() {
     setError('')
     setLoading(true)
     try {
-      await register(email, password, name.trim())
+      await register(email, password, name.trim(), referralCode.trim() || undefined)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {
@@ -85,6 +87,16 @@ export function UserRegisterPage() {
               required
               minLength={8}
               autoComplete="new-password"
+              style={{ marginBottom: 16 }}
+            />
+            <input
+              className="app-input"
+              type="text"
+              placeholder="Referral code (optional)"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              autoCapitalize="characters"
+              autoComplete="off"
             />
             <div style={{ marginTop: 32 }}>
               <GradientButton type="submit" disabled={loading}>

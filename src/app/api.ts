@@ -1,5 +1,6 @@
 import { ApiError } from '../api/client'
 import type {
+  AppNotification,
   AppUser,
   ChatMessage,
   CommunityCountry,
@@ -337,6 +338,19 @@ export const userApi = {
     request<{ event_types: { key: string; label: string }[] }>(
       '/api/community/event-types',
     ),
+
+  // General notification / reward inbox
+  getInboxNotifications: () =>
+    request<{ notifications: AppNotification[] }>('/api/notifications'),
+
+  getInboxUnreadCount: () =>
+    request<{ unread: number }>('/api/notifications/unread-count'),
+
+  markInboxRead: (id: string) =>
+    request(`/api/notifications/${id}/read`, { method: 'PUT' }),
+
+  markAllInboxRead: () =>
+    request('/api/notifications/read-all', { method: 'POST' }),
 }
 
 export function getWsChatUrl(conversationId?: string): string {

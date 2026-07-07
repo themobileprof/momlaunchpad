@@ -5,6 +5,7 @@ import { useAdminConfig } from '../context/AdminConfigContext'
 import type {
   AdminUserSummary,
   CatalogKeyLabel,
+  CommunityBadgeHolder,
   CommunityBadgeRequest,
   CommunityCountry,
   CommunityInterest,
@@ -18,7 +19,7 @@ import { UserPicker } from '../components/UserPicker'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 import { usePendingBadgeRequests } from '../hooks/usePendingBadgeRequests'
 
-const COMMUNITY_TABS = ['reports', 'badge-requests', 'badges', 'catalog'] as const
+const COMMUNITY_TABS = ['reports', 'badge-requests', 'verified', 'badges', 'catalog'] as const
 type CommunityTab = (typeof COMMUNITY_TABS)[number]
 
 function isCommunityTab(value: string | null): value is CommunityTab {
@@ -53,6 +54,10 @@ export function CommunityPage() {
   const [requestsLoading, setRequestsLoading] = useState(false)
   const [requestNotes, setRequestNotes] = useState<Record<string, string>>({})
   const [requestBusy, setRequestBusy] = useState<string | null>(null)
+
+  const [verifiedFilter, setVerifiedFilter] = useState('')
+  const [holders, setHolders] = useState<CommunityBadgeHolder[]>([])
+  const [holdersLoading, setHoldersLoading] = useState(false)
 
   function changeTab(next: CommunityTab) {
     setTab(next)
@@ -218,9 +223,26 @@ export function CommunityPage() {
   }, [requestFilter])
 
   useEffect(() => {
-    if (tab !== 'badges' && tab !== 'badge-requests') return
+    if (tab !== 'badges' && tab !== 'badge-requests' && tab !== 'verified') return
     void loadBadgeTypes()
   }, [tab, loadBadgeTypes])
+
+  const loadHolders = useCallback(async () => {
+    setHoldersLoading(true)
+    setError('')
+    try {
+      const res = await api.listBadgeHolders(verifiedFilter || undefined)
+      setHolders(res.holders ?? [])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load verified members')
+    } finally {
+      setHoldersLoading(false)
+    }
+  }, [verifiedFilter])
+
+  useEffect(() => {
+    if (tab === 'verified') void loadHolders()
+  }, [tab, loadHolders])
 
   useEffect(() => {
     if (tab === 'badge-requests') loadBadgeRequests()
@@ -564,6 +586,7 @@ export function CommunityPage() {
                 ? `Badge requests (${pendingBadgeCount})`
                 : 'Badge requests',
           },
+          { id: 'verified', label: 'Verified members' },
           { id: 'badges', label: 'Grant badges' },
           { id: 'catalog', label: 'Catalog' },
         ]}
@@ -777,6 +800,81 @@ export function CommunityPage() {
                         </div>
                       </td>
                     )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      )}
+
+      {tab === 'verified' && (
+        <Card className="mt">
+          <div className="form inline-form" style={{ marginBottom: '1rem' }}>
+            <label>
+              Badge
+              <select
+                value={verifiedFilter}
+                onChange={(e) => setVerifiedFilter(e.target.value)}
+              >
+                <option value="">All verified members</option>
+                {badgeTypes.map((bt) => (
+                  <option key={bt.key} value={bt.key}>
+                    {bt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="button" className="btn btn-ghost" onClick={loadHolders}>
+              Refresh
+            </button>
+          </div>
+          {holdersLoading ? (
+            <Spinner />
+          ) : holders.length === 0 ? (
+            <EmptyState
+              message={
+                verifiedFilter
+                  ? `No members hold the ${badgeLabel(verifiedFilter)} badge yet.`
+                  : 'No verified members yet.'
+              }
+            />
+          ) : (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Badge</th>
+                  <th>Verified</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {holders.map((h) => (
+                  <tr key={`${h.user_id}-${h.badge_type}`}>
+                    <td>
+                      <div>{h.name || '—'}</div>
+                      <div className="table-sub">
+                        <Link to={`${ADMIN_BASE}/users?email=${encodeURIComponent(h.email)}`}>
+                          {h.email}
+                        </Link>
+                      </div>
+                    </td>
+                    <td>
+                      <strong>{h.label}</strong>
+                      <div className="table-sub">
+                        <code>{h.badge_type}</code>
+                      </div>
+                    </td>
+                    <td>{new Date(h.verified_at).toLocaleDateString()}</td>
+                    <td className="actions">
+                      <Link
+                        to={`${ADMIN_BASE}/community?tab=badges&email=${encodeURIComponent(h.email)}`}
+                        className="btn btn-sm btn-ghost"
+                      >
+                        Manage badges
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

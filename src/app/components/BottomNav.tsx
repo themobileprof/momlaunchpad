@@ -7,8 +7,9 @@ import {
   IconMore,
 } from './Icons'
 import { appPath } from '../routes'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MoreMenuSheet } from './MoreMenuSheet'
+import { userApi } from '../api'
 
 const TABS = [
   { to: appPath(), label: 'Home', Icon: IconHome, end: true },
@@ -21,10 +22,27 @@ export function BottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
   const [moreOpen, setMoreOpen] = useState(false)
+  const [inboxUnread, setInboxUnread] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    userApi
+      .getInboxUnreadCount()
+      .then((r) => {
+        if (!cancelled) setInboxUnread(r.unread ?? 0)
+      })
+      .catch(() => {
+        /* non-critical */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [location.pathname])
 
   const isMoreActive =
     location.pathname.startsWith(appPath('profile')) ||
-    location.pathname.startsWith(appPath('settings'))
+    location.pathname.startsWith(appPath('settings')) ||
+    location.pathname.startsWith(appPath('inbox'))
 
   return (
     <>
@@ -54,12 +72,18 @@ export function BottomNav() {
           >
             <IconMore />
             <span>More</span>
+            {inboxUnread > 0 && <span className="bottom-nav-badge" aria-hidden />}
           </button>
         </div>
       </nav>
       {moreOpen && (
         <MoreMenuSheet
           onClose={() => setMoreOpen(false)}
+          inboxUnread={inboxUnread}
+          onInbox={() => {
+            setMoreOpen(false)
+            navigate(appPath('inbox'))
+          }}
           onProfile={() => {
             setMoreOpen(false)
             navigate(appPath('profile'))

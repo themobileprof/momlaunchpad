@@ -16,7 +16,12 @@ interface UserAuthContextValue {
   user: AppUser | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string, name: string) => Promise<void>
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    referralCode?: string,
+  ) => Promise<void>
   googleSignIn: (idToken: string) => Promise<void>
   logout: () => void
   refreshSession: () => Promise<void>
@@ -65,8 +70,8 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
   )
 
   const register = useCallback(
-    async (email: string, password: string, name: string) => {
-      const referral = getStoredReferralCode()
+    async (email: string, password: string, name: string, referralCode?: string) => {
+      const referral = referralCode?.trim() || getStoredReferralCode()
       const res = await userApi.register({
         email,
         password,

@@ -17,6 +17,7 @@ import { CommunityOnboardingPage } from './pages/CommunityOnboardingPage'
 import { CommunityCreatePage } from './pages/CommunityCreatePage'
 import { CommunityPostPage } from './pages/CommunityPostPage'
 import { CommunityNotificationsPage } from './pages/CommunityNotificationsPage'
+import { InboxPage } from './pages/InboxPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
 import { appPath } from './routes'
@@ -127,6 +128,14 @@ function UserAppRoutes() {
           element={
             <UserGate>
               <CommunityNotificationsPage />
+            </UserGate>
+          }
+        />
+        <Route
+          path="inbox"
+          element={
+            <UserGate>
+              <InboxPage />
             </UserGate>
           }
         />

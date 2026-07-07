@@ -167,6 +167,15 @@ export interface CommunityUserBadge {
   verified_by?: string
 }
 
+export interface CommunityBadgeHolder {
+  user_id: string
+  email: string
+  name?: string
+  badge_type: string
+  label: string
+  verified_at: string
+}
+
 export interface CommunityBadgeRequest {
   id: string
   user_id: string

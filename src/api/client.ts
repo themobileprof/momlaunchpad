@@ -203,6 +203,12 @@ export const api = {
     request(`/api/admin/community/users/${userId}/badges/${encodeURIComponent(badgeType)}`, {
       method: 'DELETE',
     }),
+  listBadgeHolders: (badgeType?: string) =>
+    request<{ holders: import('./types').CommunityBadgeHolder[] }>(
+      `/api/admin/community/badge-holders${
+        badgeType ? `?badge_type=${encodeURIComponent(badgeType)}` : ''
+      }`,
+    ),
   listBadgeRequests: (status = 'pending') =>
     request<{ requests: import('./types').CommunityBadgeRequest[] }>(
       `/api/admin/community/badge-requests?status=${encodeURIComponent(status)}`,
@@ -330,4 +336,27 @@ export const api = {
     request<{ rewards: import('./types').ReferralRewardRecord[] }>(
       `/api/admin/users/${userId}/referral-rewards`,
     ),
+
+  // Reward / notification delivery to a user's inbox
+  sendUserReward: (
+    userId: string,
+    body: {
+      reward_kind: 'topup_code' | 'store_discount' | 'message'
+      title?: string
+      body: string
+      code?: string
+      value?: string
+      provider?: string
+      expires_at?: string
+    },
+  ) =>
+    request(`/api/admin/users/${userId}/rewards`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  sendUserNotification: (userId: string, body: { title: string; body: string }) =>
+    request(`/api/admin/users/${userId}/notifications`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 }

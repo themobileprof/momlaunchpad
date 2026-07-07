@@ -147,6 +147,25 @@ export interface CommunityNotification {
   created_at: string
 }
 
+/** General (non-community) notification: rewards, referral rewards, system messages. */
+export interface AppNotification {
+  id: string
+  type: 'reward' | 'referral_reward' | 'system' | string
+  title: string
+  body: string
+  payload: {
+    reward_kind?: 'topup_code' | 'store_discount' | 'message'
+    code?: string
+    value?: string
+    provider?: string
+    expires_at?: string
+    referrals_count?: number
+    [key: string]: unknown
+  }
+  read_at?: string
+  created_at: string
+}
+
 export interface CommunityStatus {
   community_onboarding_completed: boolean
   country?: string
