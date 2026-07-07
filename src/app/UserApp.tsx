@@ -1,6 +1,7 @@
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './app.css'
+import { GOOGLE_CLIENT_ID, isGoogleAuthEnabled } from './lib/googleAuth'
 import { AppBackground, LoadingPage } from './components/ui'
 import { UserAuthProvider, useUserAuth } from './context/UserAuthContext'
 import { UserProfileProvider, useUserProfile } from './context/UserProfileContext'
@@ -19,8 +20,6 @@ import { CommunityNotificationsPage } from './pages/CommunityNotificationsPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
 import { appPath } from './routes'
-
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? ''
 
 function UserGate({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useUserAuth()
@@ -162,8 +161,8 @@ export default function UserApp() {
     </UserAuthProvider>
   )
 
-  if (googleClientId) {
-    return <GoogleOAuthProvider clientId={googleClientId}>{inner}</GoogleOAuthProvider>
+  if (isGoogleAuthEnabled) {
+    return <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{inner}</GoogleOAuthProvider>
   }
   return inner
 }

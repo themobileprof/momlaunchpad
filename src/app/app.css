@@ -459,6 +459,19 @@
 }
 .auth-footer a { color: var(--mint); font-weight: 600; }
 
+.google-signin-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.google-signin-wrap > div {
+  width: 100% !important;
+  display: flex;
+  justify-content: center;
+}
+
 /* Onboarding */
 .onboarding-progress {
   display: flex;

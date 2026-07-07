@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { GoogleLogin } from '@react-oauth/google'
+import { GoogleSignInSection } from '../components/GoogleSignInSection'
 import { AppBackground, GlassCard, GradientButton } from '../components/ui'
 import { useUserAuth } from '../context/UserAuthContext'
 import { appPath } from '../routes'
@@ -11,9 +11,20 @@ export function UserLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
 
   if (user) return <Navigate to={appPath()} replace />
+
+  async function handleGoogle(idToken: string) {
+    setError('')
+    setLoading(true)
+    try {
+      await googleSignIn(idToken)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google sign-in failed')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -70,28 +81,11 @@ export function UserLoginPage() {
             </div>
           </form>
 
-          {googleClientId && (
-            <>
-              <div className="auth-divider">or</div>
-              <GoogleLogin
-                onSuccess={(res) => {
-                  if (res.credential) {
-                    setLoading(true)
-                    googleSignIn(res.credential)
-                      .catch((err) =>
-                        setError(err instanceof Error ? err.message : 'Google sign-in failed'),
-                      )
-                      .finally(() => setLoading(false))
-                  }
-                }}
-                onError={() => setError('Google sign-in failed')}
-                theme="outline"
-                size="large"
-                width="100%"
-                text="continue_with"
-              />
-            </>
-          )}
+          <GoogleSignInSection
+            mode="signin"
+            onSuccess={handleGoogle}
+            onError={setError}
+          />
         </GlassCard>
 
         <div className="auth-footer">
