@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { userApi } from '../api'
 import { GradientButton, MomAppBar } from '../components/ui'
+import { useUserProfile } from '../context/UserProfileContext'
 import { appPath } from '../routes'
 
 export function CommunityOnboardingPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const isEdit = searchParams.get('edit') === '1'
+  const { profile } = useUserProfile()
   const [countries, setCountries] = useState<{ code: string; name: string }[]>([])
   const [groups, setGroups] = useState<{ key: string; label: string; items: { key: string; label: string }[] }[]>([])
   const [countryCode, setCountryCode] = useState('')
@@ -20,10 +24,19 @@ export function CommunityOnboardingPage() {
   useEffect(() => {
     userApi.getCommunityCountries().then((r) => setCountries(r.countries))
     userApi.getCommunityInterests().then((r) => setGroups(r.groups))
+    if (isEdit) return
     userApi.getCommunityStatus().then((s) => {
       if (s.community_onboarding_completed) navigate(appPath('community'))
     })
-  }, [navigate])
+  }, [navigate, isEdit])
+
+  useEffect(() => {
+    if (!isEdit || !profile) return
+    if (profile.country_code) setCountryCode(profile.country_code)
+    if (profile.state_province) setStateProvince(profile.state_province)
+    if (profile.city) setCity(profile.city)
+    if (profile.community_interests?.length) setInterests(profile.community_interests)
+  }, [isEdit, profile])
 
   useEffect(() => {
     if (!countryCode || stateProvince.length < 2) return
@@ -86,9 +99,12 @@ export function CommunityOnboardingPage() {
 
   return (
     <div className="user-app-content--no-nav">
-      <MomAppBar pageTitle="Community setup" onBack={() => navigate(appPath('community'))} />
+      <MomAppBar
+        pageTitle={isEdit ? 'Edit community location' : 'Community setup'}
+        onBack={() => navigate(isEdit ? appPath('settings') : appPath('community'))}
+      />
       <div style={{ padding: 16 }}>
-        <h2 className="u-heading-md">Join your local circle</h2>
+        <h2 className="u-heading-md">{isEdit ? 'Update your local circle' : 'Join your local circle'}</h2>
         <p className="u-muted">Share your area and interests so we can show you relevant posts.</p>
 
         {error && <div className="u-alert u-alert--error">{error}</div>}
@@ -145,7 +161,7 @@ export function CommunityOnboardingPage() {
         ))}
 
         <GradientButton onClick={submit} disabled={loading}>
-          {loading ? 'Saving…' : 'Join community →'}
+          {loading ? 'Saving…' : isEdit ? 'Save changes ✓' : 'Join community →'}
         </GradientButton>
       </div>
     </div>

@@ -14,6 +14,7 @@ export function ProfilePage() {
   const [pregnancyWeek, setPregnancyWeek] = useState(20)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (profile) {
@@ -48,6 +49,41 @@ export function ProfilePage() {
     if (!file) return
     const p = await userApi.uploadProfilePhoto(file)
     setProfile(p)
+  }
+
+  const referralUrl =
+    profile?.referral_link ||
+    (profile?.referral_code
+      ? `${window.location.origin}/join?ref=${encodeURIComponent(profile.referral_code)}`
+      : '')
+
+  async function copyReferral() {
+    if (!referralUrl) return
+    try {
+      await navigator.clipboard.writeText(referralUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setMessage('Could not copy link')
+    }
+  }
+
+  async function shareReferral() {
+    if (!referralUrl) return
+    const shareData = {
+      title: 'Join me on MomLaunchpad',
+      text: 'Join me on MomLaunchpad — gentle support, community, and personalized guidance for your pregnancy journey.',
+      url: referralUrl,
+    }
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // user dismissed the share sheet
+      }
+    } else {
+      copyReferral()
+    }
   }
 
   return (
@@ -131,9 +167,36 @@ export function ProfilePage() {
               <div style={{ marginBottom: 16 }}>
           <AppCard>
                 <p style={{ margin: '0 0 8px' }}>Your code: <strong>{profile.referral_code}</strong></p>
-                <p className="u-muted" style={{ fontSize: '0.85rem', margin: 0 }}>
+                <p className="u-muted" style={{ fontSize: '0.85rem', margin: '0 0 12px' }}>
                   {profile.total_referrals} referrals · {profile.referral_reward_points} reward points
                 </p>
+
+                <label className="app-label">Your invite link</label>
+                <input
+                  className="app-input"
+                  readOnly
+                  value={referralUrl}
+                  onFocus={(e) => e.currentTarget.select()}
+                  style={{ marginBottom: 12 }}
+                />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    className="app-btn app-btn--outline app-btn--sm"
+                    style={{ flex: 1 }}
+                    onClick={copyReferral}
+                  >
+                    {copied ? 'Copied ✓' : 'Copy link'}
+                  </button>
+                  <button
+                    type="button"
+                    className="app-btn app-btn--sm"
+                    style={{ flex: 1 }}
+                    onClick={shareReferral}
+                  >
+                    Share
+                  </button>
+                </div>
               </AppCard>
               </div>
             </>

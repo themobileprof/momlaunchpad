@@ -21,7 +21,7 @@ export function SettingsPage() {
           <div className="app-card" style={{ marginBottom: 16 }}>
             <p className="u-caption">App</p>
             <Link to="/" className="sheet-item" style={{ padding: '8px 0' }}>Marketing site</Link>
-            <Link to={appPath('community/onboarding')} className="sheet-item" style={{ padding: '8px 0' }}>Edit community location</Link>
+            <Link to={`${appPath('community/onboarding')}?edit=1`} className="sheet-item" style={{ padding: '8px 0' }}>Edit community location</Link>
           </div>
 
           <button type="button" className="app-btn app-btn--outline" style={{ width: '100%' }} onClick={logout}>
