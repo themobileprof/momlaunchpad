@@ -27,6 +27,15 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
+      # Gate deployment on the test suite (functionality + security regressions).
+      - name: Unit & security tests
+        run: npm test
+
+      # Block shipping if a runtime dependency has a high/critical advisory.
+      # --omit=dev so dev-only tooling (vite/vitest/eslint) doesn't gate prod deploys.
+      - name: Dependency vulnerability audit (runtime deps)
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Write production env file
         env:
           ENV_FILE: ${{ secrets.ENV_FILE }}

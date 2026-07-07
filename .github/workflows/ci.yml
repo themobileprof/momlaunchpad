@@ -23,6 +23,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
+      - name: Unit & security tests
+        run: npm test
+
+      - name: Dependency vulnerability audit
+        run: npm audit --audit-level=high
+
       - name: Production build
         env:
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.momlaunchpad.com' }}
