@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { Navigate, Route, Routes, useLocation, useSearchParams } from 'react-router-dom'
 import UserApp from './app/UserApp'
 import { APP_BASE } from './app/routes'
 import { Layout } from './components/Layout'
@@ -20,6 +20,7 @@ import { ReferralsPage } from './pages/ReferralsPage'
 import { FeedbackPage } from './pages/FeedbackPage'
 import { ADMIN_BASE, ADMIN_SIGN_IN_PATH } from './routes'
 import { captureReferralFromSearchParams } from './lib/referral'
+import { trackPageView } from './lib/analytics'
 import { Spinner } from './components/ui'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function RouteAnalytics() {
+  const location = useLocation()
+  useEffect(() => {
+    trackPageView(location.pathname + location.search)
+  }, [location.pathname, location.search])
+  return null
+}
+
 function FallbackRedirect() {
   const [searchParams] = useSearchParams()
   useMemo(() => {
@@ -47,6 +56,7 @@ function AppRoutes() {
   return (
     <>
       <ReferralCapture />
+      <RouteAnalytics />
       <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/join" element={<JoinPage />} />
