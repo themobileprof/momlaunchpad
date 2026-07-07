@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ApkDownloadButton } from '../components/ApkDownloadButton'
+import { ApkDownloadSection } from '../components/ApkDownloadSection'
 import { BrandLogo } from '../components/BrandLogo'
 import {
   captureReferralFromSearchParams,
@@ -47,8 +47,9 @@ export function JoinPage() {
             </p>
           )}
 
-          <div className="home-hero-actions">
-            <ApkDownloadButton size="lg" />
+          <ApkDownloadSection className="home-join-apk" />
+
+          <div className="home-hero-actions" style={{ marginTop: '1.5rem' }}>
             <Link className="home-btn home-btn-ghost home-btn-lg" to="/">
               Learn more about MomLaunchpad
             </Link>

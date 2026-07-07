@@ -949,11 +949,383 @@
   }
 }
 
+@media (max-width: 879px) {
+  .home-hero--compact .home-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-hero--compact .home-btn {
+    width: 100%;
+  }
+}
+
+/* Compact homepage */
+.home--compact {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.home-header--compact .home-header-signin {
+  color: var(--home-rose-deep);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.home-header--compact .home-header-signin:hover {
+  text-decoration: underline;
+}
+
+.home-compact-main {
+  flex: 1;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 0 clamp(1.25rem, 4vw, 3rem) 3rem;
+  width: 100%;
+}
+
+.home-visual {
+  margin-bottom: 1.75rem;
+}
+
+.home-visual-hero {
+  margin: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 50px rgba(74, 45, 122, 0.18),
+    0 4px 16px rgba(44, 34, 28, 0.08);
+  aspect-ratio: 4 / 5;
+  position: relative;
+}
+
+.home-visual-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 55%,
+    rgba(44, 34, 28, 0.12) 100%
+  );
+  pointer-events: none;
+}
+
+.home-visual-hero img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+.home-visual-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.home-visual-thumb {
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  box-shadow: 0 8px 24px rgba(44, 34, 28, 0.1);
+}
+
+.home-visual-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-visual-thumb:nth-child(2) img {
+  object-position: center top;
+}
+
+.home-compact-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+@media (min-width: 880px) {
+  .home-compact-main {
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: clamp(2rem, 4vw, 3.5rem);
+    align-items: start;
+    padding-bottom: 4rem;
+  }
+
+  .home-visual {
+    margin-bottom: 0;
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  .home-hero--compact {
+    padding-top: 0.5rem;
+    text-align: left;
+  }
+
+  .home-hero--compact .home-hero-lead {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .home-hero--compact .home-hero-actions {
+    justify-content: flex-start;
+  }
+
+  .home-android {
+    text-align: left;
+  }
+
+  .home-android .home-apk-download {
+    align-items: flex-start;
+  }
+
+  .home-android .home-apk-download .home-btn {
+    width: auto;
+    min-width: 14rem;
+  }
+}
+
+.home-hero--compact {
+  padding: clamp(1.5rem, 5vw, 2.5rem) 0 clamp(2rem, 5vw, 2.5rem);
+  text-align: center;
+}
+
+.home-hero--compact .home-hero-title {
+  font-size: clamp(2rem, 5.5vw, 2.75rem);
+  margin-bottom: 0.85rem;
+}
+
+.home-hero--compact .home-hero-lead {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.home-hero--compact .home-hero-actions {
+  margin-bottom: 0;
+}
+
+.home-android {
+  padding: 1.35rem 1.25rem;
+  background: #fffdf9;
+  border: 1px solid rgba(44, 34, 28, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(44, 34, 28, 0.05);
+  text-align: center;
+}
+
+.home-android-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.02em;
+}
+
+.home-android-lead {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--home-ink-soft);
+}
+
+.home-android .home-apk-download {
+  width: 100%;
+}
+
+.home-android .home-apk-download .home-btn {
+  width: 100%;
+}
+
+.home-android-help-link {
+  display: inline-block;
+  margin-top: 0.85rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--home-rose-deep);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.home-android-help-link:hover {
+  color: var(--home-plum);
+}
+
+.home-join-apk {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.home-footer--compact {
+  padding: 1.5rem;
+  margin-top: auto;
+}
+
+.home-footer--compact .home-footer-copy a {
+  color: var(--home-rose-deep);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.home-footer--compact .home-footer-copy a:hover {
+  text-decoration: underline;
+}
+
+/* Install help modal */
+.home-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(44, 34, 28, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+@media (min-width: 540px) {
+  .home-modal-overlay {
+    align-items: center;
+  }
+}
+
+.home-modal {
+  width: 100%;
+  max-width: 32rem;
+  max-height: min(85vh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: #fffdf9;
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(44, 34, 28, 0.2);
+  overflow: hidden;
+}
+
+.home-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(44, 34, 28, 0.08);
+  flex-shrink: 0;
+}
+
+.home-modal-header h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.home-modal-close {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: rgba(44, 34, 28, 0.06);
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--home-ink-soft);
+  cursor: pointer;
+}
+
+.home-modal-close:hover {
+  background: rgba(44, 34, 28, 0.1);
+  color: var(--home-ink);
+}
+
+.home-modal-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.apk-install-content {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--home-ink-soft);
+}
+
+.apk-install-content h3 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--home-ink);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.apk-install-content h3:first-of-type {
+  margin-top: 0;
+}
+
+.apk-install-content p {
+  margin: 0.65rem 0 0;
+}
+
+.apk-install-content p:first-child {
+  margin-top: 0;
+}
+
+.apk-install-content ol {
+  margin: 0.65rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.apk-install-content li {
+  margin-bottom: 0.45rem;
+}
+
+.apk-install-content a {
+  color: var(--home-rose-deep);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.apk-install-content a:hover {
+  text-decoration: underline;
+}
+
+.apk-install-content code {
+  font-size: 0.88em;
+  background: rgba(44, 34, 28, 0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.apk-install-content-note {
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-reveal,
   .home-journey-card,
   .home-pillar,
-  .home-good-for-me-moment {
+  .home-good-for-me-moment,
+  .home-visual {
     animation: none;
     opacity: 1;
   }

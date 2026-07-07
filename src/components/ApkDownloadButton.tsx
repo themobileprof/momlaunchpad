@@ -1,20 +1,18 @@
 import { useEffect, useState } from 'react'
 import { fetchLatestApkRelease, type ApkReleaseInfo } from '../lib/githubRelease'
-import { ApkInstallHelp } from './ApkInstallHelp'
 
 type Props = {
   className?: string
   size?: 'default' | 'lg'
-  /** Show expandable install instructions (unknown publisher, etc.) */
+  showTrustLine?: boolean
+  /** @deprecated Use ApkDownloadSection + ApkInstallModal instead */
   showInstallHelp?: boolean
-  installHelpOpen?: boolean
 }
 
 export function ApkDownloadButton({
   className = '',
   size = 'default',
-  showInstallHelp = true,
-  installHelpOpen = false,
+  showTrustLine = false,
 }: Props) {
   const [release, setRelease] = useState<ApkReleaseInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -47,7 +45,7 @@ export function ApkDownloadButton({
   if (loading) {
     return (
       <span className={`home-btn home-btn-ghost ${sizeClass} ${className}`.trim()} aria-busy="true">
-        Checking for Android build…
+        Checking for build…
       </span>
     )
   }
@@ -71,7 +69,7 @@ export function ApkDownloadButton({
   return (
     <div className={`home-apk-download ${className}`.trim()}>
       <a
-        className={`home-btn home-btn-primary ${sizeClass}`.trim()}
+        className={`home-btn home-btn-outline ${sizeClass}`.trim()}
         href={release.downloadUrl}
         download={release.name}
         rel="noopener noreferrer"
@@ -81,10 +79,9 @@ export function ApkDownloadButton({
       <p className="home-apk-meta">
         {release.name} · {release.tag}
       </p>
-      <p className="home-apk-trust">
-        Official build · direct from MomLaunchpad (early access, not Play Store yet)
-      </p>
-      {showInstallHelp && <ApkInstallHelp defaultOpen={installHelpOpen} />}
+      {showTrustLine && (
+        <p className="home-apk-trust">Official build · direct from MomLaunchpad</p>
+      )}
     </div>
   )
 }
