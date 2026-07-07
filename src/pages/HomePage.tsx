@@ -5,15 +5,35 @@ import { HomePhotoVisual } from '../components/HomePhotoVisual'
 import { appPath } from '../app/routes'
 import './home.css'
 
+const FEATURES = [
+  {
+    icon: '✨',
+    title: 'Guidance made personal',
+    desc: 'The assistant remembers your milestones and appointments, so advice fits where you actually are—not generic tips.',
+  },
+  {
+    icon: '💬',
+    title: 'Supportive chat',
+    desc: 'Ask questions any time and get gentle, judgment-free answers.',
+  },
+  {
+    icon: '🤝',
+    title: 'A caring community',
+    desc: 'Share your journey and connect with moms who truly get it.',
+  },
+  {
+    icon: '🗓️',
+    title: 'Your pregnancy calendar',
+    desc: 'Track milestones and appointments week by week.',
+  },
+] as const
+
 export function HomePage() {
   return (
     <div className="home home--compact">
       <div className="home-grain" aria-hidden />
       <header className="home-header home-header--compact">
         <BrandLogo href="/" size="lg" showText className="home-logo" />
-        <Link to={appPath('login')} className="home-header-signin">
-          Sign in
-        </Link>
       </header>
 
       <main className="home-compact-main">
@@ -37,6 +57,20 @@ export function HomePage() {
               </Link>
             </div>
           </section>
+
+          <ul className="home-features home-reveal" style={{ animationDelay: '0.2s' }}>
+            {FEATURES.map((feature) => (
+              <li key={feature.title} className="home-feature">
+                <span className="home-feature-icon" aria-hidden>
+                  {feature.icon}
+                </span>
+                <div>
+                  <h2 className="home-feature-title">{feature.title}</h2>
+                  <p className="home-feature-desc">{feature.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
 
           <ApkDownloadSection />
         </div>
