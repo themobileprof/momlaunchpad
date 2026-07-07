@@ -21,6 +21,10 @@ export function AppHomePage() {
       .finally(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    userApi.trackUsage('home_view')
+  }, [])
+
   const journeyLabel = JOURNEY_STAGES.find((s) => s.value === profile?.journey_stage)?.label
 
   return (

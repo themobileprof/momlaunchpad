@@ -34,6 +34,7 @@ export function setUserToken(token: string | null) {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'X-Client-Platform': 'web',
     ...(options.headers as Record<string, string>),
   }
   const token = getUserToken()
@@ -71,6 +72,13 @@ export const userApi = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
+
+  /** Fire-and-forget usage ping (mobile vs web comparison). Never throws. */
+  trackUsage: (event = 'home_view') =>
+    request<void>('/api/usage/track', {
+      method: 'POST',
+      body: JSON.stringify({ event, platform: 'web' }),
+    }).catch(() => {}),
 
   googleSignIn: (idToken: string, referralCode?: string) =>
     request<{ token: string; user: AppUser }>('/api/auth/google/token', {

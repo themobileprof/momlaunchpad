@@ -93,6 +93,27 @@ export interface UserStats {
   users_by_language: Record<string, number>
 }
 
+/** Per-platform usage rollup (mobile vs web) over a period. */
+export interface PlatformUsage {
+  platform: string
+  /** Raw home/app opens — session-dependent, shown for context only. */
+  events: number
+  /** Distinct users over the whole window (unique reach). */
+  users: number
+  /** Sum of distinct active user-days over the window. */
+  active_days: number
+  /** Average distinct active users per day — the session-independent metric. */
+  avg_daily_usr: number
+}
+
+/** One platform's distinct active users on a single day. */
+export interface PlatformDay {
+  day: string
+  platform: string
+  users: number
+  events: number
+}
+
 export interface TopicAnalytic {
   intent: string
   count: number

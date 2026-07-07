@@ -124,6 +124,12 @@ export const api = {
     request<{ period_days: number; calls: import('./types').VoiceCall[] }>(
       `/api/admin/analytics/calls?days=${days}`,
     ),
+  getUsageStats: (days = 7) =>
+    request<{
+      period_days: number
+      usage: import('./types').PlatformUsage[]
+      daily: import('./types').PlatformDay[]
+    }>(`/api/admin/analytics/usage?days=${days}`),
   getQuotaStats: (period = 'today') =>
     request<{ period: string; stats: import('./types').QuotaStats }>(
       `/api/admin/quota/stats?period=${period}`,

@@ -1,15 +1,30 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { QuotaStats, TopicAnalytic, UserStats, VoiceCall } from '../api/types'
+import type {
+  PlatformDay,
+  PlatformUsage,
+  QuotaStats,
+  TopicAnalytic,
+  UserStats,
+  VoiceCall,
+} from '../api/types'
 import { ADMIN_BASE } from '../routes'
 import { Alert, Card, PageHeader, Spinner } from '../components/ui'
+
+const PLATFORM_LABELS: Record<string, string> = {
+  web: 'Web app',
+  mobile: 'Mobile app',
+  other: 'Other',
+}
 
 export function DashboardPage() {
   const [stats, setStats] = useState<UserStats | null>(null)
   const [topics, setTopics] = useState<TopicAnalytic[]>([])
   const [calls, setCalls] = useState<VoiceCall[]>([])
   const [quota, setQuota] = useState<QuotaStats | null>(null)
+  const [usage, setUsage] = useState<PlatformUsage[]>([])
+  const [usageDaily, setUsageDaily] = useState<PlatformDay[]>([])
   const [topicDays, setTopicDays] = useState(7)
   const [quotaPeriod, setQuotaPeriod] = useState('today')
   const [pendingBadgeRequests, setPendingBadgeRequests] = useState(0)
@@ -20,17 +35,20 @@ export function DashboardPage() {
     setLoading(true)
     setError('')
     try {
-      const [userRes, topicRes, callRes, quotaRes, badgeReqRes] = await Promise.all([
+      const [userRes, topicRes, callRes, quotaRes, usageRes, badgeReqRes] = await Promise.all([
         api.getUserStats(),
         api.getTopicAnalytics(topicDays),
         api.getCallHistory(topicDays),
         api.getQuotaStats(quotaPeriod),
+        api.getUsageStats(topicDays),
         api.listBadgeRequests('pending'),
       ])
       setStats(userRes.stats)
       setTopics(topicRes.analytics ?? [])
       setCalls(callRes.calls ?? [])
       setQuota(quotaRes.stats)
+      setUsage(usageRes.usage ?? [])
+      setUsageDaily(usageRes.daily ?? [])
       setPendingBadgeRequests(badgeReqRes.requests?.length ?? 0)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load dashboard')
@@ -134,6 +152,83 @@ export function DashboardPage() {
           </ul>
         </Card>
       </div>
+
+      <Card>
+        <h2 className="card-title">App usage: mobile vs web ({topicDays} days)</h2>
+        <p className="muted table-sub" style={{ marginTop: 0 }}>
+          Compared by <strong>active users per day</strong> — a user counts once per
+          platform per day regardless of session length or number of opens. Raw
+          opens are session-dependent and shown for context only.
+        </p>
+        {usage.length === 0 ? (
+          <p className="muted">No usage recorded yet.</p>
+        ) : (
+          (() => {
+            const totalAvg = usage.reduce((sum, u) => sum + u.avg_daily_usr, 0) || 1
+            return (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Platform</th>
+                    <th>Avg daily active</th>
+                    <th>Share</th>
+                    <th>Unique users</th>
+                    <th className="muted">Opens</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usage.map((u) => (
+                    <tr key={u.platform}>
+                      <td>{PLATFORM_LABELS[u.platform] ?? u.platform}</td>
+                      <td>
+                        <strong>{u.avg_daily_usr}</strong>
+                      </td>
+                      <td>{Math.round((u.avg_daily_usr / totalAvg) * 100)}%</td>
+                      <td>{u.users}</td>
+                      <td className="muted">{u.events}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
+          })()
+        )}
+
+        {usageDaily.length > 0 &&
+          (() => {
+            const platforms = Array.from(new Set(usageDaily.map((d) => d.platform))).sort()
+            const days = Array.from(new Set(usageDaily.map((d) => d.day)))
+            const cell = (day: string, platform: string) =>
+              usageDaily.find((d) => d.day === day && d.platform === platform)?.users ?? 0
+            return (
+              <>
+                <h3 className="card-title" style={{ fontSize: '0.95rem', marginTop: '1rem' }}>
+                  Daily active users
+                </h3>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Day</th>
+                      {platforms.map((p) => (
+                        <th key={p}>{PLATFORM_LABELS[p] ?? p}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {days.map((day) => (
+                      <tr key={day}>
+                        <td>{day}</td>
+                        {platforms.map((p) => (
+                          <td key={p}>{cell(day, p)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )
+          })()}
+      </Card>
 
       <Card>
         <div className="form inline-form">
