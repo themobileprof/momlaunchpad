@@ -3,6 +3,7 @@ import { ApkDownloadSection } from '../components/ApkDownloadSection'
 import { BrandLogo } from '../components/BrandLogo'
 import { HomePhotoVisual } from '../components/HomePhotoVisual'
 import { appPath } from '../app/routes'
+import { openConsentSettings } from '../lib/consent'
 import './home.css'
 
 const FEATURES = [
@@ -81,6 +82,10 @@ export function HomePage() {
           © {new Date().getFullYear()} MomLaunchpad
           <span aria-hidden> · </span>
           <Link to={appPath('login')}>App</Link>
+          <span aria-hidden> · </span>
+          <button type="button" className="home-footer-link" onClick={openConsentSettings}>
+            Cookie settings
+          </button>
         </p>
       </footer>
     </div>

@@ -21,6 +21,7 @@ import { FeedbackPage } from './pages/FeedbackPage'
 import { ADMIN_BASE, ADMIN_SIGN_IN_PATH } from './routes'
 import { captureReferralFromSearchParams } from './lib/referral'
 import { trackPageView } from './lib/analytics'
+import { ConsentBanner } from './components/ConsentBanner'
 import { Spinner } from './components/ui'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -57,6 +58,7 @@ function AppRoutes() {
     <>
       <ReferralCapture />
       <RouteAnalytics />
+      <ConsentBanner />
       <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/join" element={<JoinPage />} />

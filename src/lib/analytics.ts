@@ -1,18 +1,24 @@
-// Google Analytics 4 (gtag.js) for the web SPA.
+// Google Analytics 4 (gtag.js) for the web SPA — consent-gated (GDPR opt-in).
 //
 // The measurement ID comes from VITE_GA_MEASUREMENT_ID (falls back to the
 // project's property so it works out of the box). Analytics only run in
 // production builds, so local `npm run dev` never pollutes the GA property.
 //
+// gtag.js is NOT loaded and NO cookies are set until the visitor accepts via
+// the consent banner (see lib/consent + components/ConsentBanner).
+//
 // Because this is a single-page app, gtag's automatic page_view only fires on
 // the initial hard load. We disable that (send_page_view: false) and emit
 // page_view manually on every React Router navigation instead.
+
+import { getConsent } from './consent'
 
 const GA_MEASUREMENT_ID = (
   (import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined) || 'G-4C2P6EZ1LQ'
 ).trim()
 
-export const isAnalyticsEnabled = GA_MEASUREMENT_ID.length > 0 && import.meta.env.PROD
+/** True when a measurement ID exists — controls whether the banner appears. */
+export const isAnalyticsConfigured = GA_MEASUREMENT_ID.length > 0
 
 declare global {
   interface Window {
@@ -23,9 +29,14 @@ declare global {
 
 let initialized = false
 
-/** Injects gtag.js and configures the property. Safe to call more than once. */
+/** Analytics may only run when configured, in production, and consent granted. */
+function canRun(): boolean {
+  return isAnalyticsConfigured && import.meta.env.PROD && getConsent() === 'granted'
+}
+
+/** Injects gtag.js and configures the property. No-op without consent. */
 export function initAnalytics(): void {
-  if (!isAnalyticsEnabled || initialized || typeof document === 'undefined') return
+  if (!canRun() || initialized || typeof document === 'undefined') return
   initialized = true
 
   const script = document.createElement('script')
@@ -44,7 +55,7 @@ export function initAnalytics(): void {
 
 /** Sends a page_view for the current SPA route. */
 export function trackPageView(path: string, title?: string): void {
-  if (!isAnalyticsEnabled || typeof window === 'undefined' || !window.gtag) return
+  if (!canRun() || typeof window === 'undefined' || !window.gtag) return
   window.gtag('event', 'page_view', {
     page_path: path,
     page_location: window.location.href,
@@ -54,6 +65,6 @@ export function trackPageView(path: string, title?: string): void {
 
 /** Sends a custom GA4 event. */
 export function trackEvent(name: string, params?: Record<string, unknown>): void {
-  if (!isAnalyticsEnabled || typeof window === 'undefined' || !window.gtag) return
+  if (!canRun() || typeof window === 'undefined' || !window.gtag) return
   window.gtag('event', name, params)
 }
