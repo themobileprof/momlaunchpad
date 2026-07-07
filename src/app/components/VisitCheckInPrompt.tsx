@@ -25,6 +25,13 @@ interface PendingTestRow {
   remind: boolean
 }
 
+const DEFAULT_TEST_REMINDER_DAYS = 7
+
+/** Fallback due date (a week out) when a follow-up test has no explicit date. */
+function defaultTestDueDate(): Date {
+  return new Date(Date.now() + DEFAULT_TEST_REMINDER_DAYS * 86400000)
+}
+
 export function VisitCheckInPrompt() {
   const [visits, setVisits] = useState<DoctorVisit[]>([])
   const [reminders, setReminders] = useState<Reminder[]>([])
@@ -109,7 +116,7 @@ export function VisitCheckInPrompt() {
         if (!name || !testRows[i].remind) continue
         const due = testRows[i].dueBy
           ? new Date(`${testRows[i].dueBy}T09:00:00`)
-          : new Date(Date.now() + 7 * 86400000)
+          : defaultTestDueDate()
         let reminder = await userApi.createReminder({
           title: `Test: ${name}`,
           description: `Follow-up from ${DOCTOR_VISIT_TYPE_LABELS[debriefVisit.visit_type] ?? debriefVisit.visit_type}`,

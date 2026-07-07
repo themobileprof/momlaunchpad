@@ -74,12 +74,12 @@ export function CalendarPage() {
     const [h, m] = formTime.split(':').map(Number)
     const scheduled = new Date(selected)
     scheduled.setHours(h, m, 0, 0)
-    let reminder = await userApi.createReminder({
+    const reminder = await userApi.createReminder({
       title: formTitle.trim(),
       reminder_time: scheduled.toISOString(),
       priority: formPriority,
     })
-    reminder = await syncReminderAfterCreate(reminder)
+    await syncReminderAfterCreate(reminder)
     setShowForm(false)
     setFormTitle('')
     load()
