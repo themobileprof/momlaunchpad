@@ -78,6 +78,7 @@ export interface Reminder {
   priority: 'low' | 'medium' | 'high' | 'urgent'
   is_completed: boolean
   community_event_id?: string
+  google_calendar_event_id?: string
   created_at: string
   updated_at?: string
 }
@@ -199,6 +200,64 @@ export interface QuotaInfo {
   usage_count: number
   period_start?: string
   period_end?: string
+}
+
+export interface VisitMedication {
+  name: string
+  dosage: string
+  frequency: string
+  route?: string
+  duration?: string
+  instructions?: string
+}
+
+export interface VisitPendingTest {
+  test_name: string
+  due_by?: string
+  status: string
+  notes?: string
+}
+
+export interface DoctorVisit {
+  id: string
+  user_id: string
+  visit_date: string
+  visit_type: string
+  provider_name?: string
+  facility_name?: string
+  next_appointment_at?: string
+  next_appointment_notes?: string
+  pending_tests: VisitPendingTest[]
+  debrief_completed_at?: string
+  medications?: VisitMedication[]
+  created_at: string
+  updated_at: string
+}
+
+export interface VisitDebriefPayload {
+  pending_tests: VisitPendingTest[]
+  medications?: VisitMedication[]
+  mark_completed: boolean
+}
+
+export const DOCTOR_VISIT_TYPES = [
+  'prenatal_checkup',
+  'ultrasound',
+  'lab_work',
+  'specialist',
+  'emergency',
+  'postpartum',
+  'other',
+] as const
+
+export const DOCTOR_VISIT_TYPE_LABELS: Record<string, string> = {
+  prenatal_checkup: 'Prenatal checkup',
+  ultrasound: 'Ultrasound',
+  lab_work: 'Lab work',
+  specialist: 'Specialist visit',
+  emergency: 'Emergency',
+  postpartum: 'Postpartum',
+  other: 'Other',
 }
 
 export const JOURNEY_STAGES: {

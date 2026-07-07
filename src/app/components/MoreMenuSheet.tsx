@@ -3,12 +3,14 @@ export function MoreMenuSheet({
   onProfile,
   onSettings,
   onInbox,
+  onVisits,
   inboxUnread = 0,
 }: {
   onClose: () => void
   onProfile: () => void
   onSettings: () => void
   onInbox: () => void
+  onVisits: () => void
   inboxUnread?: number
 }) {
   return (
@@ -21,6 +23,10 @@ export function MoreMenuSheet({
           {inboxUnread > 0 && (
             <span className="sheet-item-badge">{inboxUnread > 99 ? '99+' : inboxUnread}</span>
           )}
+        </button>
+        <button type="button" className="sheet-item" onClick={onVisits}>
+          <span className="sheet-item-icon">🩺</span>
+          <span>Doctor visits</span>
         </button>
         <button type="button" className="sheet-item" onClick={onProfile}>
           <span className="sheet-item-icon">👤</span>

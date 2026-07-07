@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { AppCard, EmptyState, GradientButton, MomAppBar } from '../components/ui'
+import {
+  syncReminderAfterCreate,
+  syncReminderAfterUpdate,
+  syncReminderBeforeDelete,
+} from '../lib/reminderGoogleSync'
 import type { Reminder } from '../types'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -69,18 +74,26 @@ export function CalendarPage() {
     const [h, m] = formTime.split(':').map(Number)
     const scheduled = new Date(selected)
     scheduled.setHours(h, m, 0, 0)
-    await userApi.createReminder({
+    let reminder = await userApi.createReminder({
       title: formTitle.trim(),
       reminder_time: scheduled.toISOString(),
       priority: formPriority,
     })
+    reminder = await syncReminderAfterCreate(reminder)
     setShowForm(false)
     setFormTitle('')
     load()
   }
 
   async function toggleComplete(r: Reminder) {
-    await userApi.updateReminder(r.id, { is_completed: !r.is_completed })
+    let updated = await userApi.updateReminder(r.id, { is_completed: !r.is_completed })
+    updated = await syncReminderAfterUpdate(updated)
+    setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+  }
+
+  async function deleteReminderItem(r: Reminder) {
+    await syncReminderBeforeDelete(r)
+    await userApi.deleteReminder(r.id)
     load()
   }
 
@@ -155,6 +168,12 @@ export function CalendarPage() {
                   <button type="button" className="app-btn app-btn--outline app-btn--sm" onClick={() => toggleComplete(r)}>
                     {r.is_completed ? 'Undo' : 'Mark done'}
                   </button>
+                  <button type="button" className="app-btn app-btn--ghost app-btn--sm" onClick={() => deleteReminderItem(r)} style={{ marginLeft: 8 }}>
+                    Delete
+                  </button>
+                  {r.google_calendar_event_id && (
+                    <p className="u-muted" style={{ margin: '8px 0 0', fontSize: '0.75rem' }}>Synced to Google Calendar</p>
+                  )}
                 </div>
               </div>
             ))}

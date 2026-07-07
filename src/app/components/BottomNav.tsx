@@ -42,7 +42,8 @@ export function BottomNav() {
   const isMoreActive =
     location.pathname.startsWith(appPath('profile')) ||
     location.pathname.startsWith(appPath('settings')) ||
-    location.pathname.startsWith(appPath('inbox'))
+    location.pathname.startsWith(appPath('inbox')) ||
+    location.pathname.startsWith(appPath('visits'))
 
   return (
     <>
@@ -91,6 +92,10 @@ export function BottomNav() {
           onSettings={() => {
             setMoreOpen(false)
             navigate(appPath('settings'))
+          }}
+          onVisits={() => {
+            setMoreOpen(false)
+            navigate(appPath('visits'))
           }}
         />
       )}

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
+import { HomeCommunityHighlight } from '../components/HomeCommunityHighlight'
+import { VisitCheckInPrompt } from '../components/VisitCheckInPrompt'
 import { AppCard, MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
 import { JOURNEY_STAGES } from '../types'
@@ -39,7 +41,7 @@ export function AppHomePage() {
           )}
         </div>
 
-        <div className="glass" style={{ margin: '0 16px 24px', padding: 16, opacity: 0.95 }}>
+        <div className="glass" style={{ margin: '0 16px 16px', padding: 16, opacity: 0.95 }}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
             <span>👋</span>
             <strong>Welcome{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}</strong>
@@ -53,7 +55,10 @@ export function AppHomePage() {
           )}
         </div>
 
-        <p className="u-caption" style={{ padding: '0 16px', marginBottom: 8 }}>Quick links</p>
+        <VisitCheckInPrompt />
+        <HomeCommunityHighlight />
+
+        <p className="u-caption" style={{ padding: '16px 16px 8px', marginBottom: 0 }}>Quick links</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, padding: '0 16px' }}>
           <Link to={appPath('chat')} style={{ textDecoration: 'none', color: 'inherit' }}>
             <AppCard>
@@ -73,10 +78,10 @@ export function AppHomePage() {
               <strong style={{ fontSize: '0.9rem' }}>Calendar</strong>
             </AppCard>
           </Link>
-          <Link to={appPath('profile')} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to={appPath('visits')} style={{ textDecoration: 'none', color: 'inherit' }}>
             <AppCard>
-              <div style={{ color: 'var(--teal)', fontSize: '1.25rem', marginBottom: 8 }}>👤</div>
-              <strong style={{ fontSize: '0.9rem' }}>Profile</strong>
+              <div style={{ color: 'var(--teal)', fontSize: '1.25rem', marginBottom: 8 }}>🩺</div>
+              <strong style={{ fontSize: '0.9rem' }}>Visits</strong>
             </AppCard>
           </Link>
         </div>

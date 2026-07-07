@@ -13,9 +13,11 @@ import type {
   CommunityStatus,
   CommunityThreadEvaluation,
   Conversation,
+  DoctorVisit,
   QuotaInfo,
   Reminder,
   UserProfile,
+  VisitDebriefPayload,
   WelcomeMessage,
 } from './types'
 
@@ -206,10 +208,32 @@ export const userApi = {
       reminder_time: string
       priority: string
       is_completed: boolean
+      google_calendar_event_id: string
     }>,
-  ) => request(`/api/reminders/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+  ) => request<Reminder>(`/api/reminders/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
 
   deleteReminder: (id: string) => request(`/api/reminders/${id}`, { method: 'DELETE' }),
+
+  // Doctor visits
+  listDoctorVisits: () => request<DoctorVisit[]>('/api/doctor-visits'),
+
+  createDoctorVisit: (body: Record<string, unknown>) =>
+    request<DoctorVisit>('/api/doctor-visits', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updateDoctorVisit: (id: string, body: Record<string, unknown>) =>
+    request<DoctorVisit>(`/api/doctor-visits/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  debriefDoctorVisit: (id: string, body: VisitDebriefPayload) =>
+    request<DoctorVisit>(`/api/doctor-visits/${id}/debrief`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 
   // Community
   getCommunityStatus: () => request<CommunityStatus>('/api/community/status'),

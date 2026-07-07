@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { AppCard, GradientButton, MomAppBar } from '../components/ui'
 import { useUserAuth } from '../context/UserAuthContext'
 import { useUserProfile } from '../context/UserProfileContext'
 import { JOURNEY_STAGES, type JourneyStage } from '../types'
+import { appPath } from '../routes'
 
 export function ProfilePage() {
   const { user } = useUserAuth()
@@ -159,6 +161,24 @@ export function ProfilePage() {
               </>
             )}
           </AppCard>
+          </div>
+
+          <p className="u-caption">Community feed</p>
+          <div style={{ marginBottom: 16 }}>
+            <AppCard>
+              {profile?.community_interests?.length ? (
+                <p style={{ margin: '0 0 12px' }}>
+                  Topics: {profile.community_interests.join(', ')}
+                </p>
+              ) : (
+                <p className="u-muted" style={{ margin: '0 0 12px' }}>
+                  Choose topics to personalize your community feed.
+                </p>
+              )}
+              <Link to={`${appPath('community/onboarding')}?edit=1`} className="app-btn app-btn--outline app-btn--sm" style={{ textDecoration: 'none' }}>
+                Edit feed topics
+              </Link>
+            </AppCard>
           </div>
 
           {profile?.referral_code && (

@@ -115,7 +115,7 @@ export function CommunityPostPage() {
           </div>
           <div style={{ marginTop: 12 }}>
           <GradientButton onClick={() => evaluate()} disabled={evaluating}>
-            {evaluating ? 'Starting…' : 'Good for me? — Review discussion'}
+            {evaluating ? 'Starting…' : replies.length === 0 ? 'Good for me?' : 'Review discussion'}
           </GradientButton>
           </div>
         </div>
@@ -136,7 +136,7 @@ export function CommunityPostPage() {
           <div key={r.id} className="app-card app-card--outlined" style={{ marginBottom: 8 }}>
             <strong>{r.is_anonymous ? 'Anonymous' : r.author.display_name}</strong>
             <p style={{ margin: '8px 0' }}>{r.body}</p>
-            <button type="button" className="app-btn app-btn--ghost app-btn--sm" onClick={() => evaluate(r.id)}>
+            <button type="button" className="app-btn app-btn--ghost app-btn--sm" onClick={() => evaluate(r.id)} disabled={evaluating}>
               Good for me?
             </button>
           </div>

@@ -20,6 +20,8 @@ import { CommunityNotificationsPage } from './pages/CommunityNotificationsPage'
 import { InboxPage } from './pages/InboxPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
+import { DoctorVisitsPage } from './pages/DoctorVisitsPage'
+import { DoctorVisitFormPage } from './pages/DoctorVisitFormPage'
 import { appPath } from './routes'
 
 function UserGate({ children }: { children: React.ReactNode }) {
@@ -144,6 +146,30 @@ function UserAppRoutes() {
           element={
             <UserGate>
               <ProfilePage />
+            </UserGate>
+          }
+        />
+        <Route
+          path="visits"
+          element={
+            <UserGate>
+              <DoctorVisitsPage />
+            </UserGate>
+          }
+        />
+        <Route
+          path="visits/new"
+          element={
+            <UserGate>
+              <DoctorVisitFormPage />
+            </UserGate>
+          }
+        />
+        <Route
+          path="visits/:id/edit"
+          element={
+            <UserGate>
+              <DoctorVisitFormPage />
             </UserGate>
           }
         />
