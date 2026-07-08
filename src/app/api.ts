@@ -36,7 +36,6 @@ export function setUserToken(token: string | null) {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-Client-Platform': 'web',
     ...(options.headers as Record<string, string>),
   }
   const token = getUserToken()
