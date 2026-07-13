@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { GoogleSignInSection } from '../components/GoogleSignInSection'
-import { AppBackground, GlassCard, GradientButton } from '../components/ui'
+import { GlassCard, GradientButton } from '../components/ui'
+import { appPhotos } from '../lib/appPhotos'
 import { useUserAuth } from '../context/UserAuthContext'
 import { appPath } from '../routes'
 
@@ -40,60 +41,57 @@ export function UserLoginPage() {
   }
 
   return (
-    <AppBackground>
-      <div className="auth-page user-app-content--no-nav">
-        <div className="auth-logo-wrap">
-          <div className="auth-logo-ring">
-            <img src="/logo.png" alt="MomLaunchpad" />
-          </div>
-          <h1 className="u-heading-md">Welcome back</h1>
-          <p className="u-muted">Sign in to continue your journey</p>
+    <div className="auth-page user-app-content--no-nav">
+      <div className="auth-logo-wrap">
+        <div className="auth-photo-banner" style={{ margin: '0 auto 20px', maxWidth: 320 }}>
+          <img src={appPhotos.welcome.src} alt="" />
         </div>
-
-        {error && <div className="u-alert u-alert--error">{error}</div>}
-
-        <GlassCard className="auth-card">
-          <form onSubmit={handleSubmit}>
-            <label className="app-label">Sign in with email</label>
-            <input
-              className="app-input"
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              style={{ marginBottom: 16 }}
-            />
-            <input
-              className="app-input"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-            <div style={{ marginTop: 32 }}>
-              <GradientButton type="submit" disabled={loading}>
-                {loading ? 'Signing in…' : 'Sign in →'}
-              </GradientButton>
-            </div>
-          </form>
-
-          <GoogleSignInSection
-            mode="signin"
-            onSuccess={handleGoogle}
-            onError={setError}
-          />
-        </GlassCard>
-
-        <div className="auth-footer">
-          <p className="u-muted">
-            New here? <Link to={appPath('register')}>Create an account</Link>
-          </p>
+        <div className="auth-logo-ring">
+          <img src="/logo.png" alt="MomLaunchpad" />
         </div>
+        <h1 className="u-heading-md">Welcome back</h1>
+        <p className="u-muted">Sign in to continue your journey</p>
       </div>
-    </AppBackground>
+
+      {error && <div className="u-alert u-alert--error">{error}</div>}
+
+      <GlassCard className="auth-card">
+        <form onSubmit={handleSubmit}>
+          <label className="app-label">Sign in with email</label>
+          <input
+            className="app-input"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            style={{ marginBottom: 16 }}
+          />
+          <input
+            className="app-input"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+          <div style={{ marginTop: 32 }}>
+            <GradientButton type="submit" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign in →'}
+            </GradientButton>
+          </div>
+        </form>
+
+        <GoogleSignInSection mode="signin" onSuccess={handleGoogle} onError={setError} />
+      </GlassCard>
+
+      <div className="auth-footer">
+        <p className="u-muted">
+          New here? <Link to={appPath('register')}>Create an account</Link>
+        </p>
+      </div>
+    </div>
   )
 }

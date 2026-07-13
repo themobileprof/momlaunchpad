@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
+import { GenderPicker } from '../components/GenderPicker'
 import { AppCard, GradientButton, MomAppBar } from '../components/ui'
 import { useUserAuth } from '../context/UserAuthContext'
 import { useUserProfile } from '../context/UserProfileContext'
-import { JOURNEY_STAGES, type JourneyStage } from '../types'
+import { JOURNEY_STAGES, type BabyGender, type JourneyStage } from '../types'
 import { appPath } from '../routes'
 
 export function ProfilePage() {
@@ -14,6 +15,7 @@ export function ProfilePage() {
   const [name, setName] = useState('')
   const [journeyStage, setJourneyStage] = useState<JourneyStage | undefined>()
   const [pregnancyWeek, setPregnancyWeek] = useState(20)
+  const [babyGender, setBabyGender] = useState<BabyGender | null>(null)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [copied, setCopied] = useState(false)
@@ -23,8 +25,19 @@ export function ProfilePage() {
       setName(profile.name)
       setJourneyStage(profile.journey_stage)
       if (profile.pregnancy_week) setPregnancyWeek(profile.pregnancy_week)
+      setBabyGender(profile.baby_gender ?? null)
     }
   }, [profile])
+
+  useEffect(() => {
+    const root = document.querySelector('.user-app')
+    if (!root || !babyGender) return
+    const previous = root.getAttribute('data-baby-theme')
+    root.setAttribute('data-baby-theme', babyGender)
+    return () => {
+      if (previous) root.setAttribute('data-baby-theme', previous)
+    }
+  }, [babyGender])
 
   async function save() {
     setSaving(true)
@@ -35,7 +48,11 @@ export function ProfilePage() {
         language: 'en',
         journey_stage: journeyStage,
       }
-      if (journeyStage === 'pregnant') body.pregnancy_week = pregnancyWeek
+      if (journeyStage === 'pregnant') {
+        body.pregnancy_week = pregnancyWeek
+        if (babyGender) body.baby_gender = babyGender
+        else body.baby_gender = ''
+      }
       const p = await userApi.updateProfile(body)
       setProfile(p)
       setMessage('Saved!')
@@ -156,8 +173,13 @@ export function ProfilePage() {
                   max={42}
                   value={pregnancyWeek}
                   onChange={(e) => setPregnancyWeek(Number(e.target.value))}
-                  style={{ width: '100%', accentColor: 'var(--mint)' }}
+                  style={{ width: '100%', accentColor: 'var(--accent)' }}
                 />
+                <p className="app-label" style={{ marginTop: 16 }}>Baby gender & app colors</p>
+                <p className="u-muted" style={{ fontSize: '0.85rem', margin: '0 0 12px' }}>
+                  Optional — your whole app shifts to match (rose, blue, or golden surprise).
+                </p>
+                <GenderPicker value={babyGender} onChange={setBabyGender} />
               </>
             )}
           </AppCard>

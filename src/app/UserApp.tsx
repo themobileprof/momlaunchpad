@@ -2,6 +2,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './app.css'
 import { GOOGLE_CLIENT_ID, isGoogleAuthEnabled } from './lib/googleAuth'
+import { resolveBabyTheme } from './lib/babyTheme'
 import { AppBackground, LoadingPage } from './components/ui'
 import { UserAuthProvider, useUserAuth } from './context/UserAuthContext'
 import { UserProfileProvider, useUserProfile } from './context/UserProfileContext'
@@ -47,9 +48,14 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function ThemedAppShell({ children }: { children: React.ReactNode }) {
+  const { profile } = useUserProfile()
+  return <AppBackground babyTheme={resolveBabyTheme(profile?.baby_gender)}>{children}</AppBackground>
+}
+
 function UserAppRoutes() {
   return (
-    <AppBackground>
+    <ThemedAppShell>
       <Routes>
         <Route path="login" element={<UserLoginPage />} />
         <Route path="register" element={<UserRegisterPage />} />
@@ -183,7 +189,7 @@ function UserAppRoutes() {
         />
         <Route path="*" element={<Navigate to={appPath()} replace />} />
       </Routes>
-    </AppBackground>
+    </ThemedAppShell>
   )
 }
 

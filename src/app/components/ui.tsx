@@ -1,9 +1,25 @@
 import type { ReactNode } from 'react'
+import type { BabyThemeId } from '../lib/babyTheme'
+import { appPhotos } from '../lib/appPhotos'
 
-export function AppBackground({ children }: { children: ReactNode }) {
+export function AppBackground({
+  children,
+  babyTheme = 'bloom',
+}: {
+  children: ReactNode
+  babyTheme?: BabyThemeId
+}) {
   return (
-    <div className="user-app">
-      <div className="user-app-bg" aria-hidden />
+    <div className="user-app" data-baby-theme={babyTheme}>
+      <div className="user-app-bg" aria-hidden>
+        <img
+          className="user-app-bg-photo"
+          src={appPhotos.hero.src}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
       <div className="user-app-shell">{children}</div>
     </div>
   )

@@ -1,5 +1,7 @@
 export type JourneyStage = 'ttc' | 'pregnant' | 'postpartum' | 'miscarriage'
 
+export type BabyGender = 'girl' | 'boy' | 'unknown'
+
 export interface AppUser {
   id: string
   email: string
@@ -20,6 +22,7 @@ export interface UserProfile {
   pregnancy_start_date?: string
   pregnancy_week?: number
   is_first_pregnancy?: boolean
+  baby_gender?: BabyGender
   primary_concern?: string
   diet_preference?: string
   learned_facts?: Record<string, string>

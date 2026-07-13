@@ -4,11 +4,20 @@ import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { HomeCommunityHighlight } from '../components/HomeCommunityHighlight'
 import { VisitCheckInPrompt } from '../components/VisitCheckInPrompt'
-import { AppCard, MomAppBar } from '../components/ui'
+import { MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
+import { appPhotos } from '../lib/appPhotos'
+import { babyThemeLabel, resolveBabyTheme } from '../lib/babyTheme'
 import { JOURNEY_STAGES } from '../types'
 import { appPath } from '../routes'
 import type { WelcomeMessage } from '../types'
+
+const QUICK_LINKS = [
+  { to: 'chat', label: 'Chat', sub: 'Your companion', icon: '💬', tone: 'chat' },
+  { to: 'community', label: 'Community', sub: 'Moms like you', icon: '◎', tone: 'community' },
+  { to: 'calendar', label: 'Calendar', sub: 'Reminders', icon: '📅', tone: 'calendar' },
+  { to: 'visits', label: 'Visits', sub: 'Appointments', icon: '🩺', tone: 'visits' },
+] as const
 
 export function AppHomePage() {
   const { profile } = useUserProfile()
@@ -28,62 +37,81 @@ export function AppHomePage() {
   }, [])
 
   const journeyLabel = JOURNEY_STAGES.find((s) => s.value === profile?.journey_stage)?.label
+  const firstName = profile?.name?.split(' ')[0]
+  const theme = resolveBabyTheme(profile?.baby_gender)
+  const week = profile?.pregnancy_week
 
   return (
     <>
       <MomAppBar pageTitle="Home" />
       <div className="user-app-content">
-        <div style={{ padding: '8px 16px 0' }}>
-          {journeyLabel && (
-            <span className="app-badge" style={{ marginBottom: 12, display: 'inline-flex' }}>
-              ♥ {journeyLabel}
-            </span>
-          )}
-        </div>
-
-        <div className="glass" style={{ margin: '0 16px 16px', padding: 16, opacity: 0.95 }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
-            <span>👋</span>
-            <strong>Welcome{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}</strong>
-          </div>
-          {loading ? (
-            <p className="u-muted">Loading your message…</p>
-          ) : (
-            <p className="u-body" style={{ margin: 0 }}>
-              {welcome?.message ?? 'We\'re glad you\'re here. Tap Chat when you\'re ready to talk.'}
+        <section className="home-hero" aria-label="Welcome">
+          <img className="home-hero__photo" src={appPhotos.hero.src} alt="" />
+          <div className="home-hero__overlay">
+            <div className="home-hero__badges">
+              {journeyLabel && <span className="app-badge">♥ {journeyLabel}</span>}
+              {week != null && profile?.journey_stage === 'pregnant' && (
+                <span className="app-badge">Week {week}</span>
+              )}
+              {profile?.baby_gender && (
+                <span className="app-badge">{babyThemeLabel(theme)} theme</span>
+              )}
+            </div>
+            <h1 className="home-hero__greeting">
+              Hello{firstName ? `, ${firstName}` : ''} 👋
+            </h1>
+            <p className="home-hero__message">
+              {loading
+                ? 'Loading your personalized message…'
+                : welcome?.message ??
+                  'Your cozy corner for pregnancy support — chat, community, and gentle nudges when life gets busy.'}
             </p>
-          )}
+          </div>
+        </section>
+
+        <div className="home-welcome-card">
+          <div className="home-welcome-card__row">
+            <img
+              className="home-welcome-card__thumb"
+              src={appPhotos.welcome.src}
+              alt={appPhotos.welcome.alt}
+            />
+            <div>
+              <p className="u-caption" style={{ margin: '0 0 6px' }}>
+                Personalized for you
+              </p>
+              <p className="u-body" style={{ margin: 0, fontWeight: 600 }}>
+                Your assistant remembers your journey — symptoms, visits, and milestones — so advice
+                always feels like it&apos;s meant for <em>you</em>.
+              </p>
+            </div>
+          </div>
         </div>
 
         <VisitCheckInPrompt />
         <HomeCommunityHighlight />
 
-        <p className="u-caption" style={{ padding: '16px 16px 8px', marginBottom: 0 }}>Quick links</p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, padding: '0 16px' }}>
-          <Link to={appPath('chat')} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <AppCard>
-              <div style={{ color: 'var(--teal)', fontSize: '1.25rem', marginBottom: 8 }}>💬</div>
-              <strong style={{ fontSize: '0.9rem' }}>Chat</strong>
-            </AppCard>
-          </Link>
-          <Link to={appPath('community')} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <AppCard>
-              <div style={{ color: 'var(--teal)', fontSize: '1.25rem', marginBottom: 8 }}>◎</div>
-              <strong style={{ fontSize: '0.9rem' }}>Community</strong>
-            </AppCard>
-          </Link>
-          <Link to={appPath('calendar')} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <AppCard>
-              <div style={{ color: 'var(--teal)', fontSize: '1.25rem', marginBottom: 8 }}>📅</div>
-              <strong style={{ fontSize: '0.9rem' }}>Calendar</strong>
-            </AppCard>
-          </Link>
-          <Link to={appPath('visits')} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <AppCard>
-              <div style={{ color: 'var(--teal)', fontSize: '1.25rem', marginBottom: 8 }}>🩺</div>
-              <strong style={{ fontSize: '0.9rem' }}>Visits</strong>
-            </AppCard>
-          </Link>
+        <div className="home-photo-strip" aria-hidden>
+          {appPhotos.strip.map((photo) => (
+            <img key={photo.src} src={photo.src} alt="" loading="lazy" />
+          ))}
+        </div>
+
+        <h2 className="section-title">Jump in</h2>
+        <div className="action-tiles">
+          {QUICK_LINKS.map((link) => (
+            <Link
+              key={link.to}
+              to={appPath(link.to)}
+              className={`action-tile action-tile--${link.tone}`}
+            >
+              <span className="action-tile__icon" aria-hidden>
+                {link.icon}
+              </span>
+              <span className="action-tile__label">{link.label}</span>
+              <span className="action-tile__sub">{link.sub}</span>
+            </Link>
+          ))}
         </div>
       </div>
       <BottomNav />

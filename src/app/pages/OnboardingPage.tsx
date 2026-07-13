@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { AppBackground, GlassCard, GradientButton } from '../components/ui'
+import { GenderPicker } from '../components/GenderPicker'
+import { GlassCard, GradientButton } from '../components/ui'
 import { userApi } from '../api'
 import { useUserAuth } from '../context/UserAuthContext'
 import { useUserProfile } from '../context/UserProfileContext'
-import { JOURNEY_STAGES, type JourneyStage } from '../types'
+import { appPhotos } from '../lib/appPhotos'
+import { resolveBabyTheme } from '../lib/babyTheme'
+import { JOURNEY_STAGES, type BabyGender, type JourneyStage } from '../types'
 import { appPath } from '../routes'
 
 const SIGNUP_STAGES = JOURNEY_STAGES.filter((s) => s.signup)
@@ -17,8 +20,21 @@ export function OnboardingPage() {
   const [journeyStage, setJourneyStage] = useState<JourneyStage | null>(null)
   const [pregnancyWeek, setPregnancyWeek] = useState(20)
   const [isFirstPregnancy, setIsFirstPregnancy] = useState<boolean | null>(null)
+  const [babyGender, setBabyGender] = useState<BabyGender | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const previewTheme = babyGender ? resolveBabyTheme(babyGender) : 'bloom'
+
+  useEffect(() => {
+    const root = document.querySelector('.user-app')
+    if (!root || !babyGender) return
+    const previous = root.getAttribute('data-baby-theme')
+    root.setAttribute('data-baby-theme', previewTheme)
+    return () => {
+      if (previous) root.setAttribute('data-baby-theme', previous)
+    }
+  }, [babyGender, previewTheme])
 
   if (!user) return <Navigate to={appPath('login')} replace />
   if (profile?.onboarding_completed) return <Navigate to={appPath()} replace />
@@ -36,6 +52,7 @@ export function OnboardingPage() {
       if (journeyStage === 'pregnant') {
         body.pregnancy_week = pregnancyWeek
         if (isFirstPregnancy !== null) body.is_first_pregnancy = isFirstPregnancy
+        if (babyGender) body.baby_gender = babyGender
       }
       const p = await userApi.completeOnboarding(body)
       setProfile(p)
@@ -65,8 +82,7 @@ export function OnboardingPage() {
   }
 
   return (
-    <AppBackground>
-      <div className="user-app-content--no-nav">
+    <div className="user-app-content--no-nav">
         <div className="onboarding-progress">
           {[0, 1, 2, 3].map((i) => (
             <div
@@ -77,6 +93,9 @@ export function OnboardingPage() {
         </div>
         <div style={{ padding: '16px 24px' }}>
           <h1 className="u-heading-md">Getting to know you</h1>
+          <p className="u-muted" style={{ margin: '8px 0 0' }}>
+            A few questions so your space feels personal and joyful.
+          </p>
         </div>
 
         {error && (
@@ -89,15 +108,22 @@ export function OnboardingPage() {
           <GlassCard className="auth-card">
             {step === 0 && (
               <div>
-                <div style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--teal)', color: 'white', display: 'grid', placeItems: 'center', fontSize: '1.5rem', marginBottom: 16 }}>👋</div>
+                <div className="auth-photo-banner">
+                  <img src={appPhotos.hero.src} alt="" />
+                </div>
                 <h2 className="u-heading-lg" style={{ marginBottom: 12 }}>Welcome to MomLaunchpad</h2>
                 <p className="u-body u-muted">
-                  We&apos;ll ask a few gentle questions so your companion can support you in a way that feels personal — not generic.
+                  We&apos;ll ask a few gentle questions so your companion can support you in a way
+                  that feels personal — not generic.
                 </p>
                 <ul style={{ paddingLeft: 0, listStyle: 'none', marginTop: 24 }}>
-                  {['Chat that remembers your journey', 'Community built for mothers like you', 'Calendar nudges when life gets busy'].map((t) => (
+                  {[
+                    'Chat that remembers your journey',
+                    'A community built for mothers like you',
+                    'Calendar nudges when life gets busy',
+                  ].map((t) => (
                     <li key={t} style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-                      <span style={{ color: 'var(--mint)' }}>✓</span>
+                      <span style={{ color: 'var(--accent-light)' }}>✓</span>
                       <span>{t}</span>
                     </li>
                   ))}
@@ -149,10 +175,10 @@ export function OnboardingPage() {
                       max={42}
                       value={pregnancyWeek}
                       onChange={(e) => setPregnancyWeek(Number(e.target.value))}
-                      style={{ width: '100%', marginBottom: 24, accentColor: 'var(--mint)' }}
+                      style={{ width: '100%', marginBottom: 24, accentColor: 'var(--accent)' }}
                     />
                     <p className="app-label">Is this your first pregnancy?</p>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
                       {([true, false] as const).map((v) => (
                         <button
                           key={String(v)}
@@ -165,11 +191,18 @@ export function OnboardingPage() {
                         </button>
                       ))}
                     </div>
+                    <p className="app-label">Know the baby&apos;s gender? (optional)</p>
+                    <p className="u-muted" style={{ fontSize: '0.85rem', margin: '0 0 12px' }}>
+                      Pick one to color your app — rose for girl, blue for boy, or golden sparkle if
+                      it&apos;s still a surprise.
+                    </p>
+                    <GenderPicker value={babyGender} onChange={setBabyGender} />
                   </>
                 )}
                 {journeyStage === 'ttc' && (
                   <p className="u-body u-muted">
-                    We&apos;ll tailor support for your fertility journey — cycles, waiting, and the questions that come with trying to conceive.
+                    We&apos;ll tailor support for your fertility journey — cycles, waiting, and the
+                    questions that come with trying to conceive.
                   </p>
                 )}
               </div>
@@ -186,12 +219,11 @@ export function OnboardingPage() {
             )}
             <div style={{ flex: 1 }}>
               <GradientButton onClick={next} disabled={loading}>
-                {loading ? 'Saving…' : step === 3 ? 'Start chatting →' : 'Continue →'}
+                {loading ? 'Saving…' : step === 3 ? 'Start your journey →' : 'Continue →'}
               </GradientButton>
             </div>
           </div>
         </div>
       </div>
-    </AppBackground>
   )
 }
