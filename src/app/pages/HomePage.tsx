@@ -55,9 +55,9 @@ function VisitsIcon() {
 }
 
 const QUICK_LINKS = [
-  { to: 'chat', label: 'Chat with your companion', sub: 'Guidance that remembers your journey.', Icon: ChatIcon, tone: 'chat', wide: true },
+  { to: 'calendar', label: 'Calendar', sub: 'Appointments, check-ins, and your timeline.', Icon: CalendarIcon, tone: 'calendar', wide: true },
+  { to: 'chat', label: 'Chat', sub: 'Guidance that remembers your journey.', Icon: ChatIcon, tone: 'chat' },
   { to: 'community', label: 'Community', sub: 'Moms and caregivers near you.', Icon: CommunityIcon, tone: 'community' },
-  { to: 'calendar', label: 'Calendar', sub: 'Appointments and reminders.', Icon: CalendarIcon, tone: 'calendar' },
   { to: 'visits', label: 'Visits', sub: 'Doctor notes and follow-ups.', Icon: VisitsIcon, tone: 'visits' },
 ] as const
 

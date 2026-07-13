@@ -13,9 +13,9 @@ import { userApi } from '../api'
 
 const TABS = [
   { to: appPath(), label: 'Home', Icon: IconHome, end: true },
+  { to: appPath('calendar'), label: 'Calendar', Icon: IconCalendar },
   { to: appPath('chat'), label: 'Chat', Icon: IconChat },
   { to: appPath('community'), label: 'Community', Icon: IconCommunity },
-  { to: appPath('calendar'), label: 'Calendar', Icon: IconCalendar },
 ] as const
 
 export function BottomNav() {
