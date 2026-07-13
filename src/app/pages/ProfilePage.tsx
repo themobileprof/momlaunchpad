@@ -6,12 +6,13 @@ import { GenderPicker } from '../components/GenderPicker'
 import { AppCard, GradientButton, MomAppBar } from '../components/ui'
 import { useUserAuth } from '../context/UserAuthContext'
 import { useUserProfile } from '../context/UserProfileContext'
+import { saveStoredBabyGender } from '../lib/babyGenderStorage'
 import { JOURNEY_STAGES, type BabyGender, type JourneyStage } from '../types'
 import { appPath } from '../routes'
 
 export function ProfilePage() {
   const { user } = useUserAuth()
-  const { profile, setProfile } = useUserProfile()
+  const { profile, setProfile, setPreviewBabyGender, refreshProfile } = useUserProfile()
   const [name, setName] = useState('')
   const [journeyStage, setJourneyStage] = useState<JourneyStage | undefined>()
   const [pregnancyWeek, setPregnancyWeek] = useState(20)
@@ -29,15 +30,7 @@ export function ProfilePage() {
     }
   }, [profile])
 
-  useEffect(() => {
-    const root = document.querySelector('.user-app')
-    if (!root || !babyGender) return
-    const previous = root.getAttribute('data-baby-theme')
-    root.setAttribute('data-baby-theme', babyGender)
-    return () => {
-      if (previous) root.setAttribute('data-baby-theme', previous)
-    }
-  }, [babyGender])
+  useEffect(() => () => setPreviewBabyGender(null), [setPreviewBabyGender])
 
   async function save() {
     setSaving(true)
@@ -50,11 +43,22 @@ export function ProfilePage() {
       }
       if (journeyStage === 'pregnant') {
         body.pregnancy_week = pregnancyWeek
-        if (babyGender) body.baby_gender = babyGender
-        else body.baby_gender = ''
+      }
+      if (babyGender) {
+        body.baby_gender = babyGender
+      } else if (journeyStage === 'pregnant') {
+        body.baby_gender = ''
       }
       const p = await userApi.updateProfile(body)
-      setProfile(p)
+      const savedGender = babyGender ?? p.baby_gender
+      if (user && savedGender) saveStoredBabyGender(user.id, savedGender)
+      else if (user) saveStoredBabyGender(user.id, null)
+
+      const refreshed = await refreshProfile()
+      if (user && savedGender && !refreshed?.baby_gender) {
+        setProfile({ ...(refreshed ?? p), baby_gender: savedGender })
+      }
+      setPreviewBabyGender(null)
       setMessage('Saved!')
     } catch (e) {
       setMessage(e instanceof Error ? e.message : 'Failed to save')
@@ -179,7 +183,13 @@ export function ProfilePage() {
                 <p className="u-muted" style={{ fontSize: '0.85rem', margin: '0 0 12px' }}>
                   Optional — your whole app shifts to match (rose, blue, or golden surprise).
                 </p>
-                <GenderPicker value={babyGender} onChange={setBabyGender} />
+                <GenderPicker
+                  value={babyGender}
+                  onChange={(gender) => {
+                    setBabyGender(gender)
+                    setPreviewBabyGender(gender)
+                  }}
+                />
               </>
             )}
           </AppCard>

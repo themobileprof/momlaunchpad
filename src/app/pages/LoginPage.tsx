@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { GoogleSignInSection } from '../components/GoogleSignInSection'
 import { GlassCard, GradientButton } from '../components/ui'
-import { appPhotos } from '../lib/appPhotos'
 import { useUserAuth } from '../context/UserAuthContext'
 import { appPath } from '../routes'
 
@@ -43,9 +42,6 @@ export function UserLoginPage() {
   return (
     <div className="auth-page user-app-content--no-nav">
       <div className="auth-logo-wrap">
-        <div className="auth-photo-banner" style={{ margin: '0 auto 20px', maxWidth: 320 }}>
-          <img src={appPhotos.welcome.src} alt="" />
-        </div>
         <div className="auth-logo-ring">
           <img src="/logo.png" alt="MomLaunchpad" />
         </div>

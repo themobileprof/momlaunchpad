@@ -49,8 +49,8 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
 }
 
 function ThemedAppShell({ children }: { children: React.ReactNode }) {
-  const { profile } = useUserProfile()
-  return <AppBackground babyTheme={resolveBabyTheme(profile?.baby_gender)}>{children}</AppBackground>
+  const { activeBabyGender } = useUserProfile()
+  return <AppBackground babyTheme={resolveBabyTheme(activeBabyGender)}>{children}</AppBackground>
 }
 
 function UserAppRoutes() {

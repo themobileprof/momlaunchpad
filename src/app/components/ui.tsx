@@ -1,6 +1,28 @@
 import type { ReactNode } from 'react'
+import { useUserAuth } from '../context/UserAuthContext'
 import type { BabyThemeId } from '../lib/babyTheme'
-import { appPhotos } from '../lib/appPhotos'
+
+function AppBarExitIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden width="20" height="20">
+      <path
+        d="M9 4.5H5.5a1.5 1.5 0 0 0-1.5 1.5V18a1.5 1.5 0 0 0 1.5 1.5H9"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M13 12H20M20 12l-2.75-2.75M20 12l-2.75 2.75"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="12" r="0.75" fill="currentColor" />
+    </svg>
+  )
+}
 
 export function AppBackground({
   children,
@@ -12,13 +34,12 @@ export function AppBackground({
   return (
     <div className="user-app" data-baby-theme={babyTheme}>
       <div className="user-app-bg" aria-hidden>
-        <img
-          className="user-app-bg-photo"
-          src={appPhotos.hero.src}
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
+        <span className="user-app-bubble user-app-bubble--1" />
+        <span className="user-app-bubble user-app-bubble--2" />
+        <span className="user-app-bubble user-app-bubble--3" />
+        <span className="user-app-bubble user-app-bubble--4" />
+        <span className="user-app-bubble user-app-bubble--5" />
+        <span className="user-app-bubble user-app-bubble--6" />
       </div>
       <div className="user-app-shell">{children}</div>
     </div>
@@ -29,11 +50,17 @@ export function MomAppBar({
   pageTitle,
   onBack,
   actions,
+  showLogout = true,
 }: {
   pageTitle?: string
   onBack?: () => void
   actions?: ReactNode
+  /** Web-only quick exit — shown top-right when signed in. */
+  showLogout?: boolean
 }) {
+  const { user, logout } = useUserAuth()
+  const showActions = actions || (showLogout && user)
+
   return (
     <header className="mom-app-bar">
       {onBack && (
@@ -44,11 +71,26 @@ export function MomAppBar({
         </button>
       )}
       <img src="/logo.png" alt="" className="mom-app-bar-logo" />
-      <div>
+      <div className="mom-app-bar-brand-wrap">
         <div className="mom-app-bar-brand">MomLaunchPad</div>
         {pageTitle && <div className="mom-app-bar-title">{pageTitle}</div>}
       </div>
-      {actions && <div className="mom-app-bar-actions">{actions}</div>}
+      {showActions && (
+        <div className="mom-app-bar-actions">
+          {actions}
+          {showLogout && user && (
+            <button
+              type="button"
+              className="mom-app-bar-exit"
+              onClick={logout}
+              aria-label="Log out"
+              title="Log out"
+            >
+              <AppBarExitIcon />
+            </button>
+          )}
+        </div>
+      )}
     </header>
   )
 }

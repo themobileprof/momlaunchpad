@@ -140,20 +140,20 @@ export function VisitCheckInPrompt() {
 
   return (
     <>
-      <div className="glass" style={{ margin: '16px 16px 0', padding: 16 }}>
+      <div className="glass home-prompt-card">
         {context.kind === 'upcomingAppointment' && context.visit && context.appointmentAt && (
           <>
-            <p className="u-caption" style={{ margin: '0 0 4px' }}>Upcoming appointment</p>
+            <p className="u-caption">Upcoming appointment</p>
             <strong>
               {DOCTOR_VISIT_TYPE_LABELS[context.visit.visit_type] ?? context.visit.visit_type} ·{' '}
               {context.appointmentAt.toLocaleString()}
             </strong>
             {context.visit.provider_name && (
-              <p className="u-muted" style={{ margin: '4px 0 0', fontSize: '0.85rem' }}>
+              <p className="u-muted" style={{ margin: '4px 0 0', fontSize: '0.875rem' }}>
                 {context.visit.provider_name}
               </p>
             )}
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <div className="home-prompt-card__actions">
               <button type="button" className="app-btn app-btn--outline app-btn--sm" disabled={busy} onClick={() => dismiss(context)}>
                 Not now
               </button>
@@ -166,15 +166,15 @@ export function VisitCheckInPrompt() {
 
         {context.kind === 'recentDebrief' && context.visit && (
           <>
-            <p className="u-caption" style={{ margin: '0 0 4px' }}>After your visit</p>
+            <p className="u-caption">After your visit</p>
             <strong>
               How did your {(DOCTOR_VISIT_TYPE_LABELS[context.visit.visit_type] ?? context.visit.visit_type).toLowerCase()} on{' '}
               {new Date(context.visit.visit_date).toLocaleDateString()} go?
             </strong>
-            <p className="u-muted" style={{ margin: '8px 0 0', fontSize: '0.85rem' }}>
+            <p className="u-muted home-prompt-card__body" style={{ marginTop: 8 }}>
               Log any tests still to do. We can add reminders if you want.
             </p>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <div className="home-prompt-card__actions">
               <button type="button" className="app-btn app-btn--outline app-btn--sm" onClick={() => dismiss(context)}>
                 Not now
               </button>
@@ -187,13 +187,13 @@ export function VisitCheckInPrompt() {
 
         {context.kind === 'monthlyLog' && (
           <>
-            <p className="u-caption" style={{ margin: '0 0 4px' }}>Doctor visit check-in</p>
+            <p className="u-caption">Doctor visit check-in</p>
             <strong>Any appointment coming up, or a visit you had recently?</strong>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <div className="home-prompt-card__actions">
               <button type="button" className="app-btn app-btn--outline app-btn--sm" onClick={() => dismiss(context)}>
                 Not now
               </button>
-              <Link to={appPath('visits/new')} className="gradient-btn" style={{ textDecoration: 'none', padding: '10px 16px', borderRadius: 12, fontSize: '0.9rem' }}>
+              <Link to={appPath('visits/new')} className="gradient-btn app-btn--sm" style={{ textDecoration: 'none', width: 'auto', flex: '0 0 auto' }}>
                 Log visit
               </Link>
             </div>

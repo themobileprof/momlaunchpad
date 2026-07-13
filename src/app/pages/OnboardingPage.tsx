@@ -5,8 +5,7 @@ import { GlassCard, GradientButton } from '../components/ui'
 import { userApi } from '../api'
 import { useUserAuth } from '../context/UserAuthContext'
 import { useUserProfile } from '../context/UserProfileContext'
-import { appPhotos } from '../lib/appPhotos'
-import { resolveBabyTheme } from '../lib/babyTheme'
+import { saveStoredBabyGender } from '../lib/babyGenderStorage'
 import { JOURNEY_STAGES, type BabyGender, type JourneyStage } from '../types'
 import { appPath } from '../routes'
 
@@ -14,7 +13,7 @@ const SIGNUP_STAGES = JOURNEY_STAGES.filter((s) => s.signup)
 
 export function OnboardingPage() {
   const { user } = useUserAuth()
-  const { profile, setProfile } = useUserProfile()
+  const { profile, setProfile, setPreviewBabyGender } = useUserProfile()
   const [step, setStep] = useState(0)
   const [name, setName] = useState(user?.name ?? '')
   const [journeyStage, setJourneyStage] = useState<JourneyStage | null>(null)
@@ -24,17 +23,7 @@ export function OnboardingPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const previewTheme = babyGender ? resolveBabyTheme(babyGender) : 'bloom'
-
-  useEffect(() => {
-    const root = document.querySelector('.user-app')
-    if (!root || !babyGender) return
-    const previous = root.getAttribute('data-baby-theme')
-    root.setAttribute('data-baby-theme', previewTheme)
-    return () => {
-      if (previous) root.setAttribute('data-baby-theme', previous)
-    }
-  }, [babyGender, previewTheme])
+  useEffect(() => () => setPreviewBabyGender(null), [setPreviewBabyGender])
 
   if (!user) return <Navigate to={appPath('login')} replace />
   if (profile?.onboarding_completed) return <Navigate to={appPath()} replace />
@@ -52,10 +41,16 @@ export function OnboardingPage() {
       if (journeyStage === 'pregnant') {
         body.pregnancy_week = pregnancyWeek
         if (isFirstPregnancy !== null) body.is_first_pregnancy = isFirstPregnancy
-        if (babyGender) body.baby_gender = babyGender
       }
+      if (babyGender) body.baby_gender = babyGender
       const p = await userApi.completeOnboarding(body)
-      setProfile(p)
+      const savedGender = babyGender ?? p.baby_gender
+      if (user && savedGender) saveStoredBabyGender(user.id, savedGender)
+      setProfile({
+        ...p,
+        baby_gender: savedGender,
+      })
+      setPreviewBabyGender(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save')
     } finally {
@@ -108,9 +103,6 @@ export function OnboardingPage() {
           <GlassCard className="auth-card">
             {step === 0 && (
               <div>
-                <div className="auth-photo-banner">
-                  <img src={appPhotos.hero.src} alt="" />
-                </div>
                 <h2 className="u-heading-lg" style={{ marginBottom: 12 }}>Welcome to MomLaunchpad</h2>
                 <p className="u-body u-muted">
                   We&apos;ll ask a few gentle questions so your companion can support you in a way
@@ -196,7 +188,13 @@ export function OnboardingPage() {
                       Pick one to color your app — rose for girl, blue for boy, or golden sparkle if
                       it&apos;s still a surprise.
                     </p>
-                    <GenderPicker value={babyGender} onChange={setBabyGender} />
+                    <GenderPicker
+                      value={babyGender}
+                      onChange={(gender) => {
+                        setBabyGender(gender)
+                        setPreviewBabyGender(gender)
+                      }}
+                    />
                   </>
                 )}
                 {journeyStage === 'ttc' && (

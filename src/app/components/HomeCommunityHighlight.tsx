@@ -47,10 +47,10 @@ export function HomeCommunityHighlight() {
   if (loading) return null
   if (needsOnboarding) {
     return (
-      <div className="glass" style={{ margin: '16px 16px 0', padding: 16 }}>
-        <p className="u-caption" style={{ margin: '0 0 4px' }}>Community</p>
+      <div className="glass home-prompt-card">
+        <p className="u-caption">Community</p>
         <strong>Join moms near you</strong>
-        <p className="u-muted" style={{ margin: '8px 0 12px', fontSize: '0.85rem' }}>
+        <p className="u-muted home-prompt-card__body">
           {locationLabel ? `Set up your feed for ${locationLabel}` : 'Add your location and topics to see nearby posts.'}
         </p>
         <Link to={appPath('community/onboarding')}>
@@ -63,18 +63,18 @@ export function HomeCommunityHighlight() {
   if (nearbyCount === 0 && eventCount === 0) return null
 
   return (
-    <div className="glass" style={{ margin: '16px 16px 0', padding: 16 }}>
-      <p className="u-caption" style={{ margin: '0 0 4px' }}>Near you</p>
+    <div className="glass home-prompt-card">
+      <p className="u-caption">Near you</p>
       <strong>
         {nearbyCount > 0 ? `${nearbyCount} recent post${nearbyCount === 1 ? '' : 's'} nearby` : 'Community pulse'}
         {eventCount > 0 ? ` · ${eventCount} upcoming event${eventCount === 1 ? '' : 's'}` : ''}
       </strong>
       {topPostPreview && (
-        <p className="u-muted" style={{ margin: '8px 0', fontSize: '0.85rem' }}>
+        <p className="u-muted home-prompt-card__body" style={{ marginBottom: 8 }}>
           “{topPostPreview}{topPostPreview.length >= 120 ? '…' : ''}”
         </p>
       )}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div className="home-prompt-card__actions">
         <Link to={appPath('community')} className="app-btn app-btn--outline app-btn--sm" style={{ textDecoration: 'none' }}>
           Open community
         </Link>

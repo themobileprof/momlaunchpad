@@ -8,12 +8,18 @@ import {
   type ReactNode,
 } from 'react'
 import { userApi } from '../api'
-import type { UserProfile } from '../types'
+import { mergeProfileBabyGender } from '../lib/babyGenderStorage'
+import type { BabyGender, UserProfile } from '../types'
 import { useUserAuth } from './UserAuthContext'
 
 interface UserProfileContextValue {
   profile: UserProfile | null
   loading: boolean
+  /** Live gender preview while editing profile/onboarding (overrides saved value for theming). */
+  previewBabyGender: BabyGender | null
+  setPreviewBabyGender: (gender: BabyGender | null) => void
+  /** Saved gender, or preview while the user is picking one. */
+  activeBabyGender: BabyGender | null | undefined
   refreshProfile: () => Promise<UserProfile | null>
   setProfile: (p: UserProfile) => void
 }
@@ -23,7 +29,23 @@ const UserProfileContext = createContext<UserProfileContextValue | null>(null)
 export function UserProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useUserAuth()
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [previewBabyGender, setPreviewBabyGender] = useState<BabyGender | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const activeBabyGender = previewBabyGender ?? profile?.baby_gender
+
+  const applyProfile = useCallback(
+    (p: UserProfile) => {
+      if (user) {
+        const merged = mergeProfileBabyGender(user.id, p)
+        setProfile(merged)
+        return merged
+      }
+      setProfile(p)
+      return p
+    },
+    [user],
+  )
 
   const refreshProfile = useCallback(async () => {
     if (!user) {
@@ -34,19 +56,19 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     try {
       const p = await userApi.getProfile()
-      setProfile(p)
-      return p
+      return applyProfile(p)
     } catch {
       setProfile(null)
       return null
     } finally {
       setLoading(false)
     }
-  }, [user])
+  }, [user, applyProfile])
 
   useEffect(() => {
     if (!user) {
       setProfile(null)
+      setPreviewBabyGender(null)
       setLoading(false)
       return
     }
@@ -54,8 +76,16 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
   }, [user, refreshProfile])
 
   const value = useMemo(
-    () => ({ profile, loading, refreshProfile, setProfile }),
-    [profile, loading, refreshProfile],
+    () => ({
+      profile,
+      loading,
+      previewBabyGender,
+      setPreviewBabyGender,
+      activeBabyGender,
+      refreshProfile,
+      setProfile: applyProfile,
+    }),
+    [profile, loading, previewBabyGender, activeBabyGender, refreshProfile, applyProfile],
   )
 
   return (
