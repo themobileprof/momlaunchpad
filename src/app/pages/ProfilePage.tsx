@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
+import { CommunityBadgeProfileSection } from '../components/CommunityBadgeProfileSection'
 import { GenderPicker } from '../components/GenderPicker'
 import { AppCard, GradientButton, MomAppBar } from '../components/ui'
 import { useUserAuth } from '../context/UserAuthContext'
@@ -193,6 +194,17 @@ export function ProfilePage() {
               </>
             )}
           </AppCard>
+          </div>
+
+          <p className="u-caption">Community badges</p>
+          <div style={{ marginBottom: 16 }}>
+            {journeyStage === 'ttc' && (
+              <p className="u-muted" style={{ fontSize: '0.85rem', margin: '0 0 12px' }}>
+                Healthcare professional supporting mothers at your clinic? Request your professional
+                badge below — workplace, role, and credentials help us verify faster.
+              </p>
+            )}
+            <CommunityBadgeProfileSection />
           </div>
 
           <p className="u-caption">Community feed</p>

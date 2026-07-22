@@ -189,6 +189,41 @@ export interface CommunityCountry {
   name: string
 }
 
+export interface CommunityBadgeType {
+  key: string
+  label: string
+  description?: string
+  sort_order?: number
+  is_enabled?: boolean
+}
+
+export interface CommunityBadgeRequest {
+  id: string
+  user_id: string
+  badge_type: string
+  status: 'pending' | 'approved' | 'rejected' | string
+  message?: string
+  admin_note?: string
+  reviewed_at?: string
+  created_at: string
+}
+
+export interface CommunityBadgeLimits {
+  free: number
+  premium: number
+}
+
+export interface MyCommunityBadges {
+  badges: string[]
+  requests: CommunityBadgeRequest[]
+  requestable_types: CommunityBadgeType[]
+  is_premium: boolean
+  badge_limit: number
+  badge_slots_used: number
+  can_request_more_badges: boolean
+  badge_limits: CommunityBadgeLimits
+}
+
 export interface CommunityThreadEvaluation {
   conversation_id: string
   title: string

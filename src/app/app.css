@@ -404,6 +404,92 @@
   border: 1px solid color-mix(in srgb, var(--accent-deep) 12%, transparent);
 }
 
+.app-badge--verified {
+  background: color-mix(in srgb, var(--teal) 12%, transparent);
+  color: var(--teal);
+  border-color: color-mix(in srgb, var(--teal) 24%, transparent);
+  font-weight: 600;
+}
+
+.community-badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.community-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 12%, transparent);
+}
+
+.community-badge-request-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent-deep) 8%, transparent);
+}
+
+.community-badge-request-row:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.community-badge-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.community-badge-history li {
+  padding: 10px 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent-deep) 8%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.community-badge-history li:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.community-badge-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.community-badge-status--pending { color: var(--warning, #b8860b); }
+.community-badge-status--approved { color: var(--success, #2d7a4f); }
+.community-badge-status--rejected { color: var(--error, #c0392b); }
+
+.community-badge-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  z-index: 200;
+}
+
+.community-badge-dialog {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-lg);
+}
+
 /* Bottom nav */
 .bottom-nav-wrap {
   position: fixed;

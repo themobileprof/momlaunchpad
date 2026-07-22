@@ -152,6 +152,11 @@ export function OnboardingPage() {
                     <p className="u-muted" style={{ margin: '4px 0 0', fontSize: '0.88rem' }}>{s.description}</p>
                   </button>
                 ))}
+                <p className="u-muted" style={{ marginTop: 16, fontSize: '0.85rem' }}>
+                  Healthcare professional at a clinic or hospital? Choose{' '}
+                  <strong>Trying to conceive</strong> if you&apos;re not currently pregnant, then
+                  request your professional badge in Profile after signup.
+                </p>
               </div>
             )}
 

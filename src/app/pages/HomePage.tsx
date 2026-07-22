@@ -7,9 +7,13 @@ import { VisitCheckInPrompt } from '../components/VisitCheckInPrompt'
 import { GradientButton, MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
 import { babyThemeLabel, resolveBabyTheme } from '../lib/babyTheme'
+import {
+  hasProfessionalBadge,
+  primaryProfessionalBadgeLabel,
+} from '../lib/communityBadges'
 import { JOURNEY_STAGES } from '../types'
 import { appPath } from '../routes'
-import type { WelcomeMessage } from '../types'
+import type { MyCommunityBadges, WelcomeMessage } from '../types'
 
 /** Single curated hero — not scattered elsewhere in the app */
 const HERO_IMAGE = '/pregnant/main/pexels-alameenng-33662812.jpg'
@@ -65,6 +69,7 @@ export function AppHomePage() {
   const { profile, activeBabyGender } = useUserProfile()
   const [welcome, setWelcome] = useState<WelcomeMessage | null>(null)
   const [loading, setLoading] = useState(true)
+  const [badges, setBadges] = useState<MyCommunityBadges | null>(null)
 
   useEffect(() => {
     userApi
@@ -75,16 +80,28 @@ export function AppHomePage() {
   }, [])
 
   useEffect(() => {
+    userApi
+      .getMyCommunityBadges()
+      .then(setBadges)
+      .catch(() => setBadges(null))
+  }, [])
+
+  useEffect(() => {
     userApi.trackUsage('home_view')
   }, [])
 
   const journeyLabel = JOURNEY_STAGES.find((s) => s.value === profile?.journey_stage)?.label
+  const professionalLabel = badges ? primaryProfessionalBadgeLabel(badges) : null
+  const isProfessional = badges ? hasProfessionalBadge(badges.badges) : false
+  const statusLabel = professionalLabel ?? journeyLabel
   const firstName = profile?.name?.split(' ')[0]
   const theme = resolveBabyTheme(activeBabyGender)
   const week = profile?.pregnancy_week
   const message =
     welcome?.message ??
-    'Personalized support for every stage — chat, community, and reminders that fit your life.'
+    (isProfessional
+      ? 'Thank you for supporting mothers in your community — chat, community, and reminders are here when you need them.'
+      : 'Personalized support for every stage — chat, community, and reminders that fit your life.')
 
   return (
     <>
@@ -111,7 +128,11 @@ export function AppHomePage() {
         </section>
 
         <div className="home-status-row" aria-label="Your journey">
-          {journeyLabel && <span className="app-badge">{journeyLabel}</span>}
+          {statusLabel && (
+            <span className={`app-badge${professionalLabel ? ' app-badge--verified' : ''}`}>
+              {statusLabel}
+            </span>
+          )}
           {week != null && profile?.journey_stage === 'pregnant' && (
             <span className="app-badge">Week {week}</span>
           )}

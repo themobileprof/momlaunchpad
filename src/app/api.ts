@@ -4,7 +4,9 @@ import type {
   AppUser,
   ChatMessage,
   CommunityCountry,
+  CommunityBadgeRequest,
   CommunityEvent,
+  MyCommunityBadges,
   CommunityFeedFilter,
   CommunityInterestGroup,
   CommunityNotification,
@@ -369,6 +371,18 @@ export const userApi = {
     request<{ event_types: { key: string; label: string }[] }>(
       '/api/community/event-types',
     ),
+
+  getMyCommunityBadges: () =>
+    request<MyCommunityBadges>('/api/community/me/badges'),
+
+  createCommunityBadgeRequest: (badge_type: string, message?: string) =>
+    request<{ request: CommunityBadgeRequest }>('/api/community/me/badge-requests', {
+      method: 'POST',
+      body: JSON.stringify({
+        badge_type,
+        ...(message?.trim() ? { message: message.trim() } : {}),
+      }),
+    }),
 
   // General notification / reward inbox
   getInboxNotifications: () =>
