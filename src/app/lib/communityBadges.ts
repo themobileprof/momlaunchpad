@@ -1,6 +1,5 @@
-import type { CommunityBadgeType, MyCommunityBadges } from '../types'
+import type { BadgeRequestDetails, CommunityBadgeType, MyCommunityBadges } from '../types'
 
-/** Badge keys that identify healthcare / clinic ambassadors on home and profile. */
 export const PROFESSIONAL_BADGE_KEYS = [
   'doctor',
   'midwife',
@@ -48,4 +47,66 @@ export function pendingRequestFor(
   badgeType: string,
 ) {
   return data.requests.find((r) => r.badge_type === badgeType && r.status === 'pending')
+}
+
+export function credentialRequiredForBadge(badgeType: string): boolean {
+  return badgeType !== 'ambassador'
+}
+
+export function emptyBadgeRequestDetails(): BadgeRequestDetails {
+  return {
+    workplace: '',
+    role_title: '',
+    credential_id: '',
+    verification_url: '',
+  }
+}
+
+export function validateBadgeRequestDetails(
+  badgeType: string,
+  details: BadgeRequestDetails,
+): string | null {
+  if (!details.workplace.trim()) return 'Workplace or facility is required'
+  if (!details.role_title.trim()) return 'Role or job title is required'
+  if (credentialRequiredForBadge(badgeType) && !details.credential_id?.trim()) {
+    return 'License or registration number is required for this badge'
+  }
+  const url = details.verification_url?.trim()
+  if (url) {
+    try {
+      const parsed = new URL(url)
+      if (!parsed.protocol.startsWith('http')) {
+        return 'Verification link must be a valid URL'
+      }
+    } catch {
+      return 'Verification link must be a valid URL'
+    }
+  }
+  return null
+}
+
+export function formatBadgeRequestDetails(details?: BadgeRequestDetails): string[] {
+  if (!details) return []
+  const lines: string[] = []
+  if (details.workplace?.trim()) lines.push(`Workplace: ${details.workplace.trim()}`)
+  if (details.role_title?.trim()) lines.push(`Role: ${details.role_title.trim()}`)
+  if (details.credential_id?.trim()) {
+    lines.push(`Credential: ${details.credential_id.trim()}`)
+  }
+  if (details.verification_url?.trim()) {
+    lines.push(`Link: ${details.verification_url.trim()}`)
+  }
+  return lines
+}
+
+export function formatUserLocation(req: {
+  user_city?: string
+  user_state_province?: string
+  user_country?: string
+  user_country_code?: string
+}): string {
+  const parts = [req.user_city, req.user_state_province, req.user_country || req.user_country_code]
+    .map((p) => p?.trim())
+    .filter(Boolean)
+  return parts.join(', ')
 }

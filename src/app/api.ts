@@ -375,11 +375,25 @@ export const userApi = {
   getMyCommunityBadges: () =>
     request<MyCommunityBadges>('/api/community/me/badges'),
 
-  createCommunityBadgeRequest: (badge_type: string, message?: string) =>
+  createCommunityBadgeRequest: (
+    badge_type: string,
+    details: import('./types').BadgeRequestDetails,
+    message?: string,
+  ) =>
     request<{ request: CommunityBadgeRequest }>('/api/community/me/badge-requests', {
       method: 'POST',
       body: JSON.stringify({
         badge_type,
+        details: {
+          workplace: details.workplace.trim(),
+          role_title: details.role_title.trim(),
+          ...(details.credential_id?.trim()
+            ? { credential_id: details.credential_id.trim() }
+            : {}),
+          ...(details.verification_url?.trim()
+            ? { verification_url: details.verification_url.trim() }
+            : {}),
+        },
         ...(message?.trim() ? { message: message.trim() } : {}),
       }),
     }),

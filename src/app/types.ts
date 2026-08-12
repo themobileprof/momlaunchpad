@@ -203,9 +203,17 @@ export interface CommunityBadgeRequest {
   badge_type: string
   status: 'pending' | 'approved' | 'rejected' | string
   message?: string
+  details?: BadgeRequestDetails
   admin_note?: string
   reviewed_at?: string
   created_at: string
+}
+
+export interface BadgeRequestDetails {
+  workplace: string
+  role_title: string
+  credential_id?: string
+  verification_url?: string
 }
 
 export interface CommunityBadgeLimits {

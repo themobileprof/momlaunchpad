@@ -2,9 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { userApi } from '../api'
 import {
   badgeLabelForKey,
+  credentialRequiredForBadge,
+  emptyBadgeRequestDetails,
+  formatBadgeRequestDetails,
   pendingRequestFor,
+  validateBadgeRequestDetails,
 } from '../lib/communityBadges'
-import type { CommunityBadgeType, MyCommunityBadges } from '../types'
+import type { BadgeRequestDetails, CommunityBadgeType, MyCommunityBadges } from '../types'
 import { AppCard } from './ui'
 
 function BadgeChip({ label }: { label: string }) {
@@ -36,7 +40,9 @@ export function CommunityBadgeProfileSection() {
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState<string | null>(null)
   const [requestDialog, setRequestDialog] = useState<CommunityBadgeType | null>(null)
+  const [requestDetails, setRequestDetails] = useState<BadgeRequestDetails>(emptyBadgeRequestDetails())
   const [requestNote, setRequestNote] = useState('')
+  const [formError, setFormError] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -55,19 +61,33 @@ export function CommunityBadgeProfileSection() {
     load()
   }, [load])
 
+  function openRequestDialog(badgeType: CommunityBadgeType) {
+    setRequestDialog(badgeType)
+    setRequestDetails(emptyBadgeRequestDetails())
+    setRequestNote('')
+    setFormError('')
+  }
+
   async function submitRequest() {
     if (!requestDialog) return
+    const validationError = validateBadgeRequestDetails(requestDialog.key, requestDetails)
+    if (validationError) {
+      setFormError(validationError)
+      return
+    }
     setSubmitting(requestDialog.key)
     setMessage('')
     setError('')
+    setFormError('')
     try {
-      await userApi.createCommunityBadgeRequest(requestDialog.key, requestNote)
+      await userApi.createCommunityBadgeRequest(requestDialog.key, requestDetails, requestNote)
       setMessage(`${requestDialog.label} request submitted.`)
       setRequestDialog(null)
+      setRequestDetails(emptyBadgeRequestDetails())
       setRequestNote('')
       await load()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not submit request')
+      setFormError(e instanceof Error ? e.message : 'Could not submit request')
     } finally {
       setSubmitting(null)
     }
@@ -80,6 +100,10 @@ export function CommunityBadgeProfileSection() {
     if (pendingRequestFor(data, t.key)) return false
     return true
   })
+
+  const credentialRequired = requestDialog
+    ? credentialRequiredForBadge(requestDialog.key)
+    : false
 
   return (
     <AppCard>
@@ -139,10 +163,7 @@ export function CommunityBadgeProfileSection() {
                       type="button"
                       className="app-btn app-btn--outline app-btn--sm"
                       disabled={submitting === t.key}
-                      onClick={() => {
-                        setRequestDialog(t)
-                        setRequestNote('')
-                      }}
+                      onClick={() => openRequestDialog(t)}
                     >
                       {submitting === t.key ? '…' : 'Request'}
                     </button>
@@ -164,8 +185,18 @@ export function CommunityBadgeProfileSection() {
                     <span className="u-muted" style={{ fontSize: '0.8rem' }}>
                       {new Date(r.created_at).toLocaleDateString()}
                     </span>
+                    {formatBadgeRequestDetails(r.details).map((line) => (
+                      <p key={line} className="u-muted" style={{ fontSize: '0.82rem', margin: '4px 0 0', width: '100%' }}>
+                        {line}
+                      </p>
+                    ))}
+                    {r.message?.trim() && (
+                      <p className="u-muted" style={{ fontSize: '0.82rem', margin: '4px 0 0', width: '100%' }}>
+                        Note: {r.message.trim()}
+                      </p>
+                    )}
                     {r.status === 'rejected' && r.admin_note && (
-                      <p className="u-muted" style={{ fontSize: '0.82rem', margin: '4px 0 0' }}>
+                      <p className="u-muted" style={{ fontSize: '0.82rem', margin: '4px 0 0', width: '100%' }}>
                         {r.admin_note}
                       </p>
                     )}
@@ -196,15 +227,51 @@ export function CommunityBadgeProfileSection() {
                 {requestDialog.description}
               </p>
             )}
-            <label className="app-label">Optional note for reviewers</label>
+            <label className="app-label">Workplace or facility</label>
+            <input
+              className="app-input"
+              value={requestDetails.workplace}
+              onChange={(e) => setRequestDetails({ ...requestDetails, workplace: e.target.value })}
+              placeholder="Hospital, clinic, or program name"
+              style={{ marginBottom: 12 }}
+            />
+            <label className="app-label">Role or job title</label>
+            <input
+              className="app-input"
+              value={requestDetails.role_title}
+              onChange={(e) => setRequestDetails({ ...requestDetails, role_title: e.target.value })}
+              placeholder="e.g. Staff midwife, Clinic manager"
+              style={{ marginBottom: 12 }}
+            />
+            <label className="app-label">
+              {credentialRequired ? 'License or registration number' : 'Employee or program ID (optional)'}
+            </label>
+            <input
+              className="app-input"
+              value={requestDetails.credential_id ?? ''}
+              onChange={(e) => setRequestDetails({ ...requestDetails, credential_id: e.target.value })}
+              placeholder={credentialRequired ? 'Professional license or registration' : 'Optional identifier'}
+              style={{ marginBottom: 12 }}
+            />
+            <label className="app-label">Verification link (optional)</label>
+            <input
+              className="app-input"
+              type="url"
+              value={requestDetails.verification_url ?? ''}
+              onChange={(e) => setRequestDetails({ ...requestDetails, verification_url: e.target.value })}
+              placeholder="Hospital page, registry profile, or LinkedIn"
+              style={{ marginBottom: 12 }}
+            />
+            <label className="app-label">Additional note (optional)</label>
             <textarea
               className="app-input"
               rows={3}
               value={requestNote}
               onChange={(e) => setRequestNote(e.target.value)}
-              placeholder="Credentials, workplace, license number, or context"
-              style={{ marginBottom: 16, resize: 'vertical' }}
+              placeholder="Anything else reviewers should know"
+              style={{ marginBottom: 12, resize: 'vertical' }}
             />
+            {formError && <p className="u-alert u-alert--error" style={{ marginBottom: 12 }}>{formError}</p>}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button type="button" className="app-btn app-btn--outline app-btn--sm" onClick={() => setRequestDialog(null)}>
                 Cancel

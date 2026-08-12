@@ -18,6 +18,7 @@ import { Tabs } from '../components/Tabs'
 import { UserPicker } from '../components/UserPicker'
 import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 import { usePendingBadgeRequests } from '../hooks/usePendingBadgeRequests'
+import { formatBadgeRequestDetails, formatUserLocation } from '../lib/badgeRequestFormat'
 
 const COMMUNITY_TABS = ['reports', 'badge-requests', 'verified', 'badges', 'catalog'] as const
 type CommunityTab = (typeof COMMUNITY_TABS)[number]
@@ -723,8 +724,9 @@ export function CommunityPage() {
               <thead>
                 <tr>
                   <th>User</th>
+                  <th>Location</th>
                   <th>Badge</th>
-                  <th>User note</th>
+                  <th>Verification details</th>
                   <th>Status</th>
                   <th>Submitted</th>
                   {requestFilter !== 'pending' && <th>Admin note</th>}
@@ -750,12 +752,35 @@ export function CommunityPage() {
                       </div>
                     </td>
                     <td>
+                      {formatUserLocation(req) || <span className="muted">—</span>}
+                    </td>
+                    <td>
                       <strong>{badgeLabel(req.badge_type)}</strong>
                       <div className="table-sub">
                         <code>{req.badge_type}</code>
                       </div>
                     </td>
-                    <td>{req.message?.trim() || <span className="muted">—</span>}</td>
+                    <td>
+                      {formatBadgeRequestDetails(req.details).length > 0 ? (
+                        <div>
+                          {formatBadgeRequestDetails(req.details).map((line) => (
+                            <div key={line}>{line}</div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="muted">—</span>
+                      )}
+                      {req.message?.trim() && (
+                        <div className="table-sub">Note: {req.message.trim()}</div>
+                      )}
+                      {req.details?.verification_url?.trim() && (
+                        <div className="table-sub">
+                          <a href={req.details.verification_url} target="_blank" rel="noreferrer">
+                            Open verification link
+                          </a>
+                        </div>
+                      )}
+                    </td>
                     <td>
                       <span className="badge">{req.status}</span>
                     </td>

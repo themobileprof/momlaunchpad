@@ -203,6 +203,7 @@ export interface CommunityBadgeRequest {
   badge_type: string
   status: string
   message?: string
+  details?: BadgeRequestDetails
   admin_note?: string
   reviewed_by?: string
   reviewed_at?: string
@@ -210,6 +211,17 @@ export interface CommunityBadgeRequest {
   updated_at: string
   user_email?: string
   user_name?: string
+  user_city?: string
+  user_state_province?: string
+  user_country?: string
+  user_country_code?: string
+}
+
+export interface BadgeRequestDetails {
+  workplace: string
+  role_title: string
+  credential_id?: string
+  verification_url?: string
 }
 
 export interface CatalogKeyLabel {
