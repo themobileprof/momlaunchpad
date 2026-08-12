@@ -68,6 +68,12 @@
   color: var(--home-rose-deep);
 }
 
+.home-nav--auth {
+  align-items: center;
+  gap: clamp(0.85rem, 2vw, 1.35rem);
+  flex-shrink: 0;
+}
+
 .home main {
   position: relative;
   z-index: 1;
@@ -930,8 +936,20 @@
 }
 
 @media (max-width: 640px) {
-  .home-nav {
+  .home-nav:not(.home-nav--auth) {
     display: none;
+  }
+
+  .home-header {
+    gap: 0.75rem;
+  }
+
+  .home-nav--auth {
+    gap: 0.75rem;
+  }
+
+  .home-nav--auth a {
+    font-size: 0.85rem;
   }
 
   .home-hero-actions {
@@ -946,17 +964,6 @@
   .home-cta-actions--dual .home-btn-outline,
   .home-cta-actions--dual .home-btn-ghost {
     flex: 1 1 100%;
-  }
-}
-
-@media (max-width: 879px) {
-  .home-hero--compact .home-hero-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .home-hero--compact .home-btn {
-    width: 100%;
   }
 }
 
@@ -1115,10 +1122,6 @@
     margin-right: 0;
   }
 
-  .home-hero--compact .home-hero-actions {
-    justify-content: flex-start;
-  }
-
   .home-android {
     text-align: left;
   }
@@ -1145,10 +1148,6 @@
 
 .home-hero--compact .home-hero-lead {
   font-size: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.home-hero--compact .home-hero-actions {
   margin-bottom: 0;
 }
 
