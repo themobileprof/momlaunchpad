@@ -15,6 +15,8 @@ export function ProfilePage() {
   const { user } = useUserAuth()
   const { profile, setProfile, setPreviewBabyGender, refreshProfile } = useUserProfile()
   const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [facilityOptIn, setFacilityOptIn] = useState(true)
   const [journeyStage, setJourneyStage] = useState<JourneyStage | undefined>()
   const [pregnancyWeek, setPregnancyWeek] = useState(20)
   const [babyGender, setBabyGender] = useState<BabyGender | null>(null)
@@ -25,6 +27,8 @@ export function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setName(profile.name)
+      setPhone(profile.phone_number ?? '')
+      setFacilityOptIn(profile.facility_announcements_opt_in !== false)
       setJourneyStage(profile.journey_stage)
       if (profile.pregnancy_week) setPregnancyWeek(profile.pregnancy_week)
       setBabyGender(profile.baby_gender ?? null)
@@ -41,6 +45,8 @@ export function ProfilePage() {
         name: name.trim(),
         language: 'en',
         journey_stage: journeyStage,
+        phone_number: phone.trim(),
+        facility_announcements_opt_in: facilityOptIn,
       }
       if (journeyStage === 'pregnant') {
         body.pregnancy_week = pregnancyWeek
@@ -153,7 +159,46 @@ export function ProfilePage() {
           <AppCard>
             <label className="app-label">Name</label>
             <input className="app-input" value={name} onChange={(e) => setName(e.target.value)} />
+            <label className="app-label" style={{ marginTop: 12 }}>
+              WhatsApp number (optional)
+            </label>
+            <input
+              className="app-input"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+234…"
+              autoComplete="tel"
+            />
+            <p className="u-caption" style={{ marginTop: 8 }}>
+              Optional — used for WhatsApp updates and so your health center can reach you.
+            </p>
+            <label
+              className="u-muted"
+              style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 12 }}
+            >
+              <input
+                type="checkbox"
+                checked={facilityOptIn}
+                onChange={(e) => setFacilityOptIn(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <span>Allow announcements from my health center admin</span>
+            </label>
           </AppCard>
+          </div>
+
+          <p className="u-caption">Health center admin</p>
+          <div style={{ marginBottom: 16 }}>
+            <AppCard>
+              <p className="u-muted" style={{ marginTop: 0 }}>
+                Work at a clinic or hospital? Claim your center to message people who registered
+                there.
+              </p>
+              <Link to={appPath('facility')} className="app-btn app-btn--outline app-btn--sm">
+                Open health center tools
+              </Link>
+            </AppCard>
           </div>
 
           <p className="u-caption">Journey</p>

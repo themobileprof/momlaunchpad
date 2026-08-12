@@ -21,6 +21,7 @@ interface UserAuthContextValue {
     password: string,
     name: string,
     referralCode?: string,
+    phoneNumber?: string,
   ) => Promise<void>
   googleSignIn: (idToken: string) => Promise<void>
   logout: () => void
@@ -70,12 +71,20 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
   )
 
   const register = useCallback(
-    async (email: string, password: string, name: string, referralCode?: string) => {
+    async (
+      email: string,
+      password: string,
+      name: string,
+      referralCode?: string,
+      phoneNumber?: string,
+    ) => {
       const referral = referralCode?.trim() || getStoredReferralCode()
+      const phone = phoneNumber?.trim()
       const res = await userApi.register({
         email,
         password,
         name,
+        ...(phone ? { phone_number: phone } : {}),
         referral_code: referral ?? undefined,
       })
       persistAuth(res.token, res.user)

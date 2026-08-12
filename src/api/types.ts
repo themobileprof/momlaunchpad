@@ -217,6 +217,28 @@ export interface CommunityBadgeRequest {
   user_country_code?: string
 }
 
+export interface FacilityAdminClaim {
+  id: string
+  user_id: string
+  healthcare_facility_id: string
+  status: string
+  role_title?: string
+  proof_note?: string
+  proof_url?: string
+  admin_note?: string
+  reviewed_by?: string
+  reviewed_at?: string
+  created_at: string
+  updated_at: string
+  user_email?: string
+  user_name?: string
+  user_phone?: string
+  facility_name?: string
+  facility_city?: string
+  facility_state_province?: string
+  facility_country_code?: string
+}
+
 export interface BadgeRequestDetails {
   workplace: string
   role_title: string

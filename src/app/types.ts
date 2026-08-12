@@ -32,6 +32,8 @@ export interface UserProfile {
   country_code?: string
   state_province?: string
   city?: string
+  phone_number?: string
+  facility_announcements_opt_in?: boolean
   healthcare_facility_id?: string
   healthcare_facility_name?: string
   community_onboarding_completed: boolean
@@ -296,6 +298,47 @@ export interface VisitDebriefPayload {
   pending_tests: VisitPendingTest[]
   medications?: VisitMedication[]
   mark_completed: boolean
+}
+
+export interface FacilityAdminClaim {
+  id: string
+  user_id: string
+  healthcare_facility_id: string
+  status: 'pending' | 'approved' | 'rejected' | 'revoked' | string
+  role_title?: string
+  proof_note?: string
+  proof_url?: string
+  admin_note?: string
+  reviewed_by?: string
+  reviewed_at?: string
+  created_at: string
+  updated_at: string
+  user_email?: string
+  user_name?: string
+  user_phone?: string
+  facility_name?: string
+  facility_city?: string
+  facility_state_province?: string
+  facility_country_code?: string
+}
+
+export interface FacilityMember {
+  user_id: string
+  display_name: string
+  city?: string
+  phone_number?: string
+  last_active?: string
+  facility_announcements_opt_in: boolean
+}
+
+export interface FacilityAnnouncement {
+  id: string
+  healthcare_facility_id: string
+  sent_by: string
+  title: string
+  body: string
+  recipient_count: number
+  created_at: string
 }
 
 export const DOCTOR_VISIT_TYPES = [

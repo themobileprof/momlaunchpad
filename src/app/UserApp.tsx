@@ -20,6 +20,7 @@ import { CommunityPostPage } from './pages/CommunityPostPage'
 import { CommunityNotificationsPage } from './pages/CommunityNotificationsPage'
 import { InboxPage } from './pages/InboxPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { FacilityAdminPage } from './pages/FacilityAdminPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { DoctorVisitsPage } from './pages/DoctorVisitsPage'
 import { DoctorVisitFormPage } from './pages/DoctorVisitFormPage'
@@ -144,6 +145,14 @@ function UserAppRoutes() {
           element={
             <UserGate>
               <InboxPage />
+            </UserGate>
+          }
+        />
+        <Route
+          path="facility"
+          element={
+            <UserGate>
+              <FacilityAdminPage />
             </UserGate>
           }
         />

@@ -40,41 +40,39 @@ export function HomePage() {
       <main className="home-compact-main">
         <HomePhotoVisual />
 
-        <div className="home-compact-content">
-          <section className="home-hero home-hero--compact" aria-labelledby="hero-heading">
-            <div className="home-hero-glow" aria-hidden />
-            <h1 id="hero-heading" className="home-hero-title home-reveal">
-              A softer place to land
-            </h1>
-            <p className="home-hero-lead home-reveal" style={{ animationDelay: '0.08s' }}>
-              Chat, community, and gentle support for your pregnancy journey.
-            </p>
-            <div className="home-hero-actions home-reveal" style={{ animationDelay: '0.14s' }}>
-              <Link to={appPath('login')} className="home-btn home-btn-solid home-btn-lg">
-                Sign in
-              </Link>
-              <Link to={appPath('register')} className="home-hero-secondary-link">
-                Create account
-              </Link>
-            </div>
-          </section>
+        <section className="home-hero home-hero--compact" aria-labelledby="hero-heading">
+          <div className="home-hero-glow" aria-hidden />
+          <h1 id="hero-heading" className="home-hero-title home-reveal">
+            A softer place to land
+          </h1>
+          <p className="home-hero-lead home-reveal" style={{ animationDelay: '0.08s' }}>
+            Chat, community, and gentle support for your pregnancy journey.
+          </p>
+          <div className="home-hero-actions home-reveal" style={{ animationDelay: '0.14s' }}>
+            <Link to={appPath('login')} className="home-btn home-btn-solid home-btn-lg">
+              Sign in
+            </Link>
+            <Link to={appPath('register')} className="home-hero-secondary-link">
+              Create account
+            </Link>
+          </div>
+        </section>
 
-          <ul className="home-features home-reveal" style={{ animationDelay: '0.2s' }}>
-            {FEATURES.map((feature) => (
-              <li key={feature.title} className="home-feature">
-                <span className="home-feature-icon" aria-hidden>
-                  {feature.icon}
-                </span>
-                <div>
-                  <h2 className="home-feature-title">{feature.title}</h2>
-                  <p className="home-feature-desc">{feature.desc}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <ul className="home-features home-reveal" style={{ animationDelay: '0.2s' }}>
+          {FEATURES.map((feature) => (
+            <li key={feature.title} className="home-feature">
+              <span className="home-feature-icon" aria-hidden>
+                {feature.icon}
+              </span>
+              <div>
+                <h2 className="home-feature-title">{feature.title}</h2>
+                <p className="home-feature-desc">{feature.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
 
-          <ApkDownloadSection />
-        </div>
+        <ApkDownloadSection className="home-reveal" />
       </main>
 
       <footer className="home-footer home-footer--compact">

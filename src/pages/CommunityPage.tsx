@@ -12,6 +12,7 @@ import type {
   CommunityRegion,
   CommunityReport,
   CommunityUserBadge,
+  FacilityAdminClaim,
 } from '../api/types'
 import { ADMIN_BASE } from '../routes'
 import { Tabs } from '../components/Tabs'
@@ -20,7 +21,14 @@ import { Alert, Card, EmptyState, PageHeader, Spinner } from '../components/ui'
 import { usePendingBadgeRequests } from '../hooks/usePendingBadgeRequests'
 import { formatBadgeRequestDetails, formatUserLocation } from '../lib/badgeRequestFormat'
 
-const COMMUNITY_TABS = ['reports', 'badge-requests', 'verified', 'badges', 'catalog'] as const
+const COMMUNITY_TABS = [
+  'reports',
+  'badge-requests',
+  'facility-admins',
+  'verified',
+  'badges',
+  'catalog',
+] as const
 type CommunityTab = (typeof COMMUNITY_TABS)[number]
 
 function isCommunityTab(value: string | null): value is CommunityTab {
@@ -55,6 +63,12 @@ export function CommunityPage() {
   const [requestsLoading, setRequestsLoading] = useState(false)
   const [requestNotes, setRequestNotes] = useState<Record<string, string>>({})
   const [requestBusy, setRequestBusy] = useState<string | null>(null)
+
+  const [facilityClaimFilter, setFacilityClaimFilter] = useState('pending')
+  const [facilityClaims, setFacilityClaims] = useState<FacilityAdminClaim[]>([])
+  const [facilityClaimsLoading, setFacilityClaimsLoading] = useState(false)
+  const [facilityClaimNotes, setFacilityClaimNotes] = useState<Record<string, string>>({})
+  const [facilityClaimBusy, setFacilityClaimBusy] = useState<string | null>(null)
 
   const [verifiedFilter, setVerifiedFilter] = useState('')
   const [holders, setHolders] = useState<CommunityBadgeHolder[]>([])
@@ -223,6 +237,19 @@ export function CommunityPage() {
     }
   }, [requestFilter])
 
+  const loadFacilityClaims = useCallback(async () => {
+    setFacilityClaimsLoading(true)
+    setError('')
+    try {
+      const res = await api.listFacilityAdminClaims(facilityClaimFilter)
+      setFacilityClaims(res.claims ?? [])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load facility admin claims')
+    } finally {
+      setFacilityClaimsLoading(false)
+    }
+  }, [facilityClaimFilter])
+
   useEffect(() => {
     if (tab !== 'badges' && tab !== 'badge-requests' && tab !== 'verified') return
     void loadBadgeTypes()
@@ -248,6 +275,10 @@ export function CommunityPage() {
   useEffect(() => {
     if (tab === 'badge-requests') loadBadgeRequests()
   }, [tab, loadBadgeRequests])
+
+  useEffect(() => {
+    if (tab === 'facility-admins') loadFacilityClaims()
+  }, [tab, loadFacilityClaims])
 
   const emailFromUrl = searchParams.get('email')?.trim() ?? ''
 
@@ -371,6 +402,66 @@ export function CommunityPage() {
       setError(err instanceof Error ? err.message : 'Reject failed')
     } finally {
       setRequestBusy(null)
+    }
+  }
+
+  async function approveFacilityClaim(id: string) {
+    setFacilityClaimBusy(`approve-${id}`)
+    setError('')
+    const note = facilityClaimNotes[id]?.trim()
+    try {
+      await api.approveFacilityAdminClaim(id, note || undefined)
+      setMessage('Health center admin claim approved.')
+      setFacilityClaimNotes((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+      await loadFacilityClaims()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Approve failed')
+    } finally {
+      setFacilityClaimBusy(null)
+    }
+  }
+
+  async function rejectFacilityClaim(id: string) {
+    setFacilityClaimBusy(`reject-${id}`)
+    setError('')
+    const note = facilityClaimNotes[id]?.trim()
+    try {
+      await api.rejectFacilityAdminClaim(id, note || undefined)
+      setMessage('Health center admin claim rejected.')
+      setFacilityClaimNotes((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+      await loadFacilityClaims()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Reject failed')
+    } finally {
+      setFacilityClaimBusy(null)
+    }
+  }
+
+  async function revokeFacilityClaim(id: string) {
+    setFacilityClaimBusy(`revoke-${id}`)
+    setError('')
+    const note = facilityClaimNotes[id]?.trim()
+    try {
+      await api.revokeFacilityAdminClaim(id, note || undefined)
+      setMessage('Health center admin access revoked.')
+      setFacilityClaimNotes((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+      await loadFacilityClaims()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Revoke failed')
+    } finally {
+      setFacilityClaimBusy(null)
     }
   }
 
@@ -587,6 +678,7 @@ export function CommunityPage() {
                 ? `Badge requests (${pendingBadgeCount})`
                 : 'Badge requests',
           },
+          { id: 'facility-admins', label: 'Health center admins' },
           { id: 'verified', label: 'Verified members' },
           { id: 'badges', label: 'Grant badges' },
           { id: 'catalog', label: 'Catalog' },
@@ -824,6 +916,155 @@ export function CommunityPage() {
                           </button>
                         </div>
                       </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      )}
+
+      {tab === 'facility-admins' && (
+        <Card className="mt">
+          <div className="form inline-form" style={{ marginBottom: '1rem' }}>
+            <label>
+              Status
+              <select
+                value={facilityClaimFilter}
+                onChange={(e) => setFacilityClaimFilter(e.target.value)}
+              >
+                <option value="pending">pending</option>
+                <option value="approved">approved</option>
+                <option value="rejected">rejected</option>
+                <option value="revoked">revoked</option>
+              </select>
+            </label>
+            <button type="button" className="btn btn-ghost" onClick={loadFacilityClaims}>
+              Refresh
+            </button>
+          </div>
+          {facilityClaimsLoading ? (
+            <Spinner />
+          ) : facilityClaims.length === 0 ? (
+            <EmptyState message={`No ${facilityClaimFilter} health center admin claims.`} />
+          ) : (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Health center</th>
+                  <th>Role / proof</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  {(facilityClaimFilter === 'pending' || facilityClaimFilter === 'approved') && (
+                    <th>Admin note</th>
+                  )}
+                  {(facilityClaimFilter === 'pending' || facilityClaimFilter === 'approved') && (
+                    <th>Actions</th>
+                  )}
+                  {facilityClaimFilter !== 'pending' && facilityClaimFilter !== 'approved' && (
+                    <th>Admin note</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {facilityClaims.map((claim) => (
+                  <tr key={claim.id}>
+                    <td>
+                      <div>{claim.user_name || '—'}</div>
+                      <div className="table-sub">
+                        {claim.user_email ? (
+                          <Link
+                            to={`${ADMIN_BASE}/users?email=${encodeURIComponent(claim.user_email)}`}
+                          >
+                            {claim.user_email}
+                          </Link>
+                        ) : (
+                          claim.user_id
+                        )}
+                      </div>
+                      {claim.user_phone ? (
+                        <div className="table-sub">{claim.user_phone}</div>
+                      ) : null}
+                    </td>
+                    <td>
+                      <strong>{claim.facility_name || '—'}</strong>
+                      <div className="table-sub">
+                        {[claim.facility_city, claim.facility_state_province, claim.facility_country_code]
+                          .filter(Boolean)
+                          .join(', ') || '—'}
+                      </div>
+                    </td>
+                    <td>
+                      {claim.role_title ? <div>{claim.role_title}</div> : null}
+                      {claim.proof_note ? <div className="table-sub">{claim.proof_note}</div> : null}
+                      {claim.proof_url ? (
+                        <div className="table-sub">
+                          <a href={claim.proof_url} target="_blank" rel="noreferrer">
+                            Proof link
+                          </a>
+                        </div>
+                      ) : null}
+                      {!claim.role_title && !claim.proof_note && !claim.proof_url ? (
+                        <span className="muted">—</span>
+                      ) : null}
+                    </td>
+                    <td>
+                      <span className="badge">{claim.status}</span>
+                    </td>
+                    <td>{new Date(claim.created_at).toLocaleString()}</td>
+                    {(facilityClaimFilter === 'pending' || facilityClaimFilter === 'approved') && (
+                      <td>
+                        <input
+                          className="input-full"
+                          value={facilityClaimNotes[claim.id] ?? ''}
+                          onChange={(e) =>
+                            setFacilityClaimNotes((prev) => ({
+                              ...prev,
+                              [claim.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="Optional note"
+                        />
+                      </td>
+                    )}
+                    {facilityClaimFilter === 'pending' && (
+                      <td>
+                        <div className="btn-row">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
+                            disabled={facilityClaimBusy === `approve-${claim.id}`}
+                            onClick={() => approveFacilityClaim(claim.id)}
+                          >
+                            {facilityClaimBusy === `approve-${claim.id}` ? '…' : 'Approve'}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                            disabled={facilityClaimBusy === `reject-${claim.id}`}
+                            onClick={() => rejectFacilityClaim(claim.id)}
+                          >
+                            {facilityClaimBusy === `reject-${claim.id}` ? '…' : 'Reject'}
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                    {facilityClaimFilter === 'approved' && (
+                      <td>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger"
+                          disabled={facilityClaimBusy === `revoke-${claim.id}`}
+                          onClick={() => revokeFacilityClaim(claim.id)}
+                        >
+                          {facilityClaimBusy === `revoke-${claim.id}` ? '…' : 'Revoke'}
+                        </button>
+                      </td>
+                    )}
+                    {facilityClaimFilter !== 'pending' && facilityClaimFilter !== 'approved' && (
+                      <td>{claim.admin_note?.trim() || <span className="muted">—</span>}</td>
                     )}
                   </tr>
                 ))}

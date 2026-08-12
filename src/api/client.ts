@@ -236,6 +236,35 @@ export const api = {
       },
     ),
 
+  listFacilityAdminClaims: (status = 'pending') =>
+    request<{ claims: import('./types').FacilityAdminClaim[] }>(
+      `/api/admin/community/facility-admin-claims?status=${encodeURIComponent(status)}`,
+    ),
+  approveFacilityAdminClaim: (id: string, admin_note?: string) =>
+    request<{ claim: import('./types').FacilityAdminClaim }>(
+      `/api/admin/community/facility-admin-claims/${id}/approve`,
+      {
+        method: 'POST',
+        body: JSON.stringify(admin_note ? { admin_note } : {}),
+      },
+    ),
+  rejectFacilityAdminClaim: (id: string, admin_note?: string) =>
+    request<{ claim: import('./types').FacilityAdminClaim }>(
+      `/api/admin/community/facility-admin-claims/${id}/reject`,
+      {
+        method: 'POST',
+        body: JSON.stringify(admin_note ? { admin_note } : {}),
+      },
+    ),
+  revokeFacilityAdminClaim: (id: string, admin_note?: string) =>
+    request<{ claim: import('./types').FacilityAdminClaim }>(
+      `/api/admin/community/facility-admin-claims/${id}/revoke`,
+      {
+        method: 'POST',
+        body: JSON.stringify(admin_note ? { admin_note } : {}),
+      },
+    ),
+
   // Community catalog
   listInterestGroups: () =>
     request<{ interest_groups: import('./types').CatalogKeyLabel[] }>(

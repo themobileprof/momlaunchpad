@@ -10,6 +10,7 @@ export function UserRegisterPage() {
   const { register, googleSignIn, user } = useUserAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [referralCode, setReferralCode] = useState(() => getStoredReferralCode() ?? '')
   const [error, setError] = useState('')
@@ -34,7 +35,7 @@ export function UserRegisterPage() {
     setError('')
     setLoading(true)
     try {
-      await register(email, password, name.trim(), referralCode.trim() || undefined)
+      await register(email, password, name.trim(), referralCode.trim() || undefined, phone.trim() || undefined)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {
@@ -77,6 +78,18 @@ export function UserRegisterPage() {
             autoComplete="email"
             style={{ marginBottom: 16 }}
           />
+          <input
+            className="app-input"
+            type="tel"
+            placeholder="WhatsApp number (optional)"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            autoComplete="tel"
+            style={{ marginBottom: 8 }}
+          />
+          <p className="u-caption" style={{ marginBottom: 16 }}>
+            Optional — helps us reach you on WhatsApp later.
+          </p>
           <input
             className="app-input"
             type="password"

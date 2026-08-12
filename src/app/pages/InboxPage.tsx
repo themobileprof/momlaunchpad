@@ -7,6 +7,7 @@ import { appPath } from '../routes'
 
 function rewardIcon(n: AppNotification): string {
   if (n.type === 'referral_reward') return '🎁'
+  if (n.type === 'facility_announcement') return '🏥'
   switch (n.payload?.reward_kind) {
     case 'topup_code':
       return '📱'

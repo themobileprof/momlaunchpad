@@ -33,18 +33,20 @@ describe('user token storage', () => {
 describe('register', () => {
   afterEach(() => setUserToken(null))
 
-  it('sends name/email/password with language and referral_code', async () => {
+  it('sends name/email/password/phone with language and referral_code', async () => {
     const fetchMock = mockFetch({ token: 't', user: {} })
     await userApi.register({
       email: 'mom@example.com',
       password: 'password123',
       name: 'Mom',
+      phone_number: '+2348012345678',
       referral_code: 'ABC123',
     })
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(body).toMatchObject({
       email: 'mom@example.com',
       name: 'Mom',
+      phone_number: '+2348012345678',
       language: 'en',
       referral_code: 'ABC123',
     })

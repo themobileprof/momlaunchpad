@@ -17,6 +17,9 @@ import type {
   CommunityThreadEvaluation,
   Conversation,
   DoctorVisit,
+  FacilityAdminClaim,
+  FacilityAnnouncement,
+  FacilityMember,
   QuotaInfo,
   Reminder,
   UserProfile,
@@ -64,6 +67,7 @@ export const userApi = {
     email: string
     password: string
     name: string
+    phone_number?: string
     referral_code?: string
   }) =>
     request<{ token: string; user: AppUser }>('/api/auth/register', {
@@ -417,6 +421,37 @@ export const userApi = {
         ...(message?.trim() ? { message: message.trim() } : {}),
       }),
     }),
+
+  getMyFacilityAdmin: () =>
+    request<{
+      claims: FacilityAdminClaim[]
+      approved: FacilityAdminClaim[]
+    }>('/api/community/facility-admin/me'),
+
+  createFacilityAdminClaim: (body: {
+    healthcare_facility_id: string
+    role_title?: string
+    proof_note?: string
+    proof_url?: string
+  }) =>
+    request<{ claim: FacilityAdminClaim }>('/api/community/facility-admin/claims', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  listFacilityMembers: (facilityId: string, limit = 50, offset = 0) =>
+    request<{ members: FacilityMember[]; total: number }>(
+      `/api/community/facility-admin/facilities/${facilityId}/members?limit=${limit}&offset=${offset}`,
+    ),
+
+  createFacilityAnnouncement: (facilityId: string, title: string, body: string) =>
+    request<{ announcement: FacilityAnnouncement }>(
+      `/api/community/facility-admin/facilities/${facilityId}/announcements`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ title, body }),
+      },
+    ),
 
   // General notification / reward inbox
   getInboxNotifications: () =>

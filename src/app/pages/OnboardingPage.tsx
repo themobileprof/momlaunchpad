@@ -16,6 +16,7 @@ export function OnboardingPage() {
   const { profile, setProfile, setPreviewBabyGender } = useUserProfile()
   const [step, setStep] = useState(0)
   const [name, setName] = useState(user?.name ?? '')
+  const [phone, setPhone] = useState(profile?.phone_number ?? '')
   const [journeyStage, setJourneyStage] = useState<JourneyStage | null>(null)
   const [pregnancyWeek, setPregnancyWeek] = useState(20)
   const [isFirstPregnancy, setIsFirstPregnancy] = useState<boolean | null>(null)
@@ -24,6 +25,11 @@ export function OnboardingPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => () => setPreviewBabyGender(null), [setPreviewBabyGender])
+
+  useEffect(() => {
+    if (profile?.phone_number) setPhone(profile.phone_number)
+    if (profile?.name) setName(profile.name)
+  }, [profile])
 
   if (!user) return <Navigate to={appPath('login')} replace />
   if (profile?.onboarding_completed) return <Navigate to={appPath()} replace />
@@ -38,6 +44,7 @@ export function OnboardingPage() {
         language: 'en',
         journey_stage: journeyStage,
       }
+      if (phone.trim()) body.phone_number = phone.trim()
       if (journeyStage === 'pregnant') {
         body.pregnancy_week = pregnancyWeek
         if (isFirstPregnancy !== null) body.is_first_pregnancy = isFirstPregnancy
@@ -133,7 +140,20 @@ export function OnboardingPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
                   autoFocus
+                  style={{ marginBottom: 16 }}
                 />
+                <label className="app-label">WhatsApp number (optional)</label>
+                <input
+                  className="app-input"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+234…"
+                  autoComplete="tel"
+                />
+                <p className="u-caption" style={{ marginTop: 8 }}>
+                  Optional — so we can reach you on WhatsApp later.
+                </p>
               </div>
             )}
 

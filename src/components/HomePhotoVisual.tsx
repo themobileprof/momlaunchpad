@@ -1,4 +1,4 @@
-import { homeHeroPhoto, homePhotoStrip } from '../pages/homePhotos'
+import { homeHeroPhoto } from '../pages/homePhotos'
 
 export function HomePhotoVisual() {
   return (
@@ -14,20 +14,6 @@ export function HomePhotoVisual() {
           fetchPriority="high"
         />
       </figure>
-      <div className="home-visual-strip">
-        {homePhotoStrip.map((photo) => (
-          <figure key={photo.src} className="home-visual-thumb">
-            <img
-              src={photo.src}
-              alt={photo.alt}
-              width={200}
-              height={240}
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
-        ))}
-      </div>
     </div>
   )
 }
