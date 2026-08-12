@@ -9,9 +9,19 @@ export const PROFESSIONAL_BADGE_KEYS = [
   'ambassador',
 ] as const
 
+/** Clinical badges that require a license/registration number. */
+export const CREDENTIAL_REQUIRED_BADGE_KEYS = [
+  'doctor',
+  'midwife',
+  'pediatrician',
+  'nurse',
+  'lactation_consultant',
+] as const
+
 export type ProfessionalBadgeKey = (typeof PROFESSIONAL_BADGE_KEYS)[number]
 
 const PROFESSIONAL_BADGE_SET = new Set<string>(PROFESSIONAL_BADGE_KEYS)
+const CREDENTIAL_REQUIRED_SET = new Set<string>(CREDENTIAL_REQUIRED_BADGE_KEYS)
 
 export function isProfessionalBadgeKey(key: string): boolean {
   return PROFESSIONAL_BADGE_SET.has(key)
@@ -50,7 +60,7 @@ export function pendingRequestFor(
 }
 
 export function credentialRequiredForBadge(badgeType: string): boolean {
-  return badgeType !== 'ambassador'
+  return CREDENTIAL_REQUIRED_SET.has(badgeType)
 }
 
 export function emptyBadgeRequestDetails(): BadgeRequestDetails {
