@@ -1,25 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { userApi } from '../api'
 import { GradientButton, MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
 import { appPath } from '../routes'
+import type { CommunityHealthcareFacility } from '../types'
 
 export function CommunityOnboardingPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const isEdit = searchParams.get('edit') === '1'
-  const { profile } = useUserProfile()
+  const { profile, refreshProfile } = useUserProfile()
   const [countries, setCountries] = useState<{ code: string; name: string }[]>([])
   const [groups, setGroups] = useState<{ key: string; label: string; items: { key: string; label: string }[] }[]>([])
   const [countryCode, setCountryCode] = useState('')
   const [stateProvince, setStateProvince] = useState('')
   const [city, setCity] = useState('')
+  const [facilityName, setFacilityName] = useState('')
+  const [facilityId, setFacilityId] = useState<string | null>(null)
+  const [facilitySuggestions, setFacilitySuggestions] = useState<CommunityHealthcareFacility[]>([])
+  const [showFacilitySuggestions, setShowFacilitySuggestions] = useState(false)
   const [interests, setInterests] = useState<string[]>([])
   const [stateSuggestions, setStateSuggestions] = useState<string[]>([])
   const [citySuggestions, setCitySuggestions] = useState<string[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const facilityBlurTimer = useRef<number | null>(null)
 
   useEffect(() => {
     userApi.getCommunityCountries().then((r) => setCountries(r.countries))
@@ -35,6 +41,8 @@ export function CommunityOnboardingPage() {
     if (profile.country_code) setCountryCode(profile.country_code)
     if (profile.state_province) setStateProvince(profile.state_province)
     if (profile.city) setCity(profile.city)
+    if (profile.healthcare_facility_name) setFacilityName(profile.healthcare_facility_name)
+    if (profile.healthcare_facility_id) setFacilityId(profile.healthcare_facility_id)
     if (profile.community_interests?.length) setInterests(profile.community_interests)
   }, [isEdit, profile])
 
@@ -63,6 +71,25 @@ export function CommunityOnboardingPage() {
     return () => clearTimeout(t)
   }, [countryCode, city, stateProvince])
 
+  useEffect(() => {
+    if (!countryCode || !stateProvince.trim() || !city.trim() || facilityName.trim().length < 2) {
+      setFacilitySuggestions([])
+      return
+    }
+    const t = setTimeout(() => {
+      userApi
+        .getHealthcareFacilities({
+          country_code: countryCode,
+          state_province: stateProvince.trim(),
+          city: city.trim(),
+          q: facilityName.trim(),
+        })
+        .then((r) => setFacilitySuggestions(r.facilities))
+        .catch(() => setFacilitySuggestions([]))
+    }, 300)
+    return () => clearTimeout(t)
+  }, [countryCode, stateProvince, city, facilityName])
+
   function toggleInterest(key: string) {
     setInterests((prev) => {
       if (prev.includes(key)) return prev.filter((k) => k !== key)
@@ -76,7 +103,11 @@ export function CommunityOnboardingPage() {
       setError('Please complete your location')
       return
     }
-    if (interests.length === 0) {
+    if (!facilityName.trim()) {
+      setError('Please enter your hospital or health center')
+      return
+    }
+    if (interests.length === 0 && !isEdit) {
       setError('Pick at least one interest')
       return
     }
@@ -87,9 +118,12 @@ export function CommunityOnboardingPage() {
         country_code: countryCode,
         state_province: stateProvince.trim(),
         city: city.trim(),
+        healthcare_facility_id: facilityId ?? undefined,
+        healthcare_facility_name: facilityName.trim(),
         interests,
       })
-      navigate(appPath('community'))
+      await refreshProfile()
+      navigate(isEdit ? appPath('settings') : appPath('community'))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save')
     } finally {
@@ -105,7 +139,9 @@ export function CommunityOnboardingPage() {
       />
       <div style={{ padding: 16 }}>
         <h2 className="u-heading-md">{isEdit ? 'Update your local circle' : 'Join your local circle'}</h2>
-        <p className="u-muted">Share your area and interests so we can show you relevant posts.</p>
+        <p className="u-muted">
+          Share your area and health center so Nearby can show moms registered near you.
+        </p>
 
         {error && <div className="u-alert u-alert--error">{error}</div>}
 
@@ -122,7 +158,10 @@ export function CommunityOnboardingPage() {
           className="app-input"
           list="state-list"
           value={stateProvince}
-          onChange={(e) => setStateProvince(e.target.value)}
+          onChange={(e) => {
+            setStateProvince(e.target.value)
+            setFacilityId(null)
+          }}
           style={{ marginBottom: 12 }}
         />
         <datalist id="state-list">
@@ -134,12 +173,58 @@ export function CommunityOnboardingPage() {
           className="app-input"
           list="city-list"
           value={city}
-          onChange={(e) => setCity(e.target.value)}
-          style={{ marginBottom: 16 }}
+          onChange={(e) => {
+            setCity(e.target.value)
+            setFacilityId(null)
+          }}
+          style={{ marginBottom: 12 }}
         />
         <datalist id="city-list">
           {citySuggestions.map((s) => <option key={s} value={s} />)}
         </datalist>
+
+        <label className="app-label">Hospital / health center</label>
+        <div className="facility-autocomplete" style={{ position: 'relative', marginBottom: 16 }}>
+          <input
+            className="app-input"
+            value={facilityName}
+            autoComplete="off"
+            placeholder="Start typing to search or add yours"
+            onChange={(e) => {
+              setFacilityName(e.target.value)
+              setFacilityId(null)
+              setShowFacilitySuggestions(true)
+            }}
+            onFocus={() => setShowFacilitySuggestions(true)}
+            onBlur={() => {
+              facilityBlurTimer.current = window.setTimeout(() => setShowFacilitySuggestions(false), 150)
+            }}
+          />
+          {showFacilitySuggestions && facilitySuggestions.length > 0 && (
+            <ul className="facility-autocomplete__list" role="listbox">
+              {facilitySuggestions.map((f) => (
+                <li key={f.id}>
+                  <button
+                    type="button"
+                    className="facility-autocomplete__option"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      if (facilityBlurTimer.current) window.clearTimeout(facilityBlurTimer.current)
+                      setFacilityName(f.name)
+                      setFacilityId(f.id)
+                      setShowFacilitySuggestions(false)
+                    }}
+                  >
+                    {f.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="u-muted" style={{ fontSize: '0.8rem', margin: '6px 0 0' }}>
+            Can&apos;t find it? Type the full name — we&apos;ll add it for others nearby.
+          </p>
+        </div>
 
         <p className="app-label">Interests (up to 5)</p>
         {groups.map((g) => (

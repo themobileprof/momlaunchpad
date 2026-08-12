@@ -4,6 +4,7 @@ import type {
   AppUser,
   ChatMessage,
   CommunityCountry,
+  CommunityHealthcareFacility,
   CommunityBadgeRequest,
   CommunityEvent,
   MyCommunityBadges,
@@ -262,10 +263,29 @@ export const userApi = {
     )
   },
 
+  getHealthcareFacilities: (params: {
+    country_code: string
+    state_province: string
+    city: string
+    q: string
+  }) => {
+    const q = new URLSearchParams({
+      country_code: params.country_code,
+      state_province: params.state_province,
+      city: params.city,
+      q: params.q,
+    })
+    return request<{ facilities: CommunityHealthcareFacility[] }>(
+      `/api/community/locations/healthcare-facilities?${q}`,
+    )
+  },
+
   completeCommunityOnboarding: (body: {
     country_code: string
     state_province: string
     city: string
+    healthcare_facility_id?: string
+    healthcare_facility_name?: string
     interests: string[]
   }) =>
     request<CommunityStatus>('/api/community/onboarding', {

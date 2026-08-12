@@ -32,6 +32,8 @@ export interface UserProfile {
   country_code?: string
   state_province?: string
   city?: string
+  healthcare_facility_id?: string
+  healthcare_facility_name?: string
   community_onboarding_completed: boolean
   community_interests: string[]
   referral_code: string
@@ -175,7 +177,17 @@ export interface CommunityStatus {
   country?: string
   state_province?: string
   city?: string
+  healthcare_facility_id?: string
+  healthcare_facility_name?: string
   interests: string[]
+}
+
+export interface CommunityHealthcareFacility {
+  id: string
+  name: string
+  country_code: string
+  state_province: string
+  city: string
 }
 
 export interface CommunityInterestGroup {
