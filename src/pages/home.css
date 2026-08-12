@@ -68,12 +68,6 @@
   color: var(--home-rose-deep);
 }
 
-.home-nav--auth {
-  align-items: center;
-  gap: clamp(0.85rem, 2vw, 1.35rem);
-  flex-shrink: 0;
-}
-
 .home main {
   position: relative;
   z-index: 1;
@@ -165,13 +159,26 @@
   font-weight: 600;
   font-size: 0.95rem;
   padding: 0.75rem 1.35rem;
-  border-radius: 999px;
+  border-radius: 10px;
   text-decoration: none;
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
 }
 
 .home-btn:hover {
   transform: translateY(-2px);
+}
+
+.home-btn-solid {
+  background: var(--home-plum);
+  color: #ffffff;
+  border: 1.5px solid var(--home-plum);
+  box-shadow: 0 4px 16px rgba(44, 34, 28, 0.1);
+}
+
+.home-btn-solid:hover {
+  background: var(--home-rose-deep);
+  border-color: var(--home-rose-deep);
+  box-shadow: 0 8px 20px rgba(217, 27, 139, 0.22);
 }
 
 .home-btn-primary {
@@ -207,6 +214,22 @@
   border-color: var(--brand-purple);
   color: var(--brand-purple-deep);
   background: var(--home-sage-soft);
+}
+
+.home-hero-secondary-link {
+  align-self: center;
+  color: var(--home-ink-soft);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.35rem 0.25rem;
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.home-hero-secondary-link:hover {
+  color: var(--home-rose-deep);
+  border-bottom-color: color-mix(in srgb, var(--home-rose-deep) 45%, transparent);
 }
 
 .home-nav-app-link {
@@ -936,20 +959,8 @@
 }
 
 @media (max-width: 640px) {
-  .home-nav:not(.home-nav--auth) {
+  .home-nav {
     display: none;
-  }
-
-  .home-header {
-    gap: 0.75rem;
-  }
-
-  .home-nav--auth {
-    gap: 0.75rem;
-  }
-
-  .home-nav--auth a {
-    font-size: 0.85rem;
   }
 
   .home-hero-actions {
@@ -961,9 +972,28 @@
     width: 100%;
   }
 
+  .home-hero-secondary-link {
+    text-align: center;
+  }
+
   .home-cta-actions--dual .home-btn-outline,
   .home-cta-actions--dual .home-btn-ghost {
     flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 879px) {
+  .home-hero--compact .home-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-hero--compact .home-btn {
+    width: 100%;
+  }
+
+  .home-hero--compact .home-hero-secondary-link {
+    text-align: center;
   }
 }
 
@@ -1148,7 +1178,12 @@
 
 .home-hero--compact .home-hero-lead {
   font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.home-hero--compact .home-hero-actions {
   margin-bottom: 0;
+  gap: 1rem;
 }
 
 .home-android {

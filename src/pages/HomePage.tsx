@@ -35,12 +35,6 @@ export function HomePage() {
       <div className="home-grain" aria-hidden />
       <header className="home-header home-header--compact">
         <BrandLogo href="/" size="lg" showText className="home-logo" />
-        <nav className="home-nav home-nav--auth" aria-label="Account">
-          <Link to={appPath('login')}>Sign in</Link>
-          <Link to={appPath('register')} className="home-nav-app-link">
-            Create account
-          </Link>
-        </nav>
       </header>
 
       <main className="home-compact-main">
@@ -55,6 +49,14 @@ export function HomePage() {
             <p className="home-hero-lead home-reveal" style={{ animationDelay: '0.08s' }}>
               Chat, community, and gentle support for your pregnancy journey.
             </p>
+            <div className="home-hero-actions home-reveal" style={{ animationDelay: '0.14s' }}>
+              <Link to={appPath('login')} className="home-btn home-btn-solid home-btn-lg">
+                Sign in
+              </Link>
+              <Link to={appPath('register')} className="home-hero-secondary-link">
+                Create account
+              </Link>
+            </div>
           </section>
 
           <ul className="home-features home-reveal" style={{ animationDelay: '0.2s' }}>
