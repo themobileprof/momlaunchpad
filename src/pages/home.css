@@ -1106,7 +1106,7 @@
       'features android';
     gap: clamp(1.5rem, 3vw, 2.5rem) clamp(2rem, 4vw, 3.5rem);
     align-items: start;
-    padding-bottom: 4rem;
+    padding: 0 clamp(1.25rem, 4vw, 3rem) 4rem;
   }
 
   .home-visual {
@@ -1116,7 +1116,7 @@
 
   .home-hero--compact {
     grid-area: hero;
-    padding-top: 0.5rem;
+    padding: clamp(1.5rem, 3vw, 2.5rem) 0;
     text-align: left;
   }
 
