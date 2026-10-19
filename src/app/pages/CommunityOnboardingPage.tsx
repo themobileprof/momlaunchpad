@@ -51,7 +51,8 @@ export function CommunityOnboardingPage() {
     const t = setTimeout(() => {
       userApi
         .getLocationSuggestions({ country_code: countryCode, field: 'state_province', q: stateProvince })
-        .then((r) => setStateSuggestions(r.suggestions))
+        .then((r) => setStateSuggestions(r.suggestions ?? []))
+        .catch(() => setStateSuggestions([]))
     }, 300)
     return () => clearTimeout(t)
   }, [countryCode, stateProvince])
@@ -66,7 +67,8 @@ export function CommunityOnboardingPage() {
           q: city,
           state_province: stateProvince,
         })
-        .then((r) => setCitySuggestions(r.suggestions))
+        .then((r) => setCitySuggestions(r.suggestions ?? []))
+        .catch(() => setCitySuggestions([]))
     }, 300)
     return () => clearTimeout(t)
   }, [countryCode, city, stateProvince])
