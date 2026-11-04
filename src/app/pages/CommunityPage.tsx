@@ -6,6 +6,7 @@ import { IconBell, IconComment, IconHeart } from '../components/Icons'
 import { EmptyState, MomAppBar } from '../components/ui'
 import type { CommunityFeedFilter, CommunityPost } from '../types'
 import { appPath } from '../routes'
+import { formatRelative } from '../lib/formatRelative'
 import { resolveMediaUrl } from '../lib/mediaUrl'
 
 const FILTERS: { value: CommunityFeedFilter; label: string }[] = [
@@ -19,10 +20,13 @@ function PostCard({ post, onLike }: { post: CommunityPost; onLike: () => void })
   return (
     <Link to={appPath(`community/post/${post.id}`)} style={{ textDecoration: 'none', color: 'inherit' }}>
       <div className="app-card" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-          <strong>{post.is_anonymous ? 'Anonymous Mom' : post.author.display_name}</strong>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+          <div style={{ minWidth: 0 }}>
+            <strong>{post.is_anonymous ? 'Anonymous Mom' : post.author.display_name}</strong>
+            <div className="u-caption" style={{ marginTop: 2 }}>{formatRelative(post.created_at)}</div>
+          </div>
           {post.is_event && (
-            <span className="app-badge" style={{ background: 'color-mix(in srgb, var(--teal) 10%, transparent)' }}>
+            <span className="app-badge" style={{ background: 'color-mix(in srgb, var(--teal) 10%, transparent)', flexShrink: 0 }}>
               Local event
             </span>
           )}

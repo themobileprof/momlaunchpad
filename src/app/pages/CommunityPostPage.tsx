@@ -5,6 +5,7 @@ import { IconHeart } from '../components/Icons'
 import { GradientButton, MomAppBar } from '../components/ui'
 import type { CommunityEvent, CommunityPost, CommunityReply } from '../types'
 import { appPath } from '../routes'
+import { formatRelative } from '../lib/formatRelative'
 import { resolveMediaUrl } from '../lib/mediaUrl'
 
 export function CommunityPostPage() {
@@ -95,6 +96,7 @@ export function CommunityPostPage() {
       <div style={{ padding: 16 }}>
         <div className="app-card">
           <strong>{post.is_anonymous ? 'Anonymous Mom' : post.author.display_name}</strong>
+          <div className="u-caption" style={{ marginTop: 4 }}>{formatRelative(post.created_at)}</div>
           <p className="u-body" style={{ whiteSpace: 'pre-wrap', margin: '12px 0' }}>{post.body}</p>
           {post.image_urls.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
@@ -135,6 +137,7 @@ export function CommunityPostPage() {
         {replies.map((r) => (
           <div key={r.id} className="app-card app-card--outlined" style={{ marginBottom: 8 }}>
             <strong>{r.is_anonymous ? 'Anonymous' : r.author.display_name}</strong>
+            <div className="u-caption" style={{ marginTop: 2 }}>{formatRelative(r.created_at)}</div>
             <p style={{ margin: '8px 0' }}>{r.body}</p>
             <button type="button" className="app-btn app-btn--ghost app-btn--sm" onClick={() => evaluate(r.id)} disabled={evaluating}>
               Good for me?

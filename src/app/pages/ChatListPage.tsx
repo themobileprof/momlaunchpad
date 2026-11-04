@@ -4,18 +4,8 @@ import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { EmptyState, GradientButton, MomAppBar } from '../components/ui'
 import type { Conversation } from '../types'
+import { formatRelative } from '../lib/formatRelative'
 import { appPath } from '../routes'
-
-function formatRelative(date: string) {
-  const d = new Date(date)
-  const now = new Date()
-  const diff = now.getTime() - d.getTime()
-  const days = Math.floor(diff / 86400000)
-  if (days === 0) return 'Today'
-  if (days === 1) return 'Yesterday'
-  if (days < 7) return `${days} days ago`
-  return d.toLocaleDateString()
-}
 
 export function ChatListPage() {
   const navigate = useNavigate()
