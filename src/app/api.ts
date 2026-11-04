@@ -22,6 +22,8 @@ import type {
   FacilityMember,
   QuotaInfo,
   Reminder,
+  Symptom,
+  SymptomStats,
   UserProfile,
   VisitDebriefPayload,
   WelcomeMessage,
@@ -240,6 +242,30 @@ export const userApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+
+  // Symptoms (chat-extracted; resolve from tracker)
+  getSymptomHistory: async (params?: { limit?: number; type?: string }) => {
+    const q = new URLSearchParams()
+    if (params?.limit != null) q.set('limit', String(params.limit))
+    if (params?.type) q.set('type', params.type)
+    const qs = q.toString()
+    const data = await request<{ symptoms: Symptom[] }>(
+      `/api/symptoms/history${qs ? `?${qs}` : ''}`,
+    )
+    return data.symptoms ?? []
+  },
+
+  getRecentSymptoms: async (limit = 40) => {
+    const data = await request<{ symptoms: Symptom[] }>(
+      `/api/symptoms/recent?limit=${limit}`,
+    )
+    return data.symptoms ?? []
+  },
+
+  getSymptomStats: () => request<SymptomStats>('/api/symptoms/stats'),
+
+  resolveSymptom: (id: string) =>
+    request<{ message?: string }>(`/api/symptoms/${id}/resolve`, { method: 'PUT' }),
 
   // Community
   getCommunityStatus: () => request<CommunityStatus>('/api/community/status'),

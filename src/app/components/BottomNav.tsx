@@ -43,7 +43,8 @@ export function BottomNav() {
     location.pathname.startsWith(appPath('profile')) ||
     location.pathname.startsWith(appPath('settings')) ||
     location.pathname.startsWith(appPath('inbox')) ||
-    location.pathname.startsWith(appPath('visits'))
+    location.pathname.startsWith(appPath('visits')) ||
+    location.pathname.startsWith(appPath('symptoms'))
 
   return (
     <>
@@ -96,6 +97,10 @@ export function BottomNav() {
           onVisits={() => {
             setMoreOpen(false)
             navigate(appPath('visits'))
+          }}
+          onSymptoms={() => {
+            setMoreOpen(false)
+            navigate(appPath('symptoms'))
           }}
         />
       )}

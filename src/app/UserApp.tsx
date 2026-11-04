@@ -24,6 +24,7 @@ import { FacilityAdminPage } from './pages/FacilityAdminPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { DoctorVisitsPage } from './pages/DoctorVisitsPage'
 import { DoctorVisitFormPage } from './pages/DoctorVisitFormPage'
+import { SymptomsPage } from './pages/SymptomsPage'
 import { appPath } from './routes'
 
 function UserGate({ children }: { children: React.ReactNode }) {
@@ -185,6 +186,14 @@ function UserAppRoutes() {
           element={
             <UserGate>
               <DoctorVisitFormPage />
+            </UserGate>
+          }
+        />
+        <Route
+          path="symptoms"
+          element={
+            <UserGate>
+              <SymptomsPage />
             </UserGate>
           }
         />

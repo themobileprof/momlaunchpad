@@ -140,17 +140,18 @@ Most of the core experience is available on **both** platforms. There are a few 
 ### On the website
 
 - Public homepage and invite links (for sharing MomLaunchpad with friends)
+- **Health tracker** for symptoms logged via chat (resolve, filter, open source chat)
 - Easier access to a full doctor-visits list
 - Staff/admin tools behind the scenes (not for moms)
 
 ### On the mobile app
 
-- **Health tracker** for logging symptoms and vitals
+- **Health tracker** for symptoms plus vitals logging
 - **Hospital bag checklist** (what to pack, with prices and pack status)
 - Light / dark appearance settings
 - In-app feedback so moms can send suggestions
 
-**Bottom line:** web and mobile are meant to feel like the same product. Mobile adds a few phone-friendly tools for day-to-day health and packing; web is strong for discovery, invites, and full visit records.
+**Bottom line:** web and mobile are meant to feel like the same product. Symptom tracking is available on both; mobile also adds vitals and packing tools.
 
 ---
 

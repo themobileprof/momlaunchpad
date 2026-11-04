@@ -79,3 +79,35 @@ describe('googleSignIn', () => {
     expect(headers.Authorization).toBe('Bearer user-jwt')
   })
 })
+
+describe('symptoms API', () => {
+  afterEach(() => setUserToken(null))
+
+  it('unwraps the symptoms array from history responses', async () => {
+    setUserToken('user-jwt')
+    mockFetch({
+      symptoms: [
+        {
+          id: 's1',
+          symptom_type: 'nausea',
+          description: 'queasy',
+          severity: 'mild',
+          frequency: 'daily',
+          is_resolved: false,
+          reported_at: '2026-06-01T12:00:00Z',
+        },
+      ],
+    })
+    const list = await userApi.getSymptomHistory({ limit: 10 })
+    expect(list).toHaveLength(1)
+    expect(list[0].symptom_type).toBe('nausea')
+  })
+
+  it('calls resolve with PUT', async () => {
+    setUserToken('user-jwt')
+    const fetchMock = mockFetch({ message: 'ok' })
+    await userApi.resolveSymptom('s1')
+    expect(fetchMock.mock.calls[0][0]).toContain('/api/symptoms/s1/resolve')
+    expect(fetchMock.mock.calls[0][1].method).toBe('PUT')
+  })
+})

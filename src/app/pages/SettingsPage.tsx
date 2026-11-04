@@ -90,6 +90,9 @@ export function SettingsPage() {
             <Link to={`${appPath('community/onboarding')}?edit=1`} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
               Edit community location & feed topics
             </Link>
+            <Link to={appPath('symptoms')} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
+              Health tracker (symptoms)
+            </Link>
             <Link to={appPath('visits')} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
               Doctor visit records
             </Link>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { userApi } from '../api'
 import { IconSend } from '../components/Icons'
 import { MomAppBar } from '../components/ui'
@@ -7,14 +7,17 @@ import { useChatWebSocket } from '../hooks/useChatWebSocket'
 import type { ChatMessage } from '../types'
 import { appPath } from '../routes'
 
+const SYMPTOM_STARTER = "I have a symptom I'm worried about"
+
 const STARTERS = [
   'How am I doing this week?',
-  'I have a symptom I\'m worried about',
+  SYMPTOM_STARTER,
   'Help me prepare for my appointment',
 ]
 
 export function ChatPage() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const [title, setTitle] = useState('Chat')
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -23,6 +26,7 @@ export function ChatPage() {
   const [loading, setLoading] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
   const streamingIdRef = useRef<string | null>(null)
+  const starterSentRef = useRef(false)
   const { connected, lastFrame, sendMessage } = useChatWebSocket(id)
 
   useEffect(() => {
@@ -115,6 +119,18 @@ export function ChatPage() {
     }
   }
 
+  // Health tracker → chat: open a new topic and send the symptom starter once connected.
+  useEffect(() => {
+    if (starterSentRef.current) return
+    if (searchParams.get('starter') !== 'symptom') return
+    if (loading || !connected || messages.length > 0) return
+    starterSentRef.current = true
+    setSearchParams({}, { replace: true })
+    handleSend(SYMPTOM_STARTER)
+    // handleSend is stable enough for this one-shot; deps intentionally narrow.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, loading, connected, messages.length, setSearchParams])
+
   return (
     <div className="user-app-content--no-nav" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <MomAppBar
@@ -153,6 +169,13 @@ export function ChatPage() {
                 </button>
               ))}
             </div>
+            <p className="u-muted" style={{ marginTop: 16, fontSize: '0.85rem' }}>
+              Logged symptoms live in your{' '}
+              <Link to={appPath('symptoms')} style={{ color: 'var(--accent-deep)' }}>
+                health tracker
+              </Link>
+              .
+            </p>
           </div>
         ) : (
           messages.map((m) => (

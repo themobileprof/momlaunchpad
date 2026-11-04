@@ -297,6 +297,53 @@ export interface DoctorVisit {
   updated_at: string
 }
 
+export type ConditionClass = 'fleeting' | 'common' | 'watch' | 'standing'
+
+export interface Symptom {
+  id: string
+  symptom_type: string
+  description: string
+  severity: string
+  frequency: string
+  onset_time?: string
+  associated_symptoms?: string[]
+  is_resolved: boolean
+  reported_at: string
+  resolved_at?: string
+  summary?: string
+  conversation_id?: string
+  message_id?: string
+  condition_class?: ConditionClass | string
+  recurrence_count?: number
+  is_recurrent?: boolean
+}
+
+export interface SymptomStats {
+  total_symptoms: number
+  ongoing: number
+  resolved: number
+  by_type: Record<string, number>
+  by_severity: Record<string, number>
+}
+
+/** Common filter chips for symptom history (matches mobile). */
+export const SYMPTOM_FILTER_TYPES = [
+  'swelling',
+  'nausea',
+  'headache',
+  'back_pain',
+  'cramping',
+  'vision_changes',
+  'dizziness',
+  'fatigue',
+  'insomnia',
+  'heartburn',
+  'vomiting',
+  'constipation',
+  'bleeding',
+  'contractions',
+] as const
+
 export interface VisitDebriefPayload {
   pending_tests: VisitPendingTest[]
   medications?: VisitMedication[]

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { HomeCommunityHighlight } from '../components/HomeCommunityHighlight'
+import { OngoingSymptomPrompt } from '../components/OngoingSymptomPrompt'
 import { VisitCheckInPrompt } from '../components/VisitCheckInPrompt'
 import { GradientButton, MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
@@ -58,8 +59,22 @@ function VisitsIcon() {
   )
 }
 
+function SymptomsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 21s-6.5-4.2-8.5-8.1C2.2 10.2 3.4 7 6.4 6.3c1.6-.4 3.1.3 3.9 1.5.8-1.2 2.3-1.9 3.9-1.5 3 .7 4.2 3.9 2.9 6.6C18.5 16.8 12 21 12 21Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 const QUICK_LINKS = [
   { to: 'calendar', label: 'Calendar', sub: 'Appointments, check-ins, and your timeline.', Icon: CalendarIcon, tone: 'calendar', wide: true },
+  { to: 'symptoms', label: 'Symptoms', sub: 'Track how you feel and resolve what improves.', Icon: SymptomsIcon, tone: 'symptoms', wide: true },
   { to: 'chat', label: 'Chat', sub: 'Guidance that remembers your journey.', Icon: ChatIcon, tone: 'chat' },
   { to: 'community', label: 'Community', sub: 'Moms and caregivers near you.', Icon: CommunityIcon, tone: 'community' },
   { to: 'visits', label: 'Visits', sub: 'Doctor notes and follow-ups.', Icon: VisitsIcon, tone: 'visits' },
@@ -141,6 +156,7 @@ export function AppHomePage() {
           )}
         </div>
 
+        <OngoingSymptomPrompt />
         <VisitCheckInPrompt />
         <HomeCommunityHighlight />
 

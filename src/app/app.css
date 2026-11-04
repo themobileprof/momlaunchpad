@@ -1595,6 +1595,57 @@
   background: #ede9fe;
   color: #5b21b6;
 }
+.bento-card--symptoms .bento-card__icon {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.symptom-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.symptom-stats__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  text-align: center;
+}
+.symptom-stats__cell strong {
+  font-size: 1.25rem;
+}
+.symptom-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--surface-muted);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.symptom-chip--fleeting {
+  background: #ecfdf5;
+  color: #047857;
+}
+.symptom-chip--common {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.symptom-chip--watch {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.symptom-chip--standing {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
 .bento-card__icon svg {
   width: 22px;
   height: 22px;
