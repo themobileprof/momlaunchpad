@@ -7,6 +7,8 @@ export interface VisitCheckInContext {
   kind: VisitCheckInKind
   visit?: DoctorVisit
   appointmentAt?: Date
+  /** True when the upcoming slot is the visit's own scheduled date (not a follow-up). */
+  isScheduledVisit?: boolean
   dismissalKey(now: Date): string
 }
 
@@ -29,11 +31,11 @@ export function resolveVisitCheckIn(input: {
 
   const upcoming = nearestUpcomingAppointment(input.visits, clock)
   if (upcoming) {
-    const { visit, appointmentAt } = upcoming
+    const { visit, appointmentAt, isScheduledVisit } = upcoming
     const withinWindow =
       (appointmentAt.getTime() - clock.getTime()) / 86400000 <= visitUpcomingWindowDays
     if (withinWindow) {
-      const ctx = makeContext('upcomingAppointment', visit, appointmentAt)
+      const ctx = makeContext('upcomingAppointment', visit, appointmentAt, isScheduledVisit)
       if (
         !input.dismissedKeys.has(ctx.dismissalKey(clock)) &&
         !hasMatchingAppointmentReminder(input.reminders, appointmentAt)
@@ -44,7 +46,7 @@ export function resolveVisitCheckIn(input: {
   }
 
   for (const visit of input.visits) {
-    if (!visitNeedsDebrief(visit, clock)) continue
+    if (!visitNeedsUpdate(visit, clock)) continue
     const ctx = makeContext('recentDebrief', visit, undefined)
     if (!input.dismissedKeys.has(ctx.dismissalKey(clock))) return ctx
   }
@@ -65,11 +67,13 @@ function makeContext(
   kind: VisitCheckInKind,
   visit: DoctorVisit | undefined,
   appointmentAt: Date | undefined,
+  isScheduledVisit = false,
 ): VisitCheckInContext {
   return {
     kind,
     visit,
     appointmentAt,
+    isScheduledVisit,
     dismissalKey(clock: Date) {
       if (kind === 'upcomingAppointment' && visit && appointmentAt) {
         return `upcoming_${visit.id}_${appointmentAt.getTime()}`
@@ -80,29 +84,47 @@ function makeContext(
   }
 }
 
+/** Nearest future slot: a scheduled visit_date, or a follow-up next_appointment_at. */
 function nearestUpcomingAppointment(visits: DoctorVisit[], now: Date) {
   let bestVisit: DoctorVisit | undefined
   let bestAppt: Date | undefined
+  let bestIsScheduled = false
 
   for (const visit of visits) {
-    if (!visit.next_appointment_at) continue
-    const appt = new Date(visit.next_appointment_at)
-    if (appt <= now) continue
-    if (!bestAppt || appt < bestAppt) {
-      bestAppt = appt
-      bestVisit = visit
+    const visitDate = new Date(visit.visit_date)
+    if (visitDate > now) {
+      if (!bestAppt || visitDate < bestAppt) {
+        bestAppt = visitDate
+        bestVisit = visit
+        bestIsScheduled = true
+      }
+    }
+
+    if (visit.next_appointment_at) {
+      const appt = new Date(visit.next_appointment_at)
+      if (appt > now && (!bestAppt || appt < bestAppt)) {
+        bestAppt = appt
+        bestVisit = visit
+        bestIsScheduled = false
+      }
     }
   }
 
   if (!bestVisit || !bestAppt) return null
-  return { visit: bestVisit, appointmentAt: bestAppt }
+  return { visit: bestVisit, appointmentAt: bestAppt, isScheduledVisit: bestIsScheduled }
 }
 
-function visitNeedsDebrief(visit: DoctorVisit, clock: Date) {
+/** Past visit that still needs a simple after-visit update. */
+export function visitNeedsUpdate(visit: DoctorVisit, clock: Date) {
   if (visit.debrief_completed_at) return false
   const visitDate = new Date(visit.visit_date)
+  if (visitDate > clock) return false
   const daysSince = Math.floor((clock.getTime() - visitDate.getTime()) / 86400000)
   return daysSince >= 0 && daysSince <= visitDebriefWindowDays
+}
+
+export function isScheduledVisit(visit: DoctorVisit, now = new Date()) {
+  return new Date(visit.visit_date) > now && !visit.debrief_completed_at
 }
 
 export function hasMatchingAppointmentReminder(reminders: Reminder[], appt: Date) {

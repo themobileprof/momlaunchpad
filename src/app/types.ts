@@ -285,6 +285,9 @@ export interface DoctorVisit {
   visit_type: string
   provider_name?: string
   facility_name?: string
+  clinical_notes?: string
+  diagnosis?: string
+  treatment_plan?: string
   next_appointment_at?: string
   next_appointment_notes?: string
   pending_tests: VisitPendingTest[]

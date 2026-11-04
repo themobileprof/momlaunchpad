@@ -1,63 +1,178 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { userApi } from '../api'
 import { GradientButton, MomAppBar } from '../components/ui'
 import { DOCTOR_VISIT_TYPES, DOCTOR_VISIT_TYPE_LABELS } from '../types'
+import type { DoctorVisit } from '../types'
 import { appPath } from '../routes'
+
+export type DoctorVisitFormMode = 'schedule' | 'past' | 'update'
+
+function toLocalInputValue(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+function defaultVisitDate(mode: DoctorVisitFormMode) {
+  const d = new Date()
+  if (mode === 'schedule') {
+    d.setDate(d.getDate() + 7)
+    d.setHours(9, 0, 0, 0)
+  } else {
+    d.setHours(d.getHours(), 0, 0, 0)
+  }
+  return toLocalInputValue(d)
+}
+
+function resolveMode(
+  searchMode: string | null,
+  isEdit: boolean,
+  visit: DoctorVisit | null,
+): DoctorVisitFormMode {
+  if (searchMode === 'schedule' || searchMode === 'past' || searchMode === 'update') {
+    return searchMode
+  }
+  if (!isEdit || !visit) return 'past'
+  if (new Date(visit.visit_date) > new Date() && !visit.debrief_completed_at) return 'schedule'
+  if (!visit.debrief_completed_at) return 'update'
+  return 'past'
+}
+
+function titleForMode(mode: DoctorVisitFormMode, isEdit: boolean) {
+  if (mode === 'schedule') return isEdit ? 'Edit scheduled visit' : 'Schedule visit'
+  if (mode === 'update') return 'How did your visit go?'
+  return isEdit ? 'Edit visit' : 'Log past visit'
+}
 
 export function DoctorVisitFormPage() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const isEdit = Boolean(id)
 
+  const [loadedVisit, setLoadedVisit] = useState<DoctorVisit | null>(null)
+  const [loading, setLoading] = useState(isEdit)
+
+  const mode = useMemo(
+    () => resolveMode(searchParams.get('mode'), isEdit, loadedVisit),
+    [searchParams, isEdit, loadedVisit],
+  )
+
   const [visitType, setVisitType] = useState('prenatal_checkup')
-  const [visitDate, setVisitDate] = useState(() => new Date().toISOString().slice(0, 16))
+  const [visitDate, setVisitDate] = useState(() => defaultVisitDate('past'))
   const [providerName, setProviderName] = useState('')
   const [facilityName, setFacilityName] = useState('')
+  const [howItWent, setHowItWent] = useState('')
   const [nextAppointment, setNextAppointment] = useState('')
   const [nextNotes, setNextNotes] = useState('')
-  const [notes, setNotes] = useState('')
+  const [showMore, setShowMore] = useState(false)
+  const [diagnosis, setDiagnosis] = useState('')
+  const [treatment, setTreatment] = useState('')
+  const [medication, setMedication] = useState('')
+  const [pendingTest, setPendingTest] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!id) return
+    if (!id) {
+      setVisitDate(defaultVisitDate(resolveMode(searchParams.get('mode'), false, null)))
+      return
+    }
+    setLoading(true)
     userApi
       .listDoctorVisits()
-      .then((visits) => visits.find((v) => v.id === id))
+      .then((visits) => visits.find((v) => v.id === id) ?? null)
       .then((visit) => {
-        if (!visit) return
+        if (!visit) {
+          setError('Could not load visit')
+          return
+        }
+        setLoadedVisit(visit)
         setVisitType(visit.visit_type)
-        setVisitDate(new Date(visit.visit_date).toISOString().slice(0, 16))
+        setVisitDate(toLocalInputValue(new Date(visit.visit_date)))
         setProviderName(visit.provider_name ?? '')
         setFacilityName(visit.facility_name ?? '')
+        setHowItWent(visit.clinical_notes ?? '')
+        setDiagnosis(visit.diagnosis ?? '')
+        setTreatment(visit.treatment_plan ?? '')
         setNextAppointment(
           visit.next_appointment_at
-            ? new Date(visit.next_appointment_at).toISOString().slice(0, 16)
+            ? toLocalInputValue(new Date(visit.next_appointment_at))
             : '',
         )
         setNextNotes(visit.next_appointment_notes ?? '')
+        const med = visit.medications?.[0]?.name
+        if (med) setMedication(med)
+        const test = visit.pending_tests?.find((t) => t.status !== 'completed')?.test_name
+        if (test) setPendingTest(test)
+        if (visit.diagnosis || visit.treatment_plan || med || test) setShowMore(true)
       })
       .catch(() => setError('Could not load visit'))
-  }, [id])
+      .finally(() => setLoading(false))
+  }, [id, searchParams])
 
   async function submit() {
     setSaving(true)
     setError('')
     try {
-      const body = {
-        visit_date: new Date(visitDate).toISOString(),
+      const visitDateIso = new Date(visitDate).toISOString()
+      if (mode === 'schedule' && new Date(visitDate) <= new Date()) {
+        setError('Pick a future date for a scheduled visit')
+        setSaving(false)
+        return
+      }
+      if ((mode === 'past' || mode === 'update') && new Date(visitDate) > new Date()) {
+        setError('Use Schedule visit for appointments that have not happened yet')
+        setSaving(false)
+        return
+      }
+
+      const body: Record<string, unknown> = {
+        visit_date: visitDateIso,
         visit_type: visitType,
         provider_name: providerName.trim() || undefined,
         facility_name: facilityName.trim() || undefined,
-        clinical_notes: notes.trim() || undefined,
+        clinical_notes: howItWent.trim() || undefined,
         next_appointment_at: nextAppointment ? new Date(nextAppointment).toISOString() : undefined,
         next_appointment_notes: nextNotes.trim() || undefined,
-        medications: [],
+        medications: loadedVisit?.medications ?? [],
         lab_results: [],
       }
-      if (isEdit && id) await userApi.updateDoctorVisit(id, body)
-      else await userApi.createDoctorVisit(body)
+
+      if (mode !== 'schedule' && showMore) {
+        body.diagnosis = diagnosis.trim() || undefined
+        body.treatment_plan = treatment.trim() || undefined
+        body.medications = medication.trim()
+          ? [{ name: medication.trim(), dosage: '', frequency: 'As prescribed' }]
+          : []
+      } else if (mode !== 'schedule' && loadedVisit) {
+        // Keep existing clinical fields when the user skips “more details”.
+        if (loadedVisit.diagnosis) body.diagnosis = loadedVisit.diagnosis
+        if (loadedVisit.treatment_plan) body.treatment_plan = loadedVisit.treatment_plan
+      }
+
+      let saved: DoctorVisit
+      if (isEdit && id) {
+        saved = await userApi.updateDoctorVisit(id, body)
+      } else {
+        saved = await userApi.createDoctorVisit(body)
+      }
+
+      // Past logs and after-visit updates mark the check-in complete so Home does not re-prompt.
+      if (mode === 'past' || mode === 'update') {
+        const pending_tests = showMore && pendingTest.trim()
+          ? [{ test_name: pendingTest.trim(), status: 'pending' as const }]
+          : []
+        saved = await userApi.debriefDoctorVisit(saved.id, {
+          pending_tests,
+          medications: showMore && medication.trim()
+            ? [{ name: medication.trim(), dosage: '', frequency: 'As prescribed' }]
+            : [],
+          mark_completed: true,
+        })
+      }
+
+      void saved
       navigate(appPath('visits'))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save visit')
@@ -66,11 +181,36 @@ export function DoctorVisitFormPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="user-app-content--no-nav">
+        <MomAppBar pageTitle="Visit" onBack={() => navigate(appPath('visits'))} />
+        <div className="u-center-page"><div className="u-spinner" /></div>
+      </div>
+    )
+  }
+
   return (
     <div className="user-app-content--no-nav">
-      <MomAppBar pageTitle={isEdit ? 'Edit visit' : 'Log visit'} onBack={() => navigate(appPath('visits'))} />
+      <MomAppBar pageTitle={titleForMode(mode, isEdit)} onBack={() => navigate(appPath('visits'))} />
       <div style={{ padding: 16 }}>
         {error && <div className="u-alert u-alert--error">{error}</div>}
+
+        {mode === 'schedule' && (
+          <p className="u-muted" style={{ marginTop: 0 }}>
+            Just the essentials for now. We will ask how it went after the date.
+          </p>
+        )}
+        {mode === 'update' && (
+          <p className="u-muted" style={{ marginTop: 0 }}>
+            A short update is enough. Add more details only if you want to.
+          </p>
+        )}
+        {mode === 'past' && (
+          <p className="u-muted" style={{ marginTop: 0 }}>
+            Log what you remember. Extra clinical detail is optional.
+          </p>
+        )}
 
         <label className="app-label">Visit type</label>
         <select className="app-input" value={visitType} onChange={(e) => setVisitType(e.target.value)}>
@@ -79,27 +219,102 @@ export function DoctorVisitFormPage() {
           ))}
         </select>
 
-        <label className="app-label" style={{ marginTop: 12 }}>Visit date & time</label>
-        <input className="app-input" type="datetime-local" value={visitDate} onChange={(e) => setVisitDate(e.target.value)} />
+        <label className="app-label" style={{ marginTop: 12 }}>
+          {mode === 'schedule' ? 'When is it?' : 'When was it?'}
+        </label>
+        <input
+          className="app-input"
+          type="datetime-local"
+          value={visitDate}
+          onChange={(e) => setVisitDate(e.target.value)}
+        />
 
         <label className="app-label" style={{ marginTop: 12 }}>Provider (optional)</label>
-        <input className="app-input" value={providerName} onChange={(e) => setProviderName(e.target.value)} />
+        <input className="app-input" value={providerName} onChange={(e) => setProviderName(e.target.value)} placeholder="Doctor or midwife" />
 
         <label className="app-label" style={{ marginTop: 12 }}>Facility (optional)</label>
-        <input className="app-input" value={facilityName} onChange={(e) => setFacilityName(e.target.value)} />
+        <input className="app-input" value={facilityName} onChange={(e) => setFacilityName(e.target.value)} placeholder="Clinic or hospital" />
 
-        <label className="app-label" style={{ marginTop: 12 }}>Notes (optional)</label>
-        <textarea className="app-input" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+        {mode === 'schedule' ? (
+          <>
+            <label className="app-label" style={{ marginTop: 12 }}>Note (optional)</label>
+            <textarea
+              className="app-input"
+              rows={2}
+              value={howItWent}
+              onChange={(e) => setHowItWent(e.target.value)}
+              placeholder="Anything to remember before you go"
+            />
+          </>
+        ) : (
+          <>
+            <label className="app-label" style={{ marginTop: 12 }}>How did it go?</label>
+            <textarea
+              className="app-input"
+              rows={3}
+              value={howItWent}
+              onChange={(e) => setHowItWent(e.target.value)}
+              placeholder="What the doctor said, how you feel, anything useful"
+            />
 
-        <label className="app-label" style={{ marginTop: 12 }}>Next appointment (optional)</label>
-        <input className="app-input" type="datetime-local" value={nextAppointment} onChange={(e) => setNextAppointment(e.target.value)} />
+            <label className="app-label" style={{ marginTop: 12 }}>Next appointment (optional)</label>
+            <input
+              className="app-input"
+              type="datetime-local"
+              value={nextAppointment}
+              onChange={(e) => setNextAppointment(e.target.value)}
+            />
 
-        <label className="app-label" style={{ marginTop: 12 }}>Next appointment notes</label>
-        <input className="app-input" value={nextNotes} onChange={(e) => setNextNotes(e.target.value)} />
+            <label className="app-label" style={{ marginTop: 12 }}>Next appointment notes</label>
+            <input
+              className="app-input"
+              value={nextNotes}
+              onChange={(e) => setNextNotes(e.target.value)}
+              placeholder="Bring scan results, fasting, etc."
+            />
+
+            {!showMore ? (
+              <button
+                type="button"
+                className="app-btn app-btn--ghost app-btn--sm"
+                style={{ marginTop: 16 }}
+                onClick={() => setShowMore(true)}
+              >
+                Add more details
+              </button>
+            ) : (
+              <div style={{ marginTop: 20 }}>
+                <p className="u-caption" style={{ marginBottom: 8 }}>More details (optional)</p>
+                <label className="app-label">Diagnosis</label>
+                <input className="app-input" value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} />
+                <label className="app-label" style={{ marginTop: 12 }}>Treatment plan</label>
+                <textarea className="app-input" rows={2} value={treatment} onChange={(e) => setTreatment(e.target.value)} />
+                <label className="app-label" style={{ marginTop: 12 }}>Medication</label>
+                <input className="app-input" value={medication} onChange={(e) => setMedication(e.target.value)} placeholder="Name only" />
+                <label className="app-label" style={{ marginTop: 12 }}>Test still to do</label>
+                <input className="app-input" value={pendingTest} onChange={(e) => setPendingTest(e.target.value)} placeholder="Blood work, scan…" />
+                <button
+                  type="button"
+                  className="app-btn app-btn--ghost app-btn--sm"
+                  style={{ marginTop: 8 }}
+                  onClick={() => setShowMore(false)}
+                >
+                  Hide extra details
+                </button>
+              </div>
+            )}
+          </>
+        )}
 
         <div style={{ marginTop: 20 }}>
           <GradientButton onClick={submit} disabled={saving}>
-            {saving ? 'Saving…' : 'Save visit'}
+            {saving
+              ? 'Saving…'
+              : mode === 'schedule'
+                ? 'Save appointment'
+                : mode === 'update'
+                  ? 'Save update'
+                  : 'Save visit'}
           </GradientButton>
         </div>
       </div>
