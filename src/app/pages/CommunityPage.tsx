@@ -101,26 +101,30 @@ export function CommunityPage() {
 
   return (
     <>
-      <MomAppBar
-        pageTitle="Community"
-        actions={
-          <Link to={appPath('community/notifications')} style={{ position: 'relative', color: 'var(--teal)', padding: 8 }}>
-            <IconBell />
-            {unread > 0 && <span className="notification-dot" />}
-          </Link>
-        }
-      />
-      <div className="filter-bar">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            className={`filter-chip${filter === f.value ? ' filter-chip--active' : ''}`}
-            onClick={() => setFilter(f.value)}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="community-sticky-head">
+        <MomAppBar
+          pageTitle="Community"
+          actions={
+            <Link to={appPath('community/notifications')} style={{ position: 'relative', color: 'var(--teal)', padding: 8 }}>
+              <IconBell />
+              {unread > 0 && <span className="notification-dot" />}
+            </Link>
+          }
+        />
+        <div className="filter-bar" role="tablist" aria-label="Community feed">
+          {FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              role="tab"
+              aria-selected={filter === f.value}
+              className={`filter-chip${filter === f.value ? ' filter-chip--active' : ''}`}
+              onClick={() => setFilter(f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="user-app-content" style={{ paddingBottom: 160 }}>
         {loading ? (

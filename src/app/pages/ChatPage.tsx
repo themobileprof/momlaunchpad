@@ -118,7 +118,7 @@ export function ChatPage() {
   return (
     <div className="user-app-content--no-nav" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <MomAppBar
-        pageTitle={title}
+        pageTitle="Chat"
         onBack={() => navigate(appPath('chat'))}
         actions={
           <span style={{ fontSize: '0.75rem', color: connected ? 'var(--success)' : 'var(--ink-subtle)' }}>
@@ -126,6 +126,11 @@ export function ChatPage() {
           </span>
         }
       />
+      {title && title !== 'Chat' && (
+        <div className="chat-topic-bar" title={title}>
+          <p className="chat-topic-bar__title">{title}</p>
+        </div>
+      )}
 
       {error && <div className="u-alert u-alert--error" style={{ margin: '0 16px' }}>{error}</div>}
 
