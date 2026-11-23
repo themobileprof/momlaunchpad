@@ -25,7 +25,6 @@ import type {
   Nest,
   NestContribution,
   NestContributor,
-  PublicNest,
   Symptom,
   SymptomStats,
   UserProfile,

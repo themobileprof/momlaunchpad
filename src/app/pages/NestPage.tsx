@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
@@ -38,7 +38,7 @@ export function NestPage() {
   const [logAmount, setLogAmount] = useState('')
   const [logNote, setLogNote] = useState('')
 
-  const load = useCallback(async () => {
+  async function load() {
     setLoading(true)
     setError('')
     try {
@@ -59,11 +59,11 @@ export function NestPage() {
     } finally {
       setLoading(false)
     }
-  }, [profile?.name])
+  }
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [])
 
   async function createNest() {
     setBusy(true)
