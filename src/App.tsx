@@ -10,6 +10,8 @@ import { DashboardPage } from './pages/DashboardPage'
 import { FeaturesPage } from './pages/FeaturesPage'
 import { HomePage } from './pages/HomePage'
 import { JoinPage } from './pages/JoinPage'
+import { NestJoinPage } from './pages/NestJoinPage'
+import { NestLandingPage } from './pages/NestLandingPage'
 import { LanguagesPage } from './pages/LanguagesPage'
 import { LoginPage } from './pages/LoginPage'
 import { PlansPage } from './pages/PlansPage'
@@ -62,6 +64,8 @@ function AppRoutes() {
       <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/join" element={<JoinPage />} />
+      <Route path="/nest" element={<NestLandingPage />} />
+      <Route path="/nest/:token" element={<NestJoinPage />} />
       <Route path={`${APP_BASE}/*`} element={<UserApp />} />
       <Route path={ADMIN_SIGN_IN_PATH} element={<LoginPage />} />
       <Route

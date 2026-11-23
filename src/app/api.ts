@@ -22,6 +22,10 @@ import type {
   FacilityMember,
   QuotaInfo,
   Reminder,
+  Nest,
+  NestContribution,
+  NestContributor,
+  PublicNest,
   Symptom,
   SymptomStats,
   UserProfile,
@@ -267,6 +271,58 @@ export const userApi = {
   resolveSymptom: (id: string) =>
     request<{ message?: string }>(`/api/symptoms/${id}/resolve`, { method: 'PUT' }),
 
+  // Delivery nest (tribe savings)
+  getMyNest: () => request<{ nest: Nest | null }>('/api/nests/me'),
+
+  createNest: (body: {
+    title?: string
+    goal_amount?: number
+    monthly_target_amount?: number
+    currency?: string
+    expected_delivery_date?: string
+    reminder_day_of_month?: number
+  }) =>
+    request<{ nest: Nest }>('/api/nests', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updateNest: (
+    id: string,
+    body: Partial<{
+      title: string
+      goal_amount: number
+      monthly_target_amount: number | null
+      currency: string
+      expected_delivery_date: string | null
+      reminder_day_of_month: number
+      status: string
+    }>,
+  ) =>
+    request<{ nest: Nest }>(`/api/nests/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  rotateNestInvite: (id: string) =>
+    request<{ invite_token: string; invite_link: string }>(`/api/nests/${id}/invite`, {
+      method: 'POST',
+    }),
+
+  listNestActivity: (id: string) =>
+    request<{ contributions: NestContribution[]; contributors: NestContributor[] }>(
+      `/api/nests/${id}/contributions`,
+    ),
+
+  recordNestContribution: (
+    id: string,
+    body: { display_name: string; amount: number; note?: string; status?: string },
+  ) =>
+    request<{ contribution: NestContribution }>(`/api/nests/${id}/contributions`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
   // Community
   getCommunityStatus: () => request<CommunityStatus>('/api/community/status'),
 
@@ -468,6 +524,22 @@ export const userApi = {
   listFacilityMembers: (facilityId: string, limit = 50, offset = 0) =>
     request<{ members: FacilityMember[]; total: number }>(
       `/api/community/facility-admin/facilities/${facilityId}/members?limit=${limit}&offset=${offset}`,
+    ),
+
+  listFacilityAnnouncements: (facilityId: string) =>
+    request<{ announcements: FacilityAnnouncement[] }>(
+      `/api/community/facility-admin/facilities/${facilityId}/announcements`,
+    ),
+
+  sendFacilityDirectMessage: (
+    facilityId: string,
+    memberUserId: string,
+    title: string,
+    body: string,
+  ) =>
+    request<{ ok: boolean }>(
+      `/api/community/facility-admin/facilities/${facilityId}/members/${memberUserId}/messages`,
+      { method: 'POST', body: JSON.stringify({ title, body }) },
     ),
 
   createFacilityAnnouncement: (facilityId: string, title: string, body: string) =>

@@ -25,6 +25,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { DoctorVisitsPage } from './pages/DoctorVisitsPage'
 import { DoctorVisitFormPage } from './pages/DoctorVisitFormPage'
 import { SymptomsPage } from './pages/SymptomsPage'
+import { NestPage } from './pages/NestPage'
 import { appPath } from './routes'
 
 function UserGate({ children }: { children: React.ReactNode }) {
@@ -194,6 +195,14 @@ function UserAppRoutes() {
           element={
             <UserGate>
               <SymptomsPage />
+            </UserGate>
+          }
+        />
+        <Route
+          path="nest"
+          element={
+            <UserGate>
+              <NestPage />
             </UserGate>
           }
         />

@@ -93,6 +93,12 @@ export function SettingsPage() {
             <Link to={appPath('symptoms')} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
               Health tracker (symptoms)
             </Link>
+            <Link to={appPath('nest')} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
+              Delivery nest
+            </Link>
+            <Link to={appPath('facility')} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
+              Health center admin
+            </Link>
             <Link to={appPath('visits')} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
               Doctor visit records
             </Link>

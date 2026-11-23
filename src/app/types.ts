@@ -326,6 +326,52 @@ export interface SymptomStats {
   by_severity: Record<string, number>
 }
 
+export interface Nest {
+  id: string
+  title: string
+  goal_amount: number
+  monthly_target_amount?: number
+  currency: string
+  expected_delivery_date?: string
+  reminder_day_of_month: number
+  status: string
+  invite_token: string
+  invite_link: string
+  total_raised: number
+  progress_percentage: number
+  created_at: string
+  updated_at: string
+}
+
+export interface NestContribution {
+  id: string
+  amount: number
+  currency: string
+  note?: string
+  status: string
+  contributor_name: string
+  recorded_by: string
+  created_at: string
+}
+
+export interface NestContributor {
+  id: string
+  display_name: string
+  email?: string
+  phone?: string
+}
+
+export interface PublicNest {
+  title: string
+  currency: string
+  goal_amount: number
+  monthly_target_amount?: number
+  expected_delivery_date?: string
+  total_raised: number
+  progress_percentage: number
+  mom_first_name: string
+}
+
 /** Common filter chips for symptom history (matches mobile). */
 export const SYMPTOM_FILTER_TYPES = [
   'swelling',
@@ -377,6 +423,7 @@ export interface FacilityMember {
   display_name: string
   city?: string
   phone_number?: string
+  journey_stage?: string
   last_active?: string
   facility_announcements_opt_in: boolean
 }

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { AppCard, GradientButton, MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
-import type { FacilityAdminClaim, FacilityMember } from '../types'
+import type { FacilityAdminClaim, FacilityAnnouncement, FacilityMember } from '../types'
+import { JOURNEY_STAGES } from '../types'
 import { appPath } from '../routes'
 
 function claimStatusLabel(status: string): string {
@@ -20,18 +21,28 @@ function claimStatusLabel(status: string): string {
   }
 }
 
+function journeyLabel(stage?: string): string {
+  if (!stage) return ''
+  return JOURNEY_STAGES.find((s) => s.value === stage)?.label ?? stage
+}
+
 export function FacilityAdminPage() {
+  const navigate = useNavigate()
   const { profile } = useUserProfile()
   const [claims, setClaims] = useState<FacilityAdminClaim[]>([])
   const [approved, setApproved] = useState<FacilityAdminClaim[]>([])
   const [selectedFacilityId, setSelectedFacilityId] = useState('')
   const [members, setMembers] = useState<FacilityMember[]>([])
   const [memberTotal, setMemberTotal] = useState(0)
+  const [announcements, setAnnouncements] = useState<FacilityAnnouncement[]>([])
   const [roleTitle, setRoleTitle] = useState('')
   const [proofNote, setProofNote] = useState('')
   const [proofUrl, setProofUrl] = useState('')
   const [announceTitle, setAnnounceTitle] = useState('')
   const [announceBody, setAnnounceBody] = useState('')
+  const [directMemberId, setDirectMemberId] = useState<string | null>(null)
+  const [directTitle, setDirectTitle] = useState('')
+  const [directBody, setDirectBody] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -63,18 +74,22 @@ export function FacilityAdminPage() {
     if (!selectedFacilityId) {
       setMembers([])
       setMemberTotal(0)
+      setAnnouncements([])
       return
     }
     let cancelled = false
-    userApi
-      .listFacilityMembers(selectedFacilityId)
-      .then((res) => {
+    Promise.all([
+      userApi.listFacilityMembers(selectedFacilityId),
+      userApi.listFacilityAnnouncements(selectedFacilityId),
+    ])
+      .then(([memberRes, annRes]) => {
         if (cancelled) return
-        setMembers(res.members ?? [])
-        setMemberTotal(res.total ?? 0)
+        setMembers(memberRes.members ?? [])
+        setMemberTotal(memberRes.total ?? 0)
+        setAnnouncements(annRes.announcements ?? [])
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Could not load members')
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Could not load center data')
       })
     return () => {
       cancelled = true
@@ -122,6 +137,8 @@ export function FacilityAdminPage() {
       setMessage(`Announcement sent to ${res.announcement.recipient_count} member(s).`)
       setAnnounceTitle('')
       setAnnounceBody('')
+      const annRes = await userApi.listFacilityAnnouncements(selectedFacilityId)
+      setAnnouncements(annRes.announcements ?? [])
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not send announcement')
     } finally {
@@ -129,7 +146,31 @@ export function FacilityAdminPage() {
     }
   }
 
+  async function sendDirect() {
+    if (!selectedFacilityId || !directMemberId) return
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      await userApi.sendFacilityDirectMessage(
+        selectedFacilityId,
+        directMemberId,
+        directTitle.trim(),
+        directBody.trim(),
+      )
+      setMessage('Message sent to member inbox.')
+      setDirectMemberId(null)
+      setDirectTitle('')
+      setDirectBody('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not send message')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const selected = approved.find((c) => c.healthcare_facility_id === selectedFacilityId)
+  const directMember = members.find((m) => m.user_id === directMemberId)
   const hasPendingForFacility =
     !!profile?.healthcare_facility_id &&
     claims.some(
@@ -142,12 +183,12 @@ export function FacilityAdminPage() {
 
   return (
     <>
-      <MomAppBar pageTitle="Health center" />
+      <MomAppBar pageTitle="Health center admin" onBack={() => navigate(appPath())} />
       <div className="user-app-content">
         <div style={{ padding: 16 }}>
           <p className="u-muted" style={{ marginTop: 0 }}>
-            Reach people who registered your health center in MomLaunchpad — encourage app use
-            with in-app announcements. Phone numbers (when shared) help with WhatsApp later.
+            Claim your health center, see who registered it, send center-wide announcements, or
+            message one member at a time. Phone numbers (when shared) help with WhatsApp follow-up.
           </p>
 
           {error && <div className="u-alert u-alert--error">{error}</div>}
@@ -257,14 +298,13 @@ export function FacilityAdminPage() {
                       {selected && (
                         <p style={{ marginTop: 0 }}>
                           <strong>{selected.facility_name}</strong>
-                          {selected.facility_city
-                            ? ` · ${selected.facility_city}`
-                            : ''}
+                          {selected.facility_city ? ` · ${selected.facility_city}` : ''}
                           {' · '}
                           {memberTotal} member{memberTotal === 1 ? '' : 's'} on MomLaunchpad
                         </p>
                       )}
 
+                      <h3 className="u-heading-sm" style={{ marginBottom: 8 }}>Broadcast to all</h3>
                       <label className="app-label">Announcement title</label>
                       <input
                         className="app-input"
@@ -286,7 +326,7 @@ export function FacilityAdminPage() {
                       />
                       <p className="u-caption" style={{ marginBottom: 12 }}>
                         Limit: 3 announcements per center per week. Only members who opted in
-                        receive messages.
+                        receive broadcasts.
                       </p>
                       <GradientButton
                         disabled={busy || !announceTitle.trim() || !announceBody.trim()}
@@ -296,6 +336,34 @@ export function FacilityAdminPage() {
                       </GradientButton>
                     </AppCard>
                   </div>
+
+                  {announcements.length > 0 && (
+                    <>
+                      <p className="u-caption">Recent announcements</p>
+                      <div style={{ marginBottom: 16 }}>
+                        <AppCard>
+                          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                            {announcements.map((a) => (
+                              <li
+                                key={a.id}
+                                style={{
+                                  padding: '10px 0',
+                                  borderBottom: '1px solid var(--border-subtle, #eee)',
+                                }}
+                              >
+                                <strong>{a.title}</strong>
+                                <p className="u-muted" style={{ margin: '4px 0 0', fontSize: '0.85rem' }}>
+                                  {new Date(a.created_at).toLocaleString()} · {a.recipient_count} recipient
+                                  {a.recipient_count === 1 ? '' : 's'}
+                                </p>
+                                <p style={{ margin: '6px 0 0', fontSize: '0.9rem' }}>{a.body}</p>
+                              </li>
+                            ))}
+                          </ul>
+                        </AppCard>
+                      </div>
+                    </>
+                  )}
 
                   <p className="u-caption">Members ({memberTotal})</p>
                   <div style={{ marginBottom: 16 }}>
@@ -316,8 +384,9 @@ export function FacilityAdminPage() {
                               }}
                             >
                               <strong>{m.display_name}</strong>
-                              {m.city ? (
-                                <span className="u-muted"> · {m.city}</span>
+                              {m.city ? <span className="u-muted"> · {m.city}</span> : null}
+                              {m.journey_stage ? (
+                                <span className="u-muted"> · {journeyLabel(m.journey_stage)}</span>
                               ) : null}
                               {m.phone_number ? (
                                 <div style={{ fontSize: '0.9rem', marginTop: 4 }}>
@@ -335,6 +404,21 @@ export function FacilityAdminPage() {
                                   Opted out of announcements
                                 </div>
                               )}
+                              <div style={{ marginTop: 8 }}>
+                                <button
+                                  type="button"
+                                  className="app-btn app-btn--outline app-btn--sm"
+                                  onClick={() => {
+                                    setDirectMemberId(m.user_id)
+                                    setDirectTitle('')
+                                    setDirectBody('')
+                                    setError('')
+                                    setMessage('')
+                                  }}
+                                >
+                                  Message in app
+                                </button>
+                              </div>
                             </li>
                           ))}
                         </ul>
@@ -347,6 +431,50 @@ export function FacilityAdminPage() {
           )}
         </div>
       </div>
+
+      {directMemberId && directMember && (
+        <div className="sheet-overlay" role="presentation" onClick={() => setDirectMemberId(null)}>
+          <div className="sheet-panel" onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Message member">
+            <h2 className="u-heading-sm">Message {directMember.display_name}</h2>
+            <p className="u-muted" style={{ fontSize: '0.85rem' }}>
+              Goes to their MomLaunchpad inbox. Limit 30 direct messages per day for this center.
+            </p>
+            <label className="app-label">Subject</label>
+            <input
+              className="app-input"
+              value={directTitle}
+              onChange={(e) => setDirectTitle(e.target.value)}
+              maxLength={200}
+              placeholder="e.g. Your ANC appointment"
+              style={{ marginBottom: 12 }}
+            />
+            <label className="app-label">Message</label>
+            <textarea
+              className="app-input"
+              value={directBody}
+              onChange={(e) => setDirectBody(e.target.value)}
+              rows={4}
+              maxLength={2000}
+              style={{ marginBottom: 12 }}
+            />
+            <GradientButton
+              disabled={busy || !directTitle.trim() || !directBody.trim()}
+              onClick={sendDirect}
+            >
+              {busy ? 'Sending…' : 'Send'}
+            </GradientButton>
+            <button
+              type="button"
+              className="app-btn app-btn--ghost"
+              style={{ width: '100%', marginTop: 8 }}
+              onClick={() => setDirectMemberId(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       <BottomNav />
     </>
   )

@@ -44,7 +44,9 @@ export function BottomNav() {
     location.pathname.startsWith(appPath('settings')) ||
     location.pathname.startsWith(appPath('inbox')) ||
     location.pathname.startsWith(appPath('visits')) ||
-    location.pathname.startsWith(appPath('symptoms'))
+    location.pathname.startsWith(appPath('symptoms')) ||
+    location.pathname.startsWith(appPath('nest')) ||
+    location.pathname.startsWith(appPath('facility'))
 
   return (
     <>
@@ -101,6 +103,14 @@ export function BottomNav() {
           onSymptoms={() => {
             setMoreOpen(false)
             navigate(appPath('symptoms'))
+          }}
+          onNest={() => {
+            setMoreOpen(false)
+            navigate(appPath('nest'))
+          }}
+          onFacility={() => {
+            setMoreOpen(false)
+            navigate(appPath('facility'))
           }}
         />
       )}

@@ -5,6 +5,8 @@ export function MoreMenuSheet({
   onInbox,
   onVisits,
   onSymptoms,
+  onNest,
+  onFacility,
   inboxUnread = 0,
 }: {
   onClose: () => void
@@ -13,6 +15,8 @@ export function MoreMenuSheet({
   onInbox: () => void
   onVisits: () => void
   onSymptoms: () => void
+  onNest: () => void
+  onFacility: () => void
   inboxUnread?: number
 }) {
   return (
@@ -29,6 +33,14 @@ export function MoreMenuSheet({
         <button type="button" className="sheet-item" onClick={onSymptoms}>
           <span className="sheet-item-icon">💛</span>
           <span>Health tracker</span>
+        </button>
+        <button type="button" className="sheet-item" onClick={onNest}>
+          <span className="sheet-item-icon">🪺</span>
+          <span>Delivery nest</span>
+        </button>
+        <button type="button" className="sheet-item" onClick={onFacility}>
+          <span className="sheet-item-icon">🏥</span>
+          <span>Health center admin</span>
         </button>
         <button type="button" className="sheet-item" onClick={onVisits}>
           <span className="sheet-item-icon">🩺</span>
