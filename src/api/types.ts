@@ -132,6 +132,25 @@ export interface UserFeedback {
   created_at: string
 }
 
+/** Delivery nest waitlist / interest survey (admin). */
+export interface NestInterestResponse {
+  id: string
+  user_id: string
+  user_email?: string
+  user_name?: string
+  interested: 'yes' | 'no' | 'maybe' | string
+  more_info?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface NestInterestStats {
+  total: number
+  yes: number
+  no: number
+  maybe: number
+}
+
 export interface VoiceCall {
   call_sid: string
   user_id: string

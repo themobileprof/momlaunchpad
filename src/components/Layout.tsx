@@ -7,6 +7,7 @@ import { ADMIN_BASE } from '../routes'
 const nav = [
   { to: ADMIN_BASE, label: 'Dashboard', end: true },
   { to: `${ADMIN_BASE}/feedback`, label: 'Feedback' },
+  { to: `${ADMIN_BASE}/nest-interest`, label: 'Nest interest' },
   { to: `${ADMIN_BASE}/plans`, label: 'Plans' },
   { to: `${ADMIN_BASE}/features`, label: 'Features' },
   { to: `${ADMIN_BASE}/languages`, label: 'Languages' },

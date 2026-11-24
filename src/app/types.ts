@@ -343,6 +343,15 @@ export interface Nest {
   updated_at: string
 }
 
+export interface NestInterestResponse {
+  id: string
+  user_id: string
+  interested: 'yes' | 'no' | 'maybe' | string
+  more_info?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface NestContribution {
   id: string
   amount: number

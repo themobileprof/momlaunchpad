@@ -139,6 +139,12 @@ export const api = {
       '/api/admin/analytics/feedback',
     ),
 
+  listNestInterest: () =>
+    request<{
+      responses: import('./types').NestInterestResponse[]
+      stats: import('./types').NestInterestStats
+    }>('/api/admin/analytics/nest-interest'),
+
   // Users
   listUsers: (limit = 100, offset = 0) =>
     request<{ users: import('./types').AdminUserSummary[]; limit: number; offset: number }>(

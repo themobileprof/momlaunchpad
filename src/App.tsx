@@ -20,6 +20,7 @@ import { UsersPage } from './pages/UsersPage'
 import { CommunityPage } from './pages/CommunityPage'
 import { ReferralsPage } from './pages/ReferralsPage'
 import { FeedbackPage } from './pages/FeedbackPage'
+import { NestInterestPage } from './pages/NestInterestPage'
 import { ADMIN_BASE, ADMIN_SIGN_IN_PATH } from './routes'
 import { captureReferralFromSearchParams } from './lib/referral'
 import { trackPageView } from './lib/analytics'
@@ -87,6 +88,7 @@ function AppRoutes() {
         <Route path="community" element={<CommunityPage />} />
         <Route path="referrals" element={<ReferralsPage />} />
         <Route path="feedback" element={<FeedbackPage />} />
+        <Route path="nest-interest" element={<NestInterestPage />} />
       </Route>
       <Route path="*" element={<FallbackRedirect />} />
     </Routes>

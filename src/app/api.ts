@@ -25,6 +25,7 @@ import type {
   Nest,
   NestContribution,
   NestContributor,
+  NestInterestResponse,
   Symptom,
   SymptomStats,
   UserProfile,
@@ -270,7 +271,18 @@ export const userApi = {
   resolveSymptom: (id: string) =>
     request<{ message?: string }>(`/api/symptoms/${id}/resolve`, { method: 'PUT' }),
 
-  // Delivery nest (tribe savings)
+  // Delivery nest (interest survey while feature is gated)
+  getNestInterest: () =>
+    request<{ response: NestInterestResponse | null; feature_live: boolean }>(
+      '/api/nests/interest',
+    ),
+
+  submitNestInterest: (body: { interested: string; more_info?: string }) =>
+    request<{ response: NestInterestResponse }>('/api/nests/interest', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
   getMyNest: () => request<{ nest: Nest | null }>('/api/nests/me'),
 
   createNest: (body: {
