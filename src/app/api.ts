@@ -344,6 +344,23 @@ export const userApi = {
   getCommunityCountries: () =>
     request<{ countries: CommunityCountry[] }>('/api/community/locations/countries'),
 
+  getCommunityStates: (countryCode: string) => {
+    const q = new URLSearchParams({ country_code: countryCode })
+    return request<{ states: { code: string; name: string }[] }>(
+      `/api/community/locations/states?${q}`,
+    )
+  },
+
+  getCommunityCities: (countryCode: string, stateProvince: string) => {
+    const q = new URLSearchParams({
+      country_code: countryCode,
+      state_province: stateProvince,
+    })
+    return request<{ cities: { id: string; name: string; state_province: string }[] }>(
+      `/api/community/locations/cities?${q}`,
+    )
+  },
+
   getLocationSuggestions: (params: {
     country_code: string
     field: string
@@ -364,15 +381,15 @@ export const userApi = {
   getHealthcareFacilities: (params: {
     country_code: string
     state_province: string
-    city: string
+    city?: string
     q?: string
     limit?: number
   }) => {
     const q = new URLSearchParams({
       country_code: params.country_code,
       state_province: params.state_province,
-      city: params.city,
     })
+    if (params.city?.trim()) q.set('city', params.city.trim())
     if (params.q?.trim()) q.set('q', params.q.trim())
     if (params.limit != null) q.set('limit', String(params.limit))
     return request<{ facilities: CommunityHealthcareFacility[] }>(

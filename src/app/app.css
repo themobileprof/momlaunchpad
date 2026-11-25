@@ -737,7 +737,10 @@
 }
 
 .facility-search__option {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   width: 100%;
   text-align: left;
   border: 0;
@@ -747,6 +750,15 @@
   font: inherit;
   color: var(--ink);
   cursor: pointer;
+}
+
+.facility-search__option-name {
+  font-weight: 500;
+}
+
+.facility-search__option-meta {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
 }
 
 .facility-search__option:hover,

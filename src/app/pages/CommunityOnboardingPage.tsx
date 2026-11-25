@@ -12,6 +12,8 @@ export function CommunityOnboardingPage() {
   const isEdit = searchParams.get('edit') === '1'
   const { profile, refreshProfile } = useUserProfile()
   const [countries, setCountries] = useState<{ code: string; name: string }[]>([])
+  const [states, setStates] = useState<{ code: string; name: string }[]>([])
+  const [cities, setCities] = useState<{ id: string; name: string }[]>([])
   const [groups, setGroups] = useState<{ key: string; label: string; items: { key: string; label: string }[] }[]>([])
   const [countryCode, setCountryCode] = useState('')
   const [stateProvince, setStateProvince] = useState('')
@@ -19,10 +21,9 @@ export function CommunityOnboardingPage() {
   const [facilityName, setFacilityName] = useState('')
   const [facilityId, setFacilityId] = useState<string | null>(null)
   const [interests, setInterests] = useState<string[]>([])
-  const [stateSuggestions, setStateSuggestions] = useState<string[]>([])
-  const [citySuggestions, setCitySuggestions] = useState<string[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [citiesLoading, setCitiesLoading] = useState(false)
 
   useEffect(() => {
     userApi.getCommunityCountries().then((r) => setCountries(r.countries))
@@ -44,31 +45,46 @@ export function CommunityOnboardingPage() {
   }, [isEdit, profile])
 
   useEffect(() => {
-    if (!countryCode || stateProvince.length < 2) return
-    const t = setTimeout(() => {
-      userApi
-        .getLocationSuggestions({ country_code: countryCode, field: 'state_province', q: stateProvince })
-        .then((r) => setStateSuggestions(r.suggestions ?? []))
-        .catch(() => setStateSuggestions([]))
-    }, 300)
-    return () => clearTimeout(t)
-  }, [countryCode, stateProvince])
+    if (!countryCode) {
+      setStates([])
+      return
+    }
+    let cancelled = false
+    userApi
+      .getCommunityStates(countryCode)
+      .then((r) => {
+        if (!cancelled) setStates(r.states ?? [])
+      })
+      .catch(() => {
+        if (!cancelled) setStates([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [countryCode])
 
   useEffect(() => {
-    if (!countryCode || city.length < 2) return
-    const t = setTimeout(() => {
-      userApi
-        .getLocationSuggestions({
-          country_code: countryCode,
-          field: 'city',
-          q: city,
-          state_province: stateProvince,
-        })
-        .then((r) => setCitySuggestions(r.suggestions ?? []))
-        .catch(() => setCitySuggestions([]))
-    }, 300)
-    return () => clearTimeout(t)
-  }, [countryCode, city, stateProvince])
+    if (!countryCode || !stateProvince.trim()) {
+      setCities([])
+      return
+    }
+    let cancelled = false
+    setCitiesLoading(true)
+    userApi
+      .getCommunityCities(countryCode, stateProvince.trim())
+      .then((r) => {
+        if (!cancelled) setCities(r.cities ?? [])
+      })
+      .catch(() => {
+        if (!cancelled) setCities([])
+      })
+      .finally(() => {
+        if (!cancelled) setCitiesLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [countryCode, stateProvince])
 
   function toggleInterest(key: string) {
     setInterests((prev) => {
@@ -111,6 +127,9 @@ export function CommunityOnboardingPage() {
     }
   }
 
+  const cityIsDropdown = cities.length > 0
+  const cityLabel = countryCode === 'NG' ? 'City / LGA' : 'City'
+
   return (
     <div className="user-app-content--no-nav">
       <MomAppBar
@@ -131,6 +150,8 @@ export function CommunityOnboardingPage() {
           value={countryCode}
           onChange={(e) => {
             setCountryCode(e.target.value)
+            setStateProvince('')
+            setCity('')
             setFacilityId(null)
             setFacilityName('')
           }}
@@ -143,36 +164,62 @@ export function CommunityOnboardingPage() {
         </select>
 
         <label className="app-label">State / province</label>
-        <input
+        <select
           className="app-input"
-          list="state-list"
           value={stateProvince}
+          disabled={!countryCode || states.length === 0}
           onChange={(e) => {
             setStateProvince(e.target.value)
+            setCity('')
             setFacilityId(null)
             setFacilityName('')
           }}
           style={{ marginBottom: 12 }}
-        />
-        <datalist id="state-list">
-          {stateSuggestions.map((s) => <option key={s} value={s} />)}
-        </datalist>
+        >
+          <option value="">
+            {!countryCode
+              ? 'Select country first'
+              : states.length === 0
+                ? 'No states listed yet'
+                : 'Select state'}
+          </option>
+          {states.map((s) => (
+            <option key={s.code} value={s.name}>{s.name}</option>
+          ))}
+        </select>
 
-        <label className="app-label">City</label>
-        <input
-          className="app-input"
-          list="city-list"
-          value={city}
-          onChange={(e) => {
-            setCity(e.target.value)
-            setFacilityId(null)
-            setFacilityName('')
-          }}
-          style={{ marginBottom: 12 }}
-        />
-        <datalist id="city-list">
-          {citySuggestions.map((s) => <option key={s} value={s} />)}
-        </datalist>
+        <label className="app-label">{cityLabel}</label>
+        {cityIsDropdown ? (
+          <select
+            className="app-input"
+            value={city}
+            disabled={!stateProvince || citiesLoading}
+            onChange={(e) => {
+              setCity(e.target.value)
+              setFacilityId(null)
+              setFacilityName('')
+            }}
+            style={{ marginBottom: 12 }}
+          >
+            <option value="">{citiesLoading ? 'Loading…' : `Select ${cityLabel.toLowerCase()}`}</option>
+            {cities.map((c) => (
+              <option key={c.id} value={c.name}>{c.name}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            className="app-input"
+            value={city}
+            disabled={!stateProvince}
+            placeholder={stateProvince ? 'Enter your city' : 'Select state first'}
+            onChange={(e) => {
+              setCity(e.target.value)
+              setFacilityId(null)
+              setFacilityName('')
+            }}
+            style={{ marginBottom: 12 }}
+          />
+        )}
 
         <label className="app-label">Hospital / health center</label>
         <FacilitySearchSelect
@@ -181,9 +228,10 @@ export function CommunityOnboardingPage() {
           city={city}
           facilityId={facilityId}
           facilityName={facilityName}
-          onChange={({ id, name }) => {
+          onChange={({ id, name, city: facilityCity }) => {
             setFacilityId(id)
             setFacilityName(name)
+            if (facilityCity?.trim()) setCity(facilityCity.trim())
           }}
         />
 

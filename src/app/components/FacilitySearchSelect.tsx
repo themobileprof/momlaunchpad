@@ -8,7 +8,7 @@ type Props = {
   city: string
   facilityId: string | null
   facilityName: string
-  onChange: (next: { id: string | null; name: string }) => void
+  onChange: (next: { id: string | null; name: string; city?: string }) => void
   disabled?: boolean
 }
 
@@ -30,8 +30,7 @@ export function FacilitySearchSelect({
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState('')
 
-  const locationReady =
-    !!countryCode && stateProvince.trim().length > 0 && city.trim().length > 0
+  const locationReady = !!countryCode && stateProvince.trim().length > 0
 
   useEffect(() => {
     if (!open) return
@@ -63,8 +62,8 @@ export function FacilitySearchSelect({
         .getHealthcareFacilities({
           country_code: countryCode,
           state_province: stateProvince.trim(),
-          city: city.trim(),
-          q: query.trim(),
+          city: city.trim() || undefined,
+          q: query.trim() || undefined,
           limit: 50,
         })
         .then((r) => {
@@ -105,7 +104,7 @@ export function FacilitySearchSelect({
     !options.some((f) => f.name.toLowerCase() === query.trim().toLowerCase())
 
   function selectFacility(f: CommunityHealthcareFacility) {
-    onChange({ id: f.id, name: f.name })
+    onChange({ id: f.id, name: f.name, city: f.city })
     setQuery('')
     setOpen(false)
   }
@@ -142,7 +141,7 @@ export function FacilitySearchSelect({
             className={selectedLabel ? 'facility-search__value' : 'facility-search__placeholder'}
           >
             {!locationReady
-              ? 'Select country, state, and city first'
+              ? 'Select country and state first'
               : selectedLabel || 'Search and select a health center'}
           </span>
           <span className="facility-search__chevron" aria-hidden>
@@ -156,7 +155,7 @@ export function FacilitySearchSelect({
               ref={searchRef}
               className="app-input facility-search__filter"
               value={query}
-              placeholder="Type to filter…"
+              placeholder="Type to search, e.g. Ikorodu…"
               autoComplete="off"
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -167,7 +166,7 @@ export function FacilitySearchSelect({
               )}
               {!loading && !loadError && options.length === 0 && !canAddCustom && (
                 <p className="facility-search__status">
-                  No centers listed for this area yet. Type a name to add yours.
+                  No centers listed for this state yet. Type a name to add yours.
                 </p>
               )}
               {!loading &&
@@ -180,7 +179,10 @@ export function FacilitySearchSelect({
                     className={`facility-search__option${facilityId === f.id ? ' is-selected' : ''}`}
                     onClick={() => selectFacility(f)}
                   >
-                    {f.name}
+                    <span className="facility-search__option-name">{f.name}</span>
+                    {f.city ? (
+                      <span className="facility-search__option-meta">{f.city}</span>
+                    ) : null}
                   </button>
                 ))}
               {canAddCustom && (
@@ -204,7 +206,7 @@ export function FacilitySearchSelect({
       )}
 
       <p className="u-muted facility-search__hint">
-        Pick from the list for your area. Missing centers can be added if they are not listed yet.
+        Search within your state. Selecting a center also sets the matching city / LGA when known.
       </p>
     </div>
   )
