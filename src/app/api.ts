@@ -18,6 +18,7 @@ import type {
   Conversation,
   DoctorVisit,
   FacilityAdminClaim,
+  FacilityAdminPeer,
   FacilityAnnouncement,
   FacilityMember,
   QuotaInfo,
@@ -535,6 +536,11 @@ export const userApi = {
   listFacilityMembers: (facilityId: string, limit = 50, offset = 0) =>
     request<{ members: FacilityMember[]; total: number }>(
       `/api/community/facility-admin/facilities/${facilityId}/members?limit=${limit}&offset=${offset}`,
+    ),
+
+  listFacilityAdmins: (facilityId: string) =>
+    request<{ admins: FacilityAdminPeer[] }>(
+      `/api/community/facility-admin/facilities/${facilityId}/admins`,
     ),
 
   listFacilityAnnouncements: (facilityId: string) =>

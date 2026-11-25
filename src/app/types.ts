@@ -447,6 +447,13 @@ export interface FacilityAnnouncement {
   created_at: string
 }
 
+export interface FacilityAdminPeer {
+  user_id: string
+  display_name: string
+  role_title?: string
+  approved_at: string
+}
+
 export const DOCTOR_VISIT_TYPES = [
   'prenatal_checkup',
   'ultrasound',
