@@ -5,6 +5,7 @@ import { HomePhotoVisual } from '../components/HomePhotoVisual'
 import { appPath } from '../app/routes'
 import { useBrand } from '../context/BrandContext'
 import { openConsentSettings } from '../lib/consent'
+import { ADMIN_SIGN_IN_PATH } from '../routes'
 import './home.css'
 
 const FEATURES = [
@@ -86,6 +87,10 @@ export function HomePage() {
           <button type="button" className="home-footer-link" onClick={openConsentSettings}>
             Cookie settings
           </button>
+          <span aria-hidden> · </span>
+          <Link to={ADMIN_SIGN_IN_PATH} className="home-footer-link home-footer-link--faint">
+            Admin
+          </Link>
         </p>
       </footer>
     </div>

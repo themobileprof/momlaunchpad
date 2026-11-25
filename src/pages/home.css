@@ -1250,6 +1250,17 @@
   cursor: pointer;
 }
 
+.home-footer--compact .home-footer-copy a.home-footer-link--faint {
+  color: color-mix(in srgb, var(--home-ink-soft) 55%, transparent);
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.home-footer--compact .home-footer-copy a.home-footer-link--faint:hover {
+  color: var(--home-ink-soft);
+  text-decoration: underline;
+}
+
 /* Install help modal */
 .home-modal-overlay {
   position: fixed;
