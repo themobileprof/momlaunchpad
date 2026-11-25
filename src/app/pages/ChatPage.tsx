@@ -27,7 +27,31 @@ export function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const streamingIdRef = useRef<string | null>(null)
   const starterSentRef = useRef(false)
+  const wasConnectedRef = useRef(false)
+  const everConnectedRef = useRef(false)
   const { connected, lastFrame, sendMessage } = useChatWebSocket(id)
+
+  const markLastSendingFailed = useCallback(() => {
+    setMessages((prev) => {
+      const next = [...prev]
+      for (let i = next.length - 1; i >= 0; i--) {
+        if (next[i].is_user && next[i].send_status === 'sending') {
+          next[i] = { ...next[i], send_status: 'failed' }
+          break
+        }
+      }
+      return next
+    })
+    setError('No reply yet — check your connection and tap Retry.')
+  }, [])
+
+  const clearPendingSendStatus = useCallback(() => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.is_user && m.send_status ? { ...m, send_status: undefined } : m,
+      ),
+    )
+  }, [])
 
   useEffect(() => {
     if (!id) return
@@ -48,6 +72,44 @@ export function ChatPage() {
       .finally(() => setLoading(false))
   }, [id])
 
+  // After a reconnect, pull messages so replies persisted while offline appear.
+  useEffect(() => {
+    if (
+      connected &&
+      !wasConnectedRef.current &&
+      everConnectedRef.current &&
+      id &&
+      !loading
+    ) {
+      userApi
+        .getMessages(id)
+        .then((msgs) => {
+          setMessages((prev) => {
+            const pending = prev.filter((m) => m.is_user && m.send_status)
+            const server = msgs.map((m) => ({
+              id: m.id ?? crypto.randomUUID(),
+              content: m.content,
+              is_user: m.is_user,
+              timestamp: m.timestamp,
+            }))
+            if (pending.length === 0) return server
+            const serverContents = new Set(
+              server.filter((m) => m.is_user).map((m) => m.content.trim()),
+            )
+            const stillLocal = pending.filter(
+              (m) => !serverContents.has(m.content.trim()),
+            )
+            return [...server, ...stillLocal]
+          })
+        })
+        .catch(() => {
+          /* ignore sync errors */
+        })
+    }
+    if (connected) everConnectedRef.current = true
+    wasConnectedRef.current = connected
+  }, [connected, id, loading])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -55,6 +117,7 @@ export function ChatPage() {
   const handleFrame = useCallback(
     (frame: NonNullable<typeof lastFrame>) => {
       if (frame.type === 'message' && frame.content) {
+        clearPendingSendStatus()
         const streamId = streamingIdRef.current ?? crypto.randomUUID()
         streamingIdRef.current = streamId
         setMessages((prev) => {
@@ -82,6 +145,7 @@ export function ChatPage() {
       }
       if (frame.type === 'done') {
         streamingIdRef.current = null
+        clearPendingSendStatus()
         setMessages((prev) =>
           prev.map((m) => (m.is_streaming ? { ...m, is_streaming: false } : m)),
         )
@@ -90,33 +154,52 @@ export function ChatPage() {
         setTitle(frame.content)
       }
       if (frame.type === 'error') {
+        markLastSendingFailed()
         setError(frame.message ?? frame.content ?? 'Something went wrong')
       }
     },
-    [],
+    [clearPendingSendStatus, markLastSendingFailed],
   )
 
   useEffect(() => {
     if (lastFrame) handleFrame(lastFrame)
   }, [lastFrame, handleFrame])
 
-  function handleSend(text?: string) {
+  function handleSend(text?: string, existingId?: string) {
     const content = (text ?? input).trim()
     if (!content) return
     setError('')
-    setInput('')
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        content,
-        is_user: true,
-        timestamp: new Date().toISOString(),
-      },
-    ])
-    if (!sendMessage(content)) {
-      setError('Could not send message. Check your connection.')
+    if (!existingId) setInput('')
+
+    const msgId = existingId ?? crypto.randomUUID()
+    if (!existingId) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: msgId,
+          content,
+          is_user: true,
+          timestamp: new Date().toISOString(),
+          send_status: 'sending',
+        },
+      ])
+    } else {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === existingId ? { ...m, send_status: 'sending' as const } : m,
+        ),
+      )
     }
+
+    const queued = !sendMessage(content, { onReplyTimeout: markLastSendingFailed })
+    if (queued) {
+      // Still in flight via reconnect queue — keep "sending" until timeout or reply.
+    }
+  }
+
+  function handleRetry(msg: ChatMessage) {
+    if (!msg.is_user || msg.send_status !== 'failed') return
+    handleSend(msg.content, msg.id)
   }
 
   // Health tracker → chat: open a new topic and send the symptom starter once connected.
@@ -179,12 +262,27 @@ export function ChatPage() {
           </div>
         ) : (
           messages.map((m) => (
-            <div
-              key={m.id}
-              className={`chat-bubble ${m.is_user ? 'chat-bubble--user' : 'chat-bubble--ai'}`}
-            >
-              {m.content}
-              {m.is_streaming && <span className="u-muted"> …</span>}
+            <div key={m.id} className="chat-bubble-wrap">
+              <div
+                className={`chat-bubble ${m.is_user ? 'chat-bubble--user' : 'chat-bubble--ai'}${
+                  m.send_status === 'failed' ? ' chat-bubble--failed' : ''
+                }`}
+              >
+                {m.content}
+                {m.is_streaming && <span className="u-muted"> …</span>}
+              </div>
+              {m.is_user && m.send_status === 'sending' && (
+                <p className="chat-send-meta">Sending…</p>
+              )}
+              {m.is_user && m.send_status === 'failed' && (
+                <button
+                  type="button"
+                  className="chat-retry-btn"
+                  onClick={() => handleRetry(m)}
+                >
+                  Not delivered — Retry
+                </button>
+              )}
             </div>
           ))
         )}
@@ -209,7 +307,7 @@ export function ChatPage() {
           type="button"
           className="chat-send-btn"
           onClick={() => handleSend()}
-          disabled={!input.trim() || !connected}
+          disabled={!input.trim()}
           aria-label="Send"
         >
           <IconSend />

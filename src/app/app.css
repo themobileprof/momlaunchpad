@@ -581,6 +581,36 @@
   border: 1px solid color-mix(in srgb, var(--accent-deep) 10%, transparent);
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
 }
+.chat-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+}
+.chat-bubble-wrap .chat-bubble {
+  margin-bottom: 0;
+}
+.chat-bubble--failed {
+  opacity: 0.85;
+  outline: 1px solid color-mix(in srgb, var(--danger, #c44) 55%, transparent);
+}
+.chat-send-meta {
+  align-self: flex-end;
+  margin: 4px 4px 0;
+  font-size: 0.75rem;
+  color: var(--ink-subtle);
+}
+.chat-retry-btn {
+  align-self: flex-end;
+  margin: 4px 4px 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--danger, #c44);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
 .chat-input-bar {
   position: sticky;
   bottom: 0;

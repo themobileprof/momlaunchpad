@@ -59,12 +59,16 @@ export interface Conversation {
   updated_at: string
 }
 
+export type ChatSendStatus = 'sending' | 'failed'
+
 export interface ChatMessage {
   id: string
   content: string
   is_user: boolean
   timestamp: string
   is_streaming?: boolean
+  /** User bubble delivery state — missing means delivered / historical. */
+  send_status?: ChatSendStatus
 }
 
 export type WsMessageType = 'message' | 'done' | 'calendar' | 'title_updated' | 'error'
