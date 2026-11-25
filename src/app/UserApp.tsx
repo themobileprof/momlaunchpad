@@ -35,7 +35,10 @@ function UserGate({ children }: { children: React.ReactNode }) {
   if (authLoading) return <LoadingPage />
   if (!user) return <Navigate to={appPath('login')} replace />
   if (profileLoading) return <LoadingPage />
-  if (profile && !profile.onboarding_completed) {
+  if (
+    profile &&
+    (!profile.onboarding_completed || !profile.community_onboarding_completed)
+  ) {
     return <Navigate to={appPath('onboarding')} replace />
   }
   return <>{children}</>
@@ -47,7 +50,9 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
 
   if (authLoading || profileLoading) return <LoadingPage />
   if (!user) return <Navigate to={appPath('login')} replace />
-  if (profile?.onboarding_completed) return <Navigate to={appPath()} replace />
+  if (profile?.onboarding_completed && profile?.community_onboarding_completed) {
+    return <Navigate to={appPath()} replace />
+  }
   return <>{children}</>
 }
 

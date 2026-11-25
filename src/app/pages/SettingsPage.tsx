@@ -88,7 +88,7 @@ export function SettingsPage() {
             <p className="u-caption">App</p>
             <Link to="/" className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>Marketing site</Link>
             <Link to={`${appPath('community/onboarding')}?edit=1`} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
-              Edit community location & feed topics
+              Edit community location
             </Link>
             <Link to={appPath('symptoms')} className="sheet-item" style={{ padding: '8px 0', display: 'block' }}>
               Health tracker (symptoms)

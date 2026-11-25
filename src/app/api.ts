@@ -403,11 +403,12 @@ export const userApi = {
     city: string
     healthcare_facility_id?: string
     healthcare_facility_name?: string
-    interests: string[]
+    /** Optional; omitted or empty skips interest save on first join. */
+    interests?: string[]
   }) =>
     request<CommunityStatus>('/api/community/onboarding', {
       method: 'POST',
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, interests: body.interests ?? [] }),
     }),
 
   getCommunityFeed: (filter: CommunityFeedFilter, cursor?: string, limit = 20) => {

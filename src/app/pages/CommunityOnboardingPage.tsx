@@ -6,6 +6,7 @@ import { GradientButton, MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
 import { appPath } from '../routes'
 
+/** Location/facility only — used for edit and legacy users missing community setup. */
 export function CommunityOnboardingPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -14,20 +15,17 @@ export function CommunityOnboardingPage() {
   const [countries, setCountries] = useState<{ code: string; name: string }[]>([])
   const [states, setStates] = useState<{ code: string; name: string }[]>([])
   const [cities, setCities] = useState<{ id: string; name: string }[]>([])
-  const [groups, setGroups] = useState<{ key: string; label: string; items: { key: string; label: string }[] }[]>([])
   const [countryCode, setCountryCode] = useState('')
   const [stateProvince, setStateProvince] = useState('')
   const [city, setCity] = useState('')
   const [facilityName, setFacilityName] = useState('')
   const [facilityId, setFacilityId] = useState<string | null>(null)
-  const [interests, setInterests] = useState<string[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [citiesLoading, setCitiesLoading] = useState(false)
 
   useEffect(() => {
     userApi.getCommunityCountries().then((r) => setCountries(r.countries))
-    userApi.getCommunityInterests().then((r) => setGroups(r.groups))
     if (isEdit) return
     userApi.getCommunityStatus().then((s) => {
       if (s.community_onboarding_completed) navigate(appPath('community'))
@@ -35,14 +33,13 @@ export function CommunityOnboardingPage() {
   }, [navigate, isEdit])
 
   useEffect(() => {
-    if (!isEdit || !profile) return
+    if (!profile) return
     if (profile.country_code) setCountryCode(profile.country_code)
     if (profile.state_province) setStateProvince(profile.state_province)
     if (profile.city) setCity(profile.city)
     if (profile.healthcare_facility_name) setFacilityName(profile.healthcare_facility_name)
     if (profile.healthcare_facility_id) setFacilityId(profile.healthcare_facility_id)
-    if (profile.community_interests?.length) setInterests(profile.community_interests)
-  }, [isEdit, profile])
+  }, [profile])
 
   useEffect(() => {
     if (!countryCode) {
@@ -86,14 +83,6 @@ export function CommunityOnboardingPage() {
     }
   }, [countryCode, stateProvince])
 
-  function toggleInterest(key: string) {
-    setInterests((prev) => {
-      if (prev.includes(key)) return prev.filter((k) => k !== key)
-      if (prev.length >= 5) return prev
-      return [...prev, key]
-    })
-  }
-
   async function submit() {
     if (!countryCode || !stateProvince.trim() || !city.trim()) {
       setError('Please complete your location')
@@ -101,10 +90,6 @@ export function CommunityOnboardingPage() {
     }
     if (!facilityName.trim()) {
       setError('Please select your hospital or health center')
-      return
-    }
-    if (interests.length === 0 && !isEdit) {
-      setError('Pick at least one interest')
       return
     }
     setLoading(true)
@@ -116,7 +101,7 @@ export function CommunityOnboardingPage() {
         city: city.trim(),
         healthcare_facility_id: facilityId ?? undefined,
         healthcare_facility_name: facilityName.trim(),
-        interests,
+        interests: [],
       })
       await refreshProfile()
       navigate(isEdit ? appPath('settings') : appPath('community'))
@@ -234,25 +219,6 @@ export function CommunityOnboardingPage() {
             if (facilityCity?.trim()) setCity(facilityCity.trim())
           }}
         />
-
-        <p className="app-label">Interests (up to 5)</p>
-        {groups.map((g) => (
-          <div key={g.key} style={{ marginBottom: 12 }}>
-            <p className="u-caption">{g.label}</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {g.items.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  className={`filter-chip${interests.includes(item.key) ? ' filter-chip--active' : ''}`}
-                  onClick={() => toggleInterest(item.key)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
 
         <GradientButton onClick={submit} disabled={loading}>
           {loading ? 'Saving…' : isEdit ? 'Save changes ✓' : 'Join community →'}

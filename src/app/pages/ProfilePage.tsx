@@ -254,20 +254,16 @@ export function ProfilePage() {
             <CommunityBadgeProfileSection />
           </div>
 
-          <p className="u-caption">Community feed</p>
+          <p className="u-caption">Local circle</p>
           <div style={{ marginBottom: 16 }}>
             <AppCard>
-              {profile?.community_interests?.length ? (
-                <p style={{ margin: '0 0 12px' }}>
-                  Topics: {profile.community_interests.join(', ')}
-                </p>
-              ) : (
-                <p className="u-muted" style={{ margin: '0 0 12px' }}>
-                  Choose topics to personalize your community feed.
-                </p>
-              )}
+              <p className="u-muted" style={{ margin: '0 0 12px' }}>
+                {profile?.healthcare_facility_name
+                  ? `${profile.healthcare_facility_name}${profile.city ? ` · ${profile.city}` : ''}`
+                  : 'Set your area and health center for Nearby.'}
+              </p>
               <Link to={`${appPath('community/onboarding')}?edit=1`} className="app-btn app-btn--outline app-btn--sm" style={{ textDecoration: 'none' }}>
-                Edit feed topics
+                Edit community location
               </Link>
             </AppCard>
           </div>
