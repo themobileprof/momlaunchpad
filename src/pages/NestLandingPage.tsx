@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
 import { BrandLogo } from '../components/BrandLogo'
 import { APP_BASE } from '../app/routes'
+import { useBrand } from '../context/BrandContext'
 import './home.css'
 
 /** Public marketing stub while Delivery nest is in interest-survey mode. */
 export function NestLandingPage() {
+  const brand = useBrand()
   return (
     <div className="home">
       <div className="home-grain" aria-hidden />
@@ -21,7 +23,7 @@ export function NestLandingPage() {
           </h1>
           <p className="home-hero-lead">
             Nest will let moms invite close family and friends to gift toward hospital fees and
-            baby needs before the due date — without MomLaunchpad holding the money. We are
+            baby needs before the due date — without {brand.productName} holding the money. We are
             collecting interest first so we build what you actually need.
           </p>
           <div className="home-hero-actions" style={{ marginTop: '1.5rem' }}>
@@ -29,7 +31,7 @@ export function NestLandingPage() {
               Tell us if you want Nest
             </Link>
             <Link className="home-btn home-btn-ghost home-btn-lg" to="/">
-              Back to MomLaunchpad
+              Back to {brand.productName}
             </Link>
           </div>
         </section>

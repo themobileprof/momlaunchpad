@@ -32,7 +32,7 @@ export function LoginPage() {
     <div className="login-page">
       <div className="login-card">
         <div className="brand brand-center login-brand">
-          <BrandLogo size="lg" title="MomLaunchpad" subtitle="Authorized access only" />
+          <BrandLogo size="lg" subtitle="Authorized access only" />
         </div>
         <form onSubmit={handleSubmit} className="form">
           {error && <Alert variant="error">{error}</Alert>}

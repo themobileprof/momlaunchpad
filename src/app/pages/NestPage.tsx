@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { GradientButton, MomAppBar } from '../components/ui'
+import { useBrand } from '../../context/BrandContext'
 import { appPath } from '../routes'
 import type { NestInterestResponse } from '../types'
 
@@ -13,6 +14,7 @@ const INTEREST_OPTIONS = [
 ] as const
 
 export function NestPage() {
+  const brand = useBrand()
   const navigate = useNavigate()
   const [existing, setExisting] = useState<NestInterestResponse | null>(null)
   const [interested, setInterested] = useState<'yes' | 'no' | 'maybe' | ''>('')
@@ -83,8 +85,9 @@ export function NestPage() {
           </h2>
           <p style={{ marginBottom: 12 }}>
             A private place to prepare money for delivery — hospital fees, transport, baby items —
-            with people who already love you. You set a goal tied to your due date. MomLaunchpad
-            does <strong>not</strong> hold the money: transfers still happen the way your family
+            with people who already love you. You set a goal tied to your due date.{' '}
+            {brand.productName} does <strong>not</strong> hold the money: transfers still happen
+            the way your family
             already does (bank, cash, wallet).
           </p>
           <h3 className="u-heading-sm" style={{ fontSize: '1rem' }}>

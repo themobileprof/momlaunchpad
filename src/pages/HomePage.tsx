@@ -3,6 +3,7 @@ import { ApkDownloadSection } from '../components/ApkDownloadSection'
 import { BrandLogo } from '../components/BrandLogo'
 import { HomePhotoVisual } from '../components/HomePhotoVisual'
 import { appPath } from '../app/routes'
+import { useBrand } from '../context/BrandContext'
 import { openConsentSettings } from '../lib/consent'
 import './home.css'
 
@@ -30,6 +31,7 @@ const FEATURES = [
 ] as const
 
 export function HomePage() {
+  const brand = useBrand()
   return (
     <div className="home home--compact">
       <div className="home-grain" aria-hidden />
@@ -77,7 +79,7 @@ export function HomePage() {
 
       <footer className="home-footer home-footer--compact">
         <p className="home-footer-copy">
-          © {new Date().getFullYear()} MomLaunchpad
+          © {new Date().getFullYear()} {brand.companyName}
           <span aria-hidden> · </span>
           <Link to={appPath('login')}>App</Link>
           <span aria-hidden> · </span>

@@ -1,3 +1,5 @@
+import { useBrand } from '../context/BrandContext'
+
 type Size = 'sm' | 'md' | 'lg'
 
 const SIZES: Record<Size, number> = {
@@ -18,11 +20,13 @@ type Props = {
 export function BrandLogo({
   size = 'md',
   showText = true,
-  title = 'MomLaunchpad',
+  title,
   subtitle,
   href,
   className = '',
 }: Props) {
+  const brand = useBrand()
+  const resolvedTitle = title ?? brand.productName
   const px = SIZES[size]
   const content = (
     <>
@@ -36,7 +40,7 @@ export function BrandLogo({
       />
       {showText && (
         <span className="brand-logo-text">
-          <strong>{title}</strong>
+          <strong>{resolvedTitle}</strong>
           {subtitle && <small>{subtitle}</small>}
         </span>
       )}
@@ -47,7 +51,7 @@ export function BrandLogo({
 
   if (href) {
     return (
-      <a href={href} className={classes} aria-label={`${title} home`}>
+      <a href={href} className={classes} aria-label={`${resolvedTitle} home`}>
         {content}
       </a>
     )

@@ -5,6 +5,7 @@ import { BottomNav } from '../components/BottomNav'
 import { CommunityBadgeProfileSection } from '../components/CommunityBadgeProfileSection'
 import { GenderPicker } from '../components/GenderPicker'
 import { AppCard, GradientButton, MomAppBar } from '../components/ui'
+import { useBrand } from '../../context/BrandContext'
 import { useUserAuth } from '../context/UserAuthContext'
 import { useUserProfile } from '../context/UserProfileContext'
 import { saveStoredBabyGender } from '../lib/babyGenderStorage'
@@ -12,6 +13,7 @@ import { JOURNEY_STAGES, type BabyGender, type JourneyStage } from '../types'
 import { appPath } from '../routes'
 
 export function ProfilePage() {
+  const brand = useBrand()
   const { user } = useUserAuth()
   const { profile, setProfile, setPreviewBabyGender, refreshProfile } = useUserProfile()
   const [name, setName] = useState('')
@@ -101,8 +103,8 @@ export function ProfilePage() {
   async function shareReferral() {
     if (!referralUrl) return
     const shareData = {
-      title: 'Join me on MomLaunchpad',
-      text: 'Join me on MomLaunchpad — gentle support, community, and personalized guidance for your pregnancy journey.',
+      title: `Join me on ${brand.productName}`,
+      text: `Join me on ${brand.productName} — gentle support, community, and personalized guidance for your pregnancy journey.`,
       url: referralUrl,
     }
     if (typeof navigator.share === 'function') {

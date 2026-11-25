@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { GoogleSignInSection } from '../components/GoogleSignInSection'
 import { GlassCard, GradientButton } from '../components/ui'
+import { useBrand } from '../../context/BrandContext'
 import { useUserAuth } from '../context/UserAuthContext'
 import { appPath } from '../routes'
 
 export function UserLoginPage() {
+  const brand = useBrand()
   const { login, googleSignIn, user } = useUserAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,7 +45,7 @@ export function UserLoginPage() {
     <div className="auth-page user-app-content--no-nav">
       <div className="auth-logo-wrap">
         <div className="auth-logo-ring">
-          <img src="/logo.png" alt="MomLaunchpad" />
+          <img src="/logo.png" alt={brand.productName} />
         </div>
         <h1 className="u-heading-md">Welcome back</h1>
         <p className="u-muted">Sign in to continue your journey</p>

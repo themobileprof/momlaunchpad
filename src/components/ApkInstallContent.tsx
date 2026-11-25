@@ -1,12 +1,14 @@
+import { useBrand } from '../context/BrandContext'
 import { officialReleasesUrl } from './ApkInstallHelp'
 
 export function ApkInstallContent() {
+  const brand = useBrand()
   const releasesUrl = officialReleasesUrl()
 
   return (
     <div className="apk-install-content">
       <p>
-        MomLaunchpad is not on the Google Play Store yet, so you install the Android app
+        {brand.productName} is not on the Google Play Store yet, so you install the Android app
         directly from this site. The steps below are normal for early access.
       </p>
 
@@ -35,11 +37,11 @@ export function ApkInstallContent() {
           <strong>More details</strong> first. This warning appears for any app outside the Play
           Store; it does not mean the file is unsafe.
         </li>
-        <li>Open MomLaunchpad and sign in or create your account.</li>
+        <li>Open {brand.productName} and sign in or create your account.</li>
       </ol>
 
       <p>
-        This is the official build from MomLaunchpad, also published on our{' '}
+        This is the official build from {brand.productName}, also published on our{' '}
         <a href={releasesUrl} target="_blank" rel="noopener noreferrer">
           GitHub releases
         </a>

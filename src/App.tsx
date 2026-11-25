@@ -6,6 +6,7 @@ import { Layout } from './components/Layout'
 import { ReferralCapture } from './components/ReferralCapture'
 import { AdminConfigProvider } from './context/AdminConfigContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { BrandProvider } from './context/BrandContext'
 import { DashboardPage } from './pages/DashboardPage'
 import { FeaturesPage } from './pages/FeaturesPage'
 import { HomePage } from './pages/HomePage'
@@ -98,8 +99,10 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <BrandProvider>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrandProvider>
   )
 }

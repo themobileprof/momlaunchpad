@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { userApi } from '../api'
+import { FacilitySearchSelect } from '../components/FacilitySearchSelect'
 import { GradientButton, MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
 import { appPath } from '../routes'
-import type { CommunityHealthcareFacility } from '../types'
 
 export function CommunityOnboardingPage() {
   const navigate = useNavigate()
@@ -18,14 +18,11 @@ export function CommunityOnboardingPage() {
   const [city, setCity] = useState('')
   const [facilityName, setFacilityName] = useState('')
   const [facilityId, setFacilityId] = useState<string | null>(null)
-  const [facilitySuggestions, setFacilitySuggestions] = useState<CommunityHealthcareFacility[]>([])
-  const [showFacilitySuggestions, setShowFacilitySuggestions] = useState(false)
   const [interests, setInterests] = useState<string[]>([])
   const [stateSuggestions, setStateSuggestions] = useState<string[]>([])
   const [citySuggestions, setCitySuggestions] = useState<string[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const facilityBlurTimer = useRef<number | null>(null)
 
   useEffect(() => {
     userApi.getCommunityCountries().then((r) => setCountries(r.countries))
@@ -73,25 +70,6 @@ export function CommunityOnboardingPage() {
     return () => clearTimeout(t)
   }, [countryCode, city, stateProvince])
 
-  useEffect(() => {
-    if (!countryCode || !stateProvince.trim() || !city.trim() || facilityName.trim().length < 2) {
-      setFacilitySuggestions([])
-      return
-    }
-    const t = setTimeout(() => {
-      userApi
-        .getHealthcareFacilities({
-          country_code: countryCode,
-          state_province: stateProvince.trim(),
-          city: city.trim(),
-          q: facilityName.trim(),
-        })
-        .then((r) => setFacilitySuggestions(r.facilities))
-        .catch(() => setFacilitySuggestions([]))
-    }, 300)
-    return () => clearTimeout(t)
-  }, [countryCode, stateProvince, city, facilityName])
-
   function toggleInterest(key: string) {
     setInterests((prev) => {
       if (prev.includes(key)) return prev.filter((k) => k !== key)
@@ -106,7 +84,7 @@ export function CommunityOnboardingPage() {
       return
     }
     if (!facilityName.trim()) {
-      setError('Please enter your hospital or health center')
+      setError('Please select your hospital or health center')
       return
     }
     if (interests.length === 0 && !isEdit) {
@@ -148,7 +126,16 @@ export function CommunityOnboardingPage() {
         {error && <div className="u-alert u-alert--error">{error}</div>}
 
         <label className="app-label">Country</label>
-        <select className="app-input" value={countryCode} onChange={(e) => setCountryCode(e.target.value)} style={{ marginBottom: 12 }}>
+        <select
+          className="app-input"
+          value={countryCode}
+          onChange={(e) => {
+            setCountryCode(e.target.value)
+            setFacilityId(null)
+            setFacilityName('')
+          }}
+          style={{ marginBottom: 12 }}
+        >
           <option value="">Select country</option>
           {countries.map((c) => (
             <option key={c.code} value={c.code}>{c.name}</option>
@@ -163,6 +150,7 @@ export function CommunityOnboardingPage() {
           onChange={(e) => {
             setStateProvince(e.target.value)
             setFacilityId(null)
+            setFacilityName('')
           }}
           style={{ marginBottom: 12 }}
         />
@@ -178,6 +166,7 @@ export function CommunityOnboardingPage() {
           onChange={(e) => {
             setCity(e.target.value)
             setFacilityId(null)
+            setFacilityName('')
           }}
           style={{ marginBottom: 12 }}
         />
@@ -186,47 +175,17 @@ export function CommunityOnboardingPage() {
         </datalist>
 
         <label className="app-label">Hospital / health center</label>
-        <div className="facility-autocomplete" style={{ position: 'relative', marginBottom: 16 }}>
-          <input
-            className="app-input"
-            value={facilityName}
-            autoComplete="off"
-            placeholder="Start typing to search or add yours"
-            onChange={(e) => {
-              setFacilityName(e.target.value)
-              setFacilityId(null)
-              setShowFacilitySuggestions(true)
-            }}
-            onFocus={() => setShowFacilitySuggestions(true)}
-            onBlur={() => {
-              facilityBlurTimer.current = window.setTimeout(() => setShowFacilitySuggestions(false), 150)
-            }}
-          />
-          {showFacilitySuggestions && facilitySuggestions.length > 0 && (
-            <ul className="facility-autocomplete__list" role="listbox">
-              {facilitySuggestions.map((f) => (
-                <li key={f.id}>
-                  <button
-                    type="button"
-                    className="facility-autocomplete__option"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => {
-                      if (facilityBlurTimer.current) window.clearTimeout(facilityBlurTimer.current)
-                      setFacilityName(f.name)
-                      setFacilityId(f.id)
-                      setShowFacilitySuggestions(false)
-                    }}
-                  >
-                    {f.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className="u-muted" style={{ fontSize: '0.8rem', margin: '6px 0 0' }}>
-            Can&apos;t find it? Type the full name — we&apos;ll add it for others nearby.
-          </p>
-        </div>
+        <FacilitySearchSelect
+          countryCode={countryCode}
+          stateProvince={stateProvince}
+          city={city}
+          facilityId={facilityId}
+          facilityName={facilityName}
+          onChange={({ id, name }) => {
+            setFacilityId(id)
+            setFacilityName(name)
+          }}
+        />
 
         <p className="app-label">Interests (up to 5)</p>
         {groups.map((g) => (

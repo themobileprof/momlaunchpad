@@ -1,10 +1,12 @@
 import { Link, useParams } from 'react-router-dom'
 import { BrandLogo } from '../components/BrandLogo'
 import { APP_BASE } from '../app/routes'
+import { useBrand } from '../context/BrandContext'
 import './home.css'
 
 /** Public invite links are paused until Delivery nest goes live. */
 export function NestJoinPage() {
+  const brand = useBrand()
   const { token = '' } = useParams<{ token: string }>()
 
   return (
@@ -24,14 +26,16 @@ export function NestJoinPage() {
             This invite link is for Nest — a way for family and friends to record gifts toward a
             mom’s delivery costs. We have paused live contributions while we finish the experience
             with moms.
-            {token ? ' Ask the person who shared this link to check MomLaunchpad for updates.' : ''}
+            {token
+              ? ` Ask the person who shared this link to check ${brand.productName} for updates.`
+              : ''}
           </p>
           <div className="home-hero-actions" style={{ marginTop: '1.5rem' }}>
             <Link className="home-btn home-btn-lg" to={`${APP_BASE}/nest`}>
               I’m a mom — share interest
             </Link>
             <Link className="home-btn home-btn-ghost home-btn-lg" to="/">
-              Back to MomLaunchpad
+              Back to {brand.productName}
             </Link>
           </div>
         </section>

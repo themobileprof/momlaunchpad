@@ -662,37 +662,117 @@
   color: white;
 }
 
-.facility-autocomplete__list {
+.facility-search {
+  margin-bottom: 16px;
+}
+
+.facility-search__control {
+  position: relative;
+}
+
+.facility-search__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.facility-search__trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.facility-search__trigger.is-open {
+  border-color: color-mix(in srgb, var(--accent-deep) 45%, transparent);
+}
+
+.facility-search__placeholder {
+  color: var(--ink-muted);
+}
+
+.facility-search__value {
+  color: var(--ink);
+}
+
+.facility-search__chevron {
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+
+.facility-search__clear {
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-deep);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.facility-search__panel {
   position: absolute;
-  z-index: 20;
+  z-index: 30;
   left: 0;
   right: 0;
   top: calc(100% + 4px);
   margin: 0;
-  padding: 0.35rem 0;
-  list-style: none;
+  padding: 0.5rem;
   background: var(--surface);
   border: 1px solid color-mix(in srgb, var(--accent-deep) 12%, transparent);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
-  max-height: 220px;
+}
+
+.facility-search__filter {
+  margin-bottom: 0.35rem;
+}
+
+.facility-search__options {
+  max-height: 240px;
   overflow-y: auto;
 }
 
-.facility-autocomplete__option {
+.facility-search__option {
   display: block;
   width: 100%;
   text-align: left;
   border: 0;
   background: transparent;
-  padding: 0.65rem 0.9rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 6px;
   font: inherit;
   color: var(--ink);
   cursor: pointer;
 }
 
-.facility-autocomplete__option:hover {
+.facility-search__option:hover,
+.facility-search__option.is-selected {
   background: var(--surface-muted);
+}
+
+.facility-search__option--add {
+  color: var(--accent-deep);
+  font-weight: 600;
+}
+
+.facility-search__status {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.facility-search__status--error {
+  color: var(--danger);
+}
+
+.facility-search__hint {
+  font-size: 0.8rem;
+  margin: 6px 0 0;
 }
 
 /* Empty state */

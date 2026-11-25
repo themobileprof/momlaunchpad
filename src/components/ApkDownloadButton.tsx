@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useBrand } from '../context/BrandContext'
 import { fetchLatestApkRelease, type ApkReleaseInfo } from '../lib/githubRelease'
 
 type Props = {
@@ -14,6 +15,7 @@ export function ApkDownloadButton({
   size = 'default',
   showTrustLine = false,
 }: Props) {
+  const brand = useBrand()
   const [release, setRelease] = useState<ApkReleaseInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -80,7 +82,7 @@ export function ApkDownloadButton({
         {release.name} · {release.tag}
       </p>
       {showTrustLine && (
-        <p className="home-apk-trust">Official build · direct from MomLaunchpad</p>
+        <p className="home-apk-trust">Official build · direct from {brand.productName}</p>
       )}
     </div>
   )

@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { GoogleSignInSection } from '../components/GoogleSignInSection'
 import { GlassCard, GradientButton } from '../components/ui'
+import { useBrand } from '../../context/BrandContext'
 import { useUserAuth } from '../context/UserAuthContext'
 import { getStoredReferralCode } from '../../lib/referral'
 import { appPath } from '../routes'
 
 export function UserRegisterPage() {
+  const brand = useBrand()
   const { register, googleSignIn, user } = useUserAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -47,7 +49,7 @@ export function UserRegisterPage() {
     <div className="auth-page user-app-content--no-nav">
       <div className="auth-logo-wrap">
         <div className="auth-logo-ring">
-          <img src="/logo.png" alt="MomLaunchpad" />
+          <img src="/logo.png" alt={brand.productName} />
         </div>
         <h1 className="u-heading-md">Create your account</h1>
         <p className="u-muted">A softer place to land on your journey</p>

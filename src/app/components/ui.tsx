@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useBrand } from '../../context/BrandContext'
 import { useUserAuth } from '../context/UserAuthContext'
 import type { BabyThemeId } from '../lib/babyTheme'
 
@@ -59,6 +60,7 @@ export function MomAppBar({
   showLogout?: boolean
 }) {
   const { user, logout } = useUserAuth()
+  const brand = useBrand()
   const showActions = actions || (showLogout && user)
 
   return (
@@ -72,7 +74,7 @@ export function MomAppBar({
       )}
       <img src="/logo.png" alt="" className="mom-app-bar-logo" />
       <div className="mom-app-bar-brand-wrap">
-        <div className="mom-app-bar-brand">MomLaunchPad</div>
+        <div className="mom-app-bar-brand">{brand.productNameDisplay}</div>
         {pageTitle && <div className="mom-app-bar-title">{pageTitle}</div>}
       </div>
       {showActions && (

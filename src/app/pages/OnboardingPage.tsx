@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { GenderPicker } from '../components/GenderPicker'
 import { GlassCard, GradientButton } from '../components/ui'
 import { userApi } from '../api'
+import { useBrand } from '../../context/BrandContext'
 import { useUserAuth } from '../context/UserAuthContext'
 import { useUserProfile } from '../context/UserProfileContext'
 import { saveStoredBabyGender } from '../lib/babyGenderStorage'
@@ -12,6 +13,7 @@ import { appPath } from '../routes'
 const SIGNUP_STAGES = JOURNEY_STAGES.filter((s) => s.signup)
 
 export function OnboardingPage() {
+  const brand = useBrand()
   const { user } = useUserAuth()
   const { profile, setProfile, setPreviewBabyGender } = useUserProfile()
   const [step, setStep] = useState(0)
@@ -110,7 +112,9 @@ export function OnboardingPage() {
           <GlassCard className="auth-card">
             {step === 0 && (
               <div>
-                <h2 className="u-heading-lg" style={{ marginBottom: 12 }}>Welcome to MomLaunchpad</h2>
+                <h2 className="u-heading-lg" style={{ marginBottom: 12 }}>
+                  Welcome to {brand.productName}
+                </h2>
                 <p className="u-body u-muted">
                   We&apos;ll ask a few gentle questions so your companion can support you in a way
                   that feels personal — not generic.

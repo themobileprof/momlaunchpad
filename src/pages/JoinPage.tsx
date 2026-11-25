@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ApkDownloadSection } from '../components/ApkDownloadSection'
 import { BrandLogo } from '../components/BrandLogo'
+import { useBrand } from '../context/BrandContext'
 import {
   captureReferralFromSearchParams,
   getStoredReferralCode,
@@ -9,6 +10,7 @@ import {
 import './home.css'
 
 export function JoinPage() {
+  const brand = useBrand()
   const [searchParams] = useSearchParams()
   const [code, setCode] = useState(() => getStoredReferralCode())
 
@@ -29,7 +31,7 @@ export function JoinPage() {
           <div className="home-hero-glow" aria-hidden />
           <p className="home-eyebrow">You&apos;re invited</p>
           <h1 id="join-heading" className="home-hero-title">
-            Join MomLaunchpad
+            Join {brand.productName}
             <span className="home-hero-accent"> with a friend&apos;s invite</span>
           </h1>
           <p className="home-hero-lead">
@@ -51,7 +53,7 @@ export function JoinPage() {
 
           <div className="home-hero-actions" style={{ marginTop: '1.5rem' }}>
             <Link className="home-btn home-btn-ghost home-btn-lg" to="/">
-              Learn more about MomLaunchpad
+              Learn more about {brand.productName}
             </Link>
           </div>
 
@@ -63,7 +65,9 @@ export function JoinPage() {
       </main>
 
       <footer className="home-footer home-footer-minimal">
-        <p className="home-footer-copy">© {new Date().getFullYear()} MomLaunchpad</p>
+        <p className="home-footer-copy">
+          © {new Date().getFullYear()} {brand.companyName}
+        </p>
       </footer>
     </div>
   )

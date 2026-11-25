@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { GradientButton, MomAppBar } from '../components/ui'
+import { useBrand } from '../../context/BrandContext'
 import { useUserProfile } from '../context/UserProfileContext'
 import type {
   FacilityAdminClaim,
@@ -52,6 +53,7 @@ function initials(name: string): string {
 }
 
 export function FacilityAdminPage() {
+  const brand = useBrand()
   const navigate = useNavigate()
   const { profile } = useUserProfile()
   const [claims, setClaims] = useState<FacilityAdminClaim[]>([])
@@ -155,7 +157,7 @@ export function FacilityAdminPage() {
         proof_note: proofNote.trim(),
         proof_url: proofUrl.trim() || undefined,
       })
-      setMessage('Request sent — MomLaunchpad will review shortly.')
+      setMessage(`Request sent — ${brand.productName} will review shortly.`)
       setRoleTitle('')
       setProofNote('')
       setProofUrl('')
@@ -205,7 +207,7 @@ export function FacilityAdminPage() {
         directTitle.trim(),
         directBody.trim(),
       )
-      setMessage('Message sent to their MomLaunchpad inbox.')
+      setMessage(`Message sent to their ${brand.productName} inbox.`)
       setDirectMemberId(null)
       setDirectTitle('')
       setDirectBody('')
@@ -376,8 +378,8 @@ export function FacilityAdminPage() {
             <div className="fa-card fa-card--soft">
               <p className="fa-status-pill fa-status-pill--pending">Pending review</p>
               <p className="fa-lead" style={{ marginBottom: 0 }}>
-                Your request for <strong>{profile?.healthcare_facility_name}</strong> is with
-                MomLaunchpad. You can keep using your approved center meanwhile.
+                Your request for <strong>{profile?.healthcare_facility_name}</strong> is with{' '}
+                {brand.productName}. You can keep using your approved center meanwhile.
               </p>
             </div>
           )}
@@ -394,8 +396,8 @@ export function FacilityAdminPage() {
           >
             <h2 className="u-heading-sm">Message {directMember.display_name}</h2>
             <p className="u-muted" style={{ fontSize: '0.85rem' }}>
-              Delivered to their MomLaunchpad inbox · up to 30 direct messages per day for this
-              center
+              Delivered to their {brand.productName} inbox · up to 30 direct messages per day for
+              this center
             </p>
             <label className="app-label">Subject</label>
             <input
@@ -469,6 +471,7 @@ function AccessFlow({
   busy: boolean
   claims: FacilityAdminClaim[]
 }) {
+  const brand = useBrand()
   return (
     <div className="fa-access">
       <header className="fa-hero">
@@ -497,7 +500,7 @@ function AccessFlow({
           </li>
           <li className={claim?.status === 'approved' ? 'is-done' : hasPending ? 'is-current' : ''}>
             <span className="fa-step-num">3</span>
-            <span>MomLaunchpad reviews — then your dashboard unlocks</span>
+            <span>{brand.productName} reviews — then your dashboard unlocks</span>
           </li>
         </ol>
       </header>

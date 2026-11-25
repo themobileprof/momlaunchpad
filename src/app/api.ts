@@ -365,14 +365,16 @@ export const userApi = {
     country_code: string
     state_province: string
     city: string
-    q: string
+    q?: string
+    limit?: number
   }) => {
     const q = new URLSearchParams({
       country_code: params.country_code,
       state_province: params.state_province,
       city: params.city,
-      q: params.q,
     })
+    if (params.q?.trim()) q.set('q', params.q.trim())
+    if (params.limit != null) q.set('limit', String(params.limit))
     return request<{ facilities: CommunityHealthcareFacility[] }>(
       `/api/community/locations/healthcare-facilities?${q}`,
     )
