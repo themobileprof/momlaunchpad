@@ -182,10 +182,11 @@ export function CalendarPage() {
       .sort((a, b) => a.at.getTime() - b.at.getTime())
   }, [communityEvents, reminders, viewDate, visits])
 
-  const upcomingCount = useMemo(() => {
-    const now = Date.now()
-    return timeline.filter((item) => item.at.getTime() >= now && !item.completed).length
-  }, [timeline])
+  const [nowMs] = useState(() => Date.now())
+  const upcomingCount = useMemo(
+    () => timeline.filter((item) => item.at.getTime() >= nowMs && !item.completed).length,
+    [timeline, nowMs],
+  )
 
   const stageLine =
     STAGE_COPY[profile?.journey_stage ?? '']?.(profile?.pregnancy_week) ??
