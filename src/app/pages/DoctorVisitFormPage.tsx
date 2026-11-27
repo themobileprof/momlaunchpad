@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { userApi } from '../api'
 import { GradientButton, MomAppBar } from '../components/ui'
+import {
+  appointmentReminderDescription,
+  appointmentReminderTitle,
+} from '../lib/visitCheckInLogic'
+import { syncReminderAfterCreate } from '../lib/reminderGoogleSync'
 import { DOCTOR_VISIT_TYPES, DOCTOR_VISIT_TYPE_LABELS } from '../types'
 import type { DoctorVisit } from '../types'
 import { appPath } from '../routes'
@@ -44,6 +49,19 @@ function titleForMode(mode: DoctorVisitFormMode, isEdit: boolean) {
   return isEdit ? 'Edit visit' : 'Log past visit'
 }
 
+function formatSummary(when: string, type: string) {
+  const label = DOCTOR_VISIT_TYPE_LABELS[type] ?? type
+  const d = new Date(when)
+  if (Number.isNaN(d.getTime())) return label
+  return `${label} · ${d.toLocaleString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })}`
+}
+
 export function DoctorVisitFormPage() {
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
@@ -72,6 +90,8 @@ export function DoctorVisitFormPage() {
   const [pendingTest, setPendingTest] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [savedVisit, setSavedVisit] = useState<DoctorVisit | null>(null)
+  const [addingReminder, setAddingReminder] = useState(false)
 
   useEffect(() => {
     if (!id) {
@@ -146,7 +166,6 @@ export function DoctorVisitFormPage() {
           ? [{ name: medication.trim(), dosage: '', frequency: 'As prescribed' }]
           : []
       } else if (mode !== 'schedule' && loadedVisit) {
-        // Keep existing clinical fields when the user skips “more details”.
         if (loadedVisit.diagnosis) body.diagnosis = loadedVisit.diagnosis
         if (loadedVisit.treatment_plan) body.treatment_plan = loadedVisit.treatment_plan
       }
@@ -158,7 +177,6 @@ export function DoctorVisitFormPage() {
         saved = await userApi.createDoctorVisit(body)
       }
 
-      // Past logs and after-visit updates mark the check-in complete so Home does not re-prompt.
       if (mode === 'past' || mode === 'update') {
         const pending_tests = showMore && pendingTest.trim()
           ? [{ test_name: pendingTest.trim(), status: 'pending' as const }]
@@ -170,14 +188,36 @@ export function DoctorVisitFormPage() {
             : [],
           mark_completed: true,
         })
+        navigate(appPath('visits'))
+        return
       }
 
-      void saved
-      navigate(appPath('visits'))
+      // Schedule mode: offer one-tap calendar reminder before leaving.
+      setSavedVisit(saved)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save visit')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function addToCalendarAndFinish() {
+    if (!savedVisit) return
+    setAddingReminder(true)
+    try {
+      const reminder = await userApi.createReminder({
+        title: appointmentReminderTitle(savedVisit),
+        description: appointmentReminderDescription(savedVisit) || undefined,
+        reminder_time: savedVisit.visit_date,
+        priority: 'medium',
+      })
+      await syncReminderAfterCreate(reminder)
+      navigate(appPath('calendar'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Saved visit, but reminder failed')
+      navigate(appPath('calendar'))
+    } finally {
+      setAddingReminder(false)
     }
   }
 
@@ -190,15 +230,25 @@ export function DoctorVisitFormPage() {
     )
   }
 
+  const saveLabel =
+    mode === 'schedule'
+      ? 'Save appointment'
+      : mode === 'update'
+        ? 'Save update'
+        : 'Save visit'
+
   return (
-    <div className="user-app-content--no-nav">
-      <MomAppBar pageTitle={titleForMode(mode, isEdit)} onBack={() => navigate(appPath('visits'))} />
-      <div style={{ padding: 16 }}>
+    <div className="user-app-content--no-nav visit-form-page">
+      <MomAppBar
+        pageTitle={titleForMode(mode, isEdit)}
+        onBack={() => navigate(savedVisit ? appPath('calendar') : appPath('visits'))}
+      />
+      <div className="visit-form-page__scroll">
         {error && <div className="u-alert u-alert--error">{error}</div>}
 
         {mode === 'schedule' && (
           <p className="u-muted" style={{ marginTop: 0 }}>
-            Just the essentials for now. We will ask how it went after the date.
+            Just the essentials — type, date, and time. We&apos;ll ask how it went after.
           </p>
         )}
         {mode === 'update' && (
@@ -305,19 +355,42 @@ export function DoctorVisitFormPage() {
             )}
           </>
         )}
-
-        <div style={{ marginTop: 20 }}>
-          <GradientButton onClick={submit} disabled={saving}>
-            {saving
-              ? 'Saving…'
-              : mode === 'schedule'
-                ? 'Save appointment'
-                : mode === 'update'
-                  ? 'Save update'
-                  : 'Save visit'}
-          </GradientButton>
-        </div>
       </div>
+
+      <div className="visit-form-page__footer">
+        <p className="visit-form-page__summary">{formatSummary(visitDate, visitType)}</p>
+        <GradientButton onClick={submit} disabled={saving || Boolean(savedVisit)}>
+          {saving ? 'Saving…' : saveLabel}
+        </GradientButton>
+      </div>
+
+      {savedVisit && (
+        <div className="sheet-overlay" role="dialog" aria-modal="true" aria-labelledby="visit-saved-title">
+          <div className="sheet-panel sheet-panel--compose">
+            <div className="sheet-panel__handle" aria-hidden />
+            <h2 id="visit-saved-title" className="u-heading-sm">Appointment saved</h2>
+            <p className="u-muted" style={{ margin: '8px 0 0', lineHeight: 1.45 }}>
+              Add it to your calendar so you get a nudge when the day arrives.
+            </p>
+            <p className="visit-saved-chip">
+              {appointmentReminderTitle(savedVisit)}
+            </p>
+            <div className="sheet-panel__footer sheet-panel__footer--stack">
+              <GradientButton onClick={addToCalendarAndFinish} disabled={addingReminder}>
+                {addingReminder ? 'Adding…' : 'Add to calendar'}
+              </GradientButton>
+              <button
+                type="button"
+                className="app-btn app-btn--ghost"
+                onClick={() => navigate(appPath('calendar'))}
+                disabled={addingReminder}
+              >
+                Skip — view calendar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -2,10 +2,19 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { userApi } from '../api'
 import { IconSend } from '../components/Icons'
-import { MomAppBar } from '../components/ui'
+import { GradientButton, MomAppBar } from '../components/ui'
 import { useChatWebSocket } from '../hooks/useChatWebSocket'
+import { syncReminderAfterCreate } from '../lib/reminderGoogleSync'
 import type { ChatMessage } from '../types'
 import { appPath } from '../routes'
+
+interface CalendarSuggestion {
+  title: string
+  description?: string
+  suggested_time: string
+  priority?: string
+  reason?: string
+}
 
 const SYMPTOM_STARTER = "I have a symptom I'm worried about"
 
@@ -24,6 +33,8 @@ export function ChatPage() {
   const [input, setInput] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [calendarSuggestion, setCalendarSuggestion] = useState<CalendarSuggestion | null>(null)
+  const [savingSuggestion, setSavingSuggestion] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const streamingIdRef = useRef<string | null>(null)
   const starterSentRef = useRef(false)
@@ -153,6 +164,21 @@ export function ChatPage() {
       if (frame.type === 'title_updated' && frame.content) {
         setTitle(frame.content)
       }
+      if (frame.type === 'calendar' && frame.data) {
+        const title = typeof frame.data.title === 'string' ? frame.data.title : ''
+        const suggested =
+          typeof frame.data.suggested_time === 'string' ? frame.data.suggested_time : ''
+        if (title && suggested) {
+          setCalendarSuggestion({
+            title,
+            description:
+              typeof frame.data.description === 'string' ? frame.data.description : undefined,
+            suggested_time: suggested,
+            priority: typeof frame.data.priority === 'string' ? frame.data.priority : 'medium',
+            reason: typeof frame.data.reason === 'string' ? frame.data.reason : undefined,
+          })
+        }
+      }
       if (frame.type === 'error') {
         markLastSendingFailed()
         setError(frame.message ?? frame.content ?? 'Something went wrong')
@@ -160,6 +186,26 @@ export function ChatPage() {
     },
     [clearPendingSendStatus, markLastSendingFailed],
   )
+
+  async function acceptCalendarSuggestion() {
+    if (!calendarSuggestion) return
+    setSavingSuggestion(true)
+    try {
+      const reminder = await userApi.createReminder({
+        title: calendarSuggestion.title,
+        description: calendarSuggestion.description,
+        reminder_time: calendarSuggestion.suggested_time,
+        priority: calendarSuggestion.priority || 'medium',
+      })
+      await syncReminderAfterCreate(reminder)
+      setCalendarSuggestion(null)
+      navigate(appPath('calendar'))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not save reminder')
+    } finally {
+      setSavingSuggestion(false)
+    }
+  }
 
   useEffect(() => {
     if (lastFrame) handleFrame(lastFrame)
@@ -313,6 +359,47 @@ export function ChatPage() {
           <IconSend />
         </button>
       </div>
+
+      {calendarSuggestion && (
+        <div
+          className="sheet-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="chat-cal-title"
+        >
+          <div className="sheet-panel sheet-panel--compose">
+            <div className="sheet-panel__handle" aria-hidden />
+            <h2 id="chat-cal-title" className="u-heading-sm">Add to your calendar?</h2>
+            <p className="u-muted" style={{ margin: '8px 0 0', lineHeight: 1.45 }}>
+              {calendarSuggestion.reason ||
+                'I can save this as a reminder so you don’t forget.'}
+            </p>
+            <p className="visit-saved-chip">{calendarSuggestion.title}</p>
+            <p className="u-muted" style={{ margin: '8px 0 0', fontSize: '0.88rem' }}>
+              {new Date(calendarSuggestion.suggested_time).toLocaleString(undefined, {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+              })}
+            </p>
+            <div className="sheet-panel__footer sheet-panel__footer--stack">
+              <GradientButton onClick={acceptCalendarSuggestion} disabled={savingSuggestion}>
+                {savingSuggestion ? 'Saving…' : 'Save reminder'}
+              </GradientButton>
+              <button
+                type="button"
+                className="app-btn app-btn--ghost"
+                onClick={() => setCalendarSuggestion(null)}
+                disabled={savingSuggestion}
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { userApi } from '../api'
 import { BottomNav } from '../components/BottomNav'
 import { PregnancyWeekStory } from '../components/PregnancyWeekStory'
@@ -13,8 +13,6 @@ import {
 import { appPath } from '../routes'
 import type { CommunityEvent, DoctorVisit, Reminder } from '../types'
 import { DOCTOR_VISIT_TYPE_LABELS } from '../types'
-
-const PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const
 
 type TimelineKind = 'reminder' | 'visit' | 'community'
 
@@ -32,12 +30,12 @@ interface TimelineItem {
 const STAGE_COPY: Record<string, (week?: number) => string> = {
   pregnant: (week) =>
     week
-      ? `Week ${week}: this is your narrative calendar for appointments, reminders, and support moments.`
-      : 'Your narrative calendar combines appointments, reminders, and support moments.',
+      ? `Week ${week}: keep appointments and gentle reminders in one place.`
+      : 'Your appointments and reminders, in one calm timeline.',
   ttc: () =>
-    'A calm timeline for cycle windows, reminders, and community events that support your goals.',
+    'A calm timeline for reminders and moments that support your goals.',
   postpartum: () =>
-    'Recovery-focused timeline with practical reminders, follow-ups, and support events.',
+    'Recovery-focused timeline with practical reminders and follow-ups.',
   miscarriage: () =>
     'A gentle, low-pressure timeline with only what is helpful right now.',
 }
@@ -65,7 +63,7 @@ function asTimelineReminder(r: Reminder): TimelineItem {
     kind: 'reminder',
     at,
     title: r.title,
-    subtitle: `${formatTime(at)} · ${r.priority} priority`,
+    subtitle: formatTime(at),
     priority: r.priority,
     completed: r.is_completed,
     sourceId: r.id,
@@ -116,6 +114,8 @@ function asTimelineCommunity(event: CommunityEvent): TimelineItem {
 
 export function CalendarPage() {
   const today = new Date()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { profile } = useUserProfile()
   const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
   const [reminders, setReminders] = useState<Reminder[]>([])
@@ -123,10 +123,11 @@ export function CalendarPage() {
   const [communityEvents, setCommunityEvents] = useState<CommunityEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [formTitle, setFormTitle] = useState('')
   const [formDate, setFormDate] = useState(toInputDate(today))
   const [formTime, setFormTime] = useState('09:00')
-  const [formPriority, setFormPriority] = useState<string>('medium')
+  const [toast, setToast] = useState('')
 
   const load = async () => {
     setLoading(true)
@@ -151,6 +152,23 @@ export function CalendarPage() {
     load()
   }, [])
 
+  useEffect(() => {
+    const add = searchParams.get('add')
+    if (add === 'reminder') {
+      setShowForm(true)
+      setSearchParams({}, { replace: true })
+    } else if (add === 'appointment') {
+      setSearchParams({}, { replace: true })
+      navigate(appPath('visits/new?mode=schedule'))
+    }
+  }, [searchParams, setSearchParams, navigate])
+
+  useEffect(() => {
+    if (!toast) return
+    const t = window.setTimeout(() => setToast(''), 3200)
+    return () => window.clearTimeout(t)
+  }, [toast])
+
   const monthLabel = viewDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
 
   const timeline = useMemo(() => {
@@ -164,23 +182,37 @@ export function CalendarPage() {
       .sort((a, b) => a.at.getTime() - b.at.getTime())
   }, [communityEvents, reminders, viewDate, visits])
 
+  const upcomingCount = useMemo(() => {
+    const now = Date.now()
+    return timeline.filter((item) => item.at.getTime() >= now && !item.completed).length
+  }, [timeline])
+
   const stageLine =
     STAGE_COPY[profile?.journey_stage ?? '']?.(profile?.pregnancy_week) ??
     'A single timeline for the things that matter in your journey.'
 
   async function createReminder() {
     if (!formTitle.trim() || !formDate || !formTime) return
-    const scheduled = new Date(`${formDate}T${formTime}:00`)
-    const reminder = await userApi.createReminder({
-      title: formTitle.trim(),
-      reminder_time: scheduled.toISOString(),
-      priority: formPriority,
-    })
-    await syncReminderAfterCreate(reminder)
-    setShowForm(false)
-    setFormTitle('')
-    setFormDate(toInputDate(today))
-    load()
+    setSaving(true)
+    try {
+      const scheduled = new Date(`${formDate}T${formTime}:00`)
+      const reminder = await userApi.createReminder({
+        title: formTitle.trim(),
+        reminder_time: scheduled.toISOString(),
+        priority: 'medium',
+      })
+      await syncReminderAfterCreate(reminder)
+      setShowForm(false)
+      setFormTitle('')
+      setFormDate(toInputDate(today))
+      setFormTime('09:00')
+      setToast('Reminder saved')
+      await load()
+    } catch (e) {
+      setToast(e instanceof Error ? e.message : 'Could not save reminder')
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function toggleComplete(r: Reminder) {
@@ -233,19 +265,37 @@ export function CalendarPage() {
           </div>
           <p className="calendar-story-head__narration">
             {isPregnant
-              ? 'Appointments, reminders, and community events alongside your weekly pregnancy story above.'
+              ? 'Appointments and reminders alongside your weekly pregnancy story above.'
               : stageLine}
           </p>
           <div className="calendar-story-head__meta">
-            <span className="app-badge">{timeline.length} items</span>
-            <span className="app-badge">Reminders · Visits · Community</span>
+            <span className="app-badge">{upcomingCount} upcoming</span>
+            <span className="app-badge">Appointments · Reminders</span>
           </div>
         </section>
 
         {loading ? (
           <div className="u-center-page"><div className="u-spinner" /></div>
         ) : timeline.length === 0 ? (
-          <EmptyState icon="📅" title="No timeline items" body="This month is clear. Add a reminder to start your story." />
+          <EmptyState
+            icon="📅"
+            title="Nothing scheduled yet"
+            body="Save your next clinic visit or a gentle reminder — it only takes a moment."
+            action={
+              <div className="calendar-empty-actions">
+                <GradientButton onClick={() => navigate(appPath('visits/new?mode=schedule'))}>
+                  Schedule appointment
+                </GradientButton>
+                <button
+                  type="button"
+                  className="app-btn app-btn--outline"
+                  onClick={() => setShowForm(true)}
+                >
+                  Add reminder
+                </button>
+              </div>
+            }
+          />
         ) : (
           <section className="calendar-timeline">
             {timeline.map((item) => (
@@ -254,7 +304,9 @@ export function CalendarPage() {
                   <span>{fmtDate(item.at)}</span>
                 </div>
                 <div className="calendar-timeline-item__body">
-                  <p className="calendar-timeline-item__kind">{item.kind}</p>
+                  <p className="calendar-timeline-item__kind">
+                    {item.kind === 'visit' ? 'Appointment' : item.kind === 'reminder' ? 'Reminder' : 'Community'}
+                  </p>
                   <h3 className="calendar-timeline-item__title">{item.title}</h3>
                   <p className="calendar-timeline-item__sub">{item.subtitle}</p>
 
@@ -304,34 +356,64 @@ export function CalendarPage() {
           </section>
         )}
 
-        <button
-          type="button"
-          className="calendar-add-btn"
-          onClick={() => setShowForm(true)}
-          aria-label="Add reminder"
-        >
-          + Reminder
-        </button>
+        <div className="calendar-action-dock" role="group" aria-label="Add to calendar">
+          <button
+            type="button"
+            className="calendar-action-dock__primary"
+            onClick={() => navigate(appPath('visits/new?mode=schedule'))}
+          >
+            <span className="calendar-action-dock__icon" aria-hidden>＋</span>
+            Schedule appointment
+          </button>
+          <button
+            type="button"
+            className="calendar-action-dock__secondary"
+            onClick={() => setShowForm(true)}
+          >
+            Add reminder
+          </button>
+        </div>
       </div>
 
       {showForm && (
         <div className="sheet-overlay" onClick={() => setShowForm(false)} role="presentation">
-          <div className="sheet-panel" onClick={(e) => e.stopPropagation()}>
-            <h2 className="u-heading-sm">New reminder</h2>
-            <input className="app-input" placeholder="Title" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} style={{ marginTop: 12 }} />
-            <input className="app-input" type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} style={{ marginTop: 8 }} />
-            <input className="app-input" type="time" value={formTime} onChange={(e) => setFormTime(e.target.value)} style={{ marginTop: 8 }} />
-            <select className="app-input" value={formPriority} onChange={(e) => setFormPriority(e.target.value)} style={{ marginTop: 8 }}>
-              {PRIORITIES.map((p) => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-            <div style={{ marginTop: 16 }}>
-              <GradientButton onClick={createReminder}>Save reminder</GradientButton>
+          <div className="sheet-panel sheet-panel--compose" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-panel__handle" aria-hidden />
+            <h2 className="u-heading-sm">Quick reminder</h2>
+            <p className="u-muted" style={{ margin: '6px 0 0', fontSize: '0.88rem' }}>
+              Vitamins, scans, rest — whatever you need to remember.
+            </p>
+            <label className="app-label" style={{ marginTop: 16 }}>What for?</label>
+            <input
+              className="app-input"
+              placeholder="e.g. Take folic acid"
+              value={formTitle}
+              onChange={(e) => setFormTitle(e.target.value)}
+              autoFocus
+            />
+            <div className="calendar-compose-row">
+              <div>
+                <label className="app-label">Date</label>
+                <input className="app-input" type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} />
+              </div>
+              <div>
+                <label className="app-label">Time</label>
+                <input className="app-input" type="time" value={formTime} onChange={(e) => setFormTime(e.target.value)} />
+              </div>
+            </div>
+            <div className="sheet-panel__footer">
+              <button type="button" className="app-btn app-btn--ghost" onClick={() => setShowForm(false)}>
+                Cancel
+              </button>
+              <GradientButton onClick={createReminder} disabled={saving || !formTitle.trim()}>
+                {saving ? 'Saving…' : 'Save reminder'}
+              </GradientButton>
             </div>
           </div>
         </div>
       )}
+
+      {toast && <div className="calendar-toast" role="status">{toast}</div>}
 
       <BottomNav />
     </>

@@ -1128,7 +1128,7 @@
 .calendar-timeline {
   position: relative;
   margin: 0 var(--page-pad);
-  padding: 8px 0 calc(var(--section-gap) + 56px);
+  padding: 8px 0 calc(var(--section-gap) + 96px);
   display: grid;
   gap: 10px;
 }
@@ -1137,7 +1137,7 @@
   position: absolute;
   left: 24px;
   top: 10px;
-  bottom: calc(var(--section-gap) + 62px);
+  bottom: calc(var(--section-gap) + 100px);
   width: 2px;
   background: color-mix(in srgb, var(--accent-deep) 18%, transparent);
 }
@@ -1206,25 +1206,144 @@
   text-decoration: none;
 }
 
-.calendar-add-btn {
+.calendar-empty-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.calendar-action-dock {
   position: fixed;
-  right: 24px;
-  bottom: calc(var(--nav-h) + 32px);
-  width: auto;
-  min-height: 44px;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  gap: 8px;
+  width: min(440px, calc(100% - 32px));
+  padding: 8px;
+  border-radius: calc(var(--radius-lg) + 4px);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-deep) 14%, transparent);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+}
+.calendar-action-dock__primary,
+.calendar-action-dock__secondary {
   border: none;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  padding: 0 14px;
+}
+.calendar-action-dock__primary {
+  flex: 1.4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background: var(--accent-deep);
   color: #fff;
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 600;
-  box-shadow: var(--shadow-md);
-  cursor: pointer;
 }
-.calendar-add-btn:hover {
+.calendar-action-dock__primary:hover {
   background: var(--accent);
+}
+.calendar-action-dock__secondary {
+  flex: 1;
+  background: var(--surface-muted);
+  color: var(--accent-deep);
+  border: 1px solid color-mix(in srgb, var(--accent-deep) 16%, transparent);
+}
+.calendar-action-dock__icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.calendar-compose-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.calendar-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--nav-h) + 88px + env(safe-area-inset-bottom));
+  z-index: 220;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.22s ease-out;
+}
+
+.sheet-panel--compose {
+  padding-top: 12px;
+}
+.sheet-panel__handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink-subtle) 45%, transparent);
+  margin: 0 auto 16px;
+}
+.sheet-panel__footer {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.sheet-panel__footer--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+.sheet-panel__footer--stack .gradient-btn,
+.sheet-panel__footer--stack button {
+  width: 100%;
+}
+
+.visit-form-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.visit-form-page__scroll {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 16px 120px;
+}
+.visit-form-page__footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--accent-deep) 12%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -8px 24px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.visit-form-page__summary {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+.visit-saved-chip {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  border: 1px solid color-mix(in srgb, var(--accent-deep) 12%, transparent);
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 /* Community FAB */
