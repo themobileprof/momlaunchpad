@@ -72,12 +72,27 @@ function SymptomsIcon() {
   )
 }
 
+function NestIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 4.5c-2.2 2.4-5.8 3.4-8.2 3.8 1.1 4.8 4.2 8.4 8.2 10.2 4-1.8 7.1-5.4 8.2-10.2C17.8 7.9 14.2 6.9 12 4.5Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path d="M9.2 12.2h5.6M12 9.4v5.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 const QUICK_LINKS = [
-  { to: 'calendar', label: 'Calendar', sub: 'Appointments, check-ins, and your timeline.', Icon: CalendarIcon, tone: 'calendar', wide: true },
-  { to: 'symptoms', label: 'Symptoms', sub: 'Track how you feel and resolve what improves.', Icon: SymptomsIcon, tone: 'symptoms', wide: true },
-  { to: 'chat', label: 'Chat', sub: 'Guidance that remembers your journey.', Icon: ChatIcon, tone: 'chat' },
+  { to: 'calendar', label: 'Calendar', sub: 'Appointments and reminders.', Icon: CalendarIcon, tone: 'calendar' },
+  { to: 'symptoms', label: 'Symptoms', sub: 'Track how you feel day to day.', Icon: SymptomsIcon, tone: 'symptoms' },
+  { to: 'chat', label: 'Chat', sub: 'Guidance for your journey.', Icon: ChatIcon, tone: 'chat' },
   { to: 'community', label: 'Community', sub: 'Moms and caregivers near you.', Icon: CommunityIcon, tone: 'community' },
   { to: 'visits', label: 'Visits', sub: 'Doctor notes and follow-ups.', Icon: VisitsIcon, tone: 'visits' },
+  { to: 'nest', label: 'Nest', sub: 'Plan support for delivery day.', Icon: NestIcon, tone: 'nest' },
 ] as const
 
 export function AppHomePage() {
@@ -169,7 +184,7 @@ export function AppHomePage() {
             <Link
               key={link.to}
               to={appPath(link.to)}
-              className={`bento-card bento-card--${link.tone}${'wide' in link && link.wide ? ' bento-card--wide' : ''}`}
+              className={`bento-card bento-card--${link.tone}`}
             >
               <span className="bento-card__icon">
                 <link.Icon />

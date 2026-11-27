@@ -1840,6 +1840,10 @@
   background: #d1fae5;
   color: #065f46;
 }
+.bento-card--nest .bento-card__icon {
+  background: #e0f2fe;
+  color: #075985;
+}
 
 .symptom-stats {
   display: grid;
