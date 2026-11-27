@@ -1978,7 +1978,9 @@
 
 /* Home prompt cards (visit check-in, community highlight) */
 .home-prompt-card {
+  position: relative;
   padding: 18px;
+  padding-right: 44px;
 }
 .home-prompt-card .u-caption {
   margin: 0 0 6px;
@@ -1992,6 +1994,31 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 16px;
+}
+.home-prompt-card__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-muted, #6b7280);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.home-prompt-card__close:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--ink, #111827);
+}
+.home-prompt-card__close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Page sections — consistent horizontal padding */

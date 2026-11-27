@@ -4,7 +4,7 @@ import { userApi } from '../api'
 import { IconSend } from '../components/Icons'
 import { GradientButton, MomAppBar } from '../components/ui'
 import { useChatWebSocket } from '../hooks/useChatWebSocket'
-import { syncReminderAfterCreate } from '../lib/reminderGoogleSync'
+import { offerExternalCalendar } from '../lib/reminderGoogleSync'
 import type { ChatMessage } from '../types'
 import { appPath } from '../routes'
 
@@ -197,7 +197,7 @@ export function ChatPage() {
         reminder_time: calendarSuggestion.suggested_time,
         priority: calendarSuggestion.priority || 'medium',
       })
-      await syncReminderAfterCreate(reminder)
+      offerExternalCalendar(reminder)
       setCalendarSuggestion(null)
       navigate(appPath('calendar'))
     } catch (e) {

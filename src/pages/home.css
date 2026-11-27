@@ -45,6 +45,18 @@
   color: var(--home-ink);
 }
 
+.home-header-session {
+  color: var(--home-ink-soft);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.home-header-session:hover {
+  color: var(--home-rose-deep);
+}
+
 .home-logo .brand-logo-text strong {
   font-family: 'Fraunces', Georgia, serif;
   font-size: 1.15rem;

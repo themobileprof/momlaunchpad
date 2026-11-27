@@ -5,11 +5,7 @@ import { BottomNav } from '../components/BottomNav'
 import { PregnancyWeekStory } from '../components/PregnancyWeekStory'
 import { EmptyState, GradientButton, MomAppBar } from '../components/ui'
 import { useUserProfile } from '../context/UserProfileContext'
-import {
-  syncReminderAfterCreate,
-  syncReminderAfterUpdate,
-  syncReminderBeforeDelete,
-} from '../lib/reminderGoogleSync'
+import { offerExternalCalendar } from '../lib/reminderGoogleSync'
 import { appPath } from '../routes'
 import type { CommunityEvent, DoctorVisit, Reminder } from '../types'
 import { DOCTOR_VISIT_TYPE_LABELS } from '../types'
@@ -202,12 +198,12 @@ export function CalendarPage() {
         reminder_time: scheduled.toISOString(),
         priority: 'medium',
       })
-      await syncReminderAfterCreate(reminder)
+      offerExternalCalendar(reminder)
       setShowForm(false)
       setFormTitle('')
       setFormDate(toInputDate(today))
       setFormTime('09:00')
-      setToast('Reminder saved')
+      setToast('Reminder saved — opened Google Calendar to add it')
       await load()
     } catch (e) {
       setToast(e instanceof Error ? e.message : 'Could not save reminder')
@@ -217,13 +213,11 @@ export function CalendarPage() {
   }
 
   async function toggleComplete(r: Reminder) {
-    let updated = await userApi.updateReminder(r.id, { is_completed: !r.is_completed })
-    updated = await syncReminderAfterUpdate(updated)
+    const updated = await userApi.updateReminder(r.id, { is_completed: !r.is_completed })
     setReminders((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
   }
 
   async function deleteReminderItem(r: Reminder) {
-    await syncReminderBeforeDelete(r)
     await userApi.deleteReminder(r.id)
     load()
   }

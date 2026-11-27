@@ -16,7 +16,7 @@ import {
   saveDismissedKey,
   saveMonthlyDismissedAt,
 } from '../lib/visitCheckInDismissals'
-import { syncReminderAfterCreate } from '../lib/reminderGoogleSync'
+import { offerExternalCalendar } from '../lib/reminderGoogleSync'
 import { appPath } from '../routes'
 
 export function VisitCheckInPrompt() {
@@ -57,16 +57,16 @@ export function VisitCheckInPrompt() {
     if (!ctx.visit || !ctx.appointmentAt) return
     setBusy(true)
     try {
-      let reminder = await userApi.createReminder({
+      const reminder = await userApi.createReminder({
         title: appointmentReminderTitle(ctx.visit),
         description: appointmentReminderDescription(ctx.visit) || undefined,
         reminder_time: ctx.appointmentAt.toISOString(),
         priority: 'medium',
       })
-      reminder = await syncReminderAfterCreate(reminder)
       setReminders((prev) => [...prev, reminder])
+      offerExternalCalendar(reminder)
       dismiss(ctx)
-      setMessage('Appointment added to your calendar')
+      setMessage('Opened Google Calendar — save the event there to get reminders')
     } catch (e) {
       setMessage(e instanceof Error ? e.message : 'Failed to add reminder')
     } finally {
@@ -76,6 +76,16 @@ export function VisitCheckInPrompt() {
 
   return (
     <div className="glass home-prompt-card">
+      <button
+        type="button"
+        className="home-prompt-card__close"
+        aria-label="Dismiss"
+        disabled={busy}
+        onClick={() => dismiss(context)}
+      >
+        <span aria-hidden>×</span>
+      </button>
+
       {context.kind === 'upcomingAppointment' && context.visit && context.appointmentAt && (
         <>
           <p className="u-caption">
@@ -91,9 +101,6 @@ export function VisitCheckInPrompt() {
             </p>
           )}
           <div className="home-prompt-card__actions">
-            <button type="button" className="app-btn app-btn--outline app-btn--sm" disabled={busy} onClick={() => dismiss(context)}>
-              Not now
-            </button>
             <GradientButton onClick={() => addAppointmentReminder(context)} disabled={busy}>
               {busy ? 'Adding…' : 'Add to calendar'}
             </GradientButton>
@@ -112,9 +119,6 @@ export function VisitCheckInPrompt() {
             A short update is enough — add more details only if you want.
           </p>
           <div className="home-prompt-card__actions">
-            <button type="button" className="app-btn app-btn--outline app-btn--sm" onClick={() => dismiss(context)}>
-              Not now
-            </button>
             <Link
               to={appPath(`visits/${context.visit.id}/edit?mode=update`)}
               className="gradient-btn app-btn--sm"
@@ -131,9 +135,6 @@ export function VisitCheckInPrompt() {
           <p className="u-caption">Doctor visit check-in</p>
           <strong>Anything coming up, or a visit you already had?</strong>
           <div className="home-prompt-card__actions" style={{ flexWrap: 'wrap' }}>
-            <button type="button" className="app-btn app-btn--outline app-btn--sm" onClick={() => dismiss(context)}>
-              Not now
-            </button>
             <Link
               to={appPath('visits/new?mode=schedule')}
               className="app-btn app-btn--outline app-btn--sm"

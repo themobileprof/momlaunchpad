@@ -6,7 +6,7 @@ import {
   appointmentReminderDescription,
   appointmentReminderTitle,
 } from '../lib/visitCheckInLogic'
-import { syncReminderAfterCreate } from '../lib/reminderGoogleSync'
+import { offerExternalCalendar } from '../lib/reminderGoogleSync'
 import { DOCTOR_VISIT_TYPES, DOCTOR_VISIT_TYPE_LABELS } from '../types'
 import type { DoctorVisit } from '../types'
 import { appPath } from '../routes'
@@ -211,7 +211,7 @@ export function DoctorVisitFormPage() {
         reminder_time: savedVisit.visit_date,
         priority: 'medium',
       })
-      await syncReminderAfterCreate(reminder)
+      offerExternalCalendar(reminder)
       navigate(appPath('calendar'))
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Saved visit, but reminder failed')

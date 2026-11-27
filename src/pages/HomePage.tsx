@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ApkDownloadSection } from '../components/ApkDownloadSection'
 import { BrandLogo } from '../components/BrandLogo'
 import { HomePhotoVisual } from '../components/HomePhotoVisual'
+import { getUserToken } from '../app/api'
 import { appPath } from '../app/routes'
 import { useBrand } from '../context/BrandContext'
 import { openConsentSettings } from '../lib/consent'
@@ -33,11 +34,22 @@ const FEATURES = [
 
 export function HomePage() {
   const brand = useBrand()
+  const isSignedIn = Boolean(getUserToken())
+
   return (
     <div className="home home--compact">
       <div className="home-grain" aria-hidden />
       <header className="home-header home-header--compact">
         <BrandLogo href="/" size="lg" showText className="home-logo" />
+        {isSignedIn ? (
+          <Link to={appPath()} className="home-header-session">
+            Open app
+          </Link>
+        ) : (
+          <Link to={appPath('login')} className="home-header-session">
+            Sign in
+          </Link>
+        )}
       </header>
 
       <main className="home-compact-main">
@@ -52,12 +64,20 @@ export function HomePage() {
             Chat, community, and gentle support for your pregnancy journey.
           </p>
           <div className="home-hero-actions home-reveal" style={{ animationDelay: '0.14s' }}>
-            <Link to={appPath('login')} className="home-btn home-btn-solid home-btn-lg">
-              Sign in
-            </Link>
-            <Link to={appPath('register')} className="home-hero-secondary-link">
-              Create account
-            </Link>
+            {isSignedIn ? (
+              <Link to={appPath()} className="home-btn home-btn-solid home-btn-lg">
+                Continue to app
+              </Link>
+            ) : (
+              <>
+                <Link to={appPath('login')} className="home-btn home-btn-solid home-btn-lg">
+                  Sign in
+                </Link>
+                <Link to={appPath('register')} className="home-hero-secondary-link">
+                  Create account
+                </Link>
+              </>
+            )}
           </div>
         </section>
 
@@ -82,7 +102,9 @@ export function HomePage() {
         <p className="home-footer-copy">
           © {new Date().getFullYear()} {brand.companyName}
           <span aria-hidden> · </span>
-          <Link to={appPath('login')}>App</Link>
+          <Link to={isSignedIn ? appPath() : appPath('login')}>
+            {isSignedIn ? 'Open app' : 'App'}
+          </Link>
           <span aria-hidden> · </span>
           <button type="button" className="home-footer-link" onClick={openConsentSettings}>
             Cookie settings
